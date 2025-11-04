@@ -68,6 +68,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/teams/all", async (req, res) => {
+    try {
+      const teams = await storage.getAllTeams();
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get teams" });
+    }
+  });
+
   app.patch("/api/team/:id", async (req, res) => {
     try {
       const updated = await storage.updateTeam(parseInt(req.params.id), req.body);
@@ -177,8 +186,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/competitions", async (req, res) => {
     try {
+      const gameState = await storage.getGameState();
       const competitions = await storage.getAllCompetitions();
-      res.json(competitions);
+      
+      // Filter to only show competitions the player's team is in
+      const playerCompetitions = competitions.filter(comp => 
+        comp.teams.includes(gameState.playerTeamId)
+      );
+      
+      // Resolve team names in standings
+      for (const competition of playerCompetitions) {
+        for (const standing of competition.standings) {
+          const team = await storage.getTeam(standing.teamId);
+          if (team) {
+            standing.teamName = team.name;
+          }
+        }
+      }
+      
+      res.json(playerCompetitions);
     } catch (error) {
       res.status(500).json({ error: "Failed to get competitions" });
     }
@@ -186,8 +212,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/matches", async (req, res) => {
     try {
-      const matches = await storage.getAllMatches();
-      res.json(matches);
+      const gameState = await storage.getGameState();
+      const allMatches = await storage.getAllMatches();
+      
+      // Filter to only show matches involving the player's team
+      const playerMatches = allMatches.filter(match => 
+        match.homeTeamId === gameState.playerTeamId || 
+        match.awayTeamId === gameState.playerTeamId
+      );
+      
+      res.json(playerMatches);
     } catch (error) {
       res.status(500).json({ error: "Failed to get matches" });
     }

@@ -19,7 +19,7 @@ export class CompetitionEngine {
     
     const fixtures = await this.generateLeagueFixtures(allTeamIds, season);
     
-    const standings = this.initializeStandings(allTeamIds);
+    const standings = await this.initializeStandings(allTeamIds);
     
     const competition = await this.storage.createCompetition({
       name: `Futsal League ${season}`,
@@ -224,20 +224,27 @@ export class CompetitionEngine {
     return fixtures as Match[];
   }
 
-  private initializeStandings(teamIds: number[]): LeagueStanding[] {
-    return teamIds.map((teamId) => ({
-      teamId,
-      teamName: `Team ${teamId}`,
-      played: 0,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      goalDifference: 0,
-      points: 0,
-      form: [],
-    }));
+  private async initializeStandings(teamIds: number[]): Promise<LeagueStanding[]> {
+    const standings: LeagueStanding[] = [];
+    
+    for (const teamId of teamIds) {
+      const team = await this.storage.getTeam(teamId);
+      standings.push({
+        teamId,
+        teamName: team?.name || `Team ${teamId}`,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        points: 0,
+        form: [],
+      });
+    }
+    
+    return standings;
   }
 
   async updateStandings(competitionId: number, match: Match): Promise<void> {

@@ -5,17 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Trophy, Play } from "lucide-react";
 import { format } from "date-fns";
-import type { Match, Competition } from "@shared/schema";
+import type { Match, Competition, Team } from "@shared/schema";
 
 export function MatchesPage() {
   const { gameState, loadGameData, loading, initialized } = useFutsalManager();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [teams, setTeams] = useState<Record<number, string>>({});
   const [simulating, setSimulating] = useState<number | null>(null);
 
   useEffect(() => {
     if (initialized) {
       loadGameData();
       loadCompetitions();
+      loadTeams();
     }
   }, [initialized]);
 
@@ -28,6 +30,22 @@ export function MatchesPage() {
       }
     } catch (error) {
       console.error("Failed to load competitions:", error);
+    }
+  };
+
+  const loadTeams = async () => {
+    try {
+      const response = await fetch("/api/teams/all");
+      if (response.ok) {
+        const data = await response.json();
+        const teamMap: Record<number, string> = {};
+        data.forEach((team: Team) => {
+          teamMap[team.id] = team.name;
+        });
+        setTeams(teamMap);
+      }
+    } catch (error) {
+      console.error("Failed to load teams:", error);
     }
   };
 
@@ -98,6 +116,9 @@ export function MatchesPage() {
                 <div className="space-y-3">
                   {upcomingMatches.map((match) => {
                     const competition = competitions.find(c => c.id === match.competitionId);
+                    const homeTeamName = teams[match.homeTeamId] || `Team ${match.homeTeamId}`;
+                    const awayTeamName = teams[match.awayTeamId] || `Team ${match.awayTeamId}`;
+                    const isHomeGame = match.homeTeamId === gameState?.playerTeamId;
                     return (
                       <div
                         key={match.id}
@@ -106,18 +127,25 @@ export function MatchesPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-4">
                             <div className="text-center flex-1">
-                              <p className="font-medium">Home Team {match.homeTeamId}</p>
+                              <p className={`font-medium ${isHomeGame ? "text-primary font-bold" : ""}`}>
+                                {homeTeamName}
+                              </p>
                             </div>
                             <div className="text-2xl font-bold text-muted-foreground px-4">
                               VS
                             </div>
                             <div className="text-center flex-1">
-                              <p className="font-medium">Away Team {match.awayTeamId}</p>
+                              <p className={`font-medium ${!isHomeGame ? "text-primary font-bold" : ""}`}>
+                                {awayTeamName}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center justify-center gap-4 mt-2 text-sm text-muted-foreground">
                             <span>{format(new Date(match.date), "MMM d, yyyy")}</span>
                             <Badge variant="outline">{competition?.name || "League"}</Badge>
+                            <Badge variant={isHomeGame ? "default" : "secondary"}>
+                              {isHomeGame ? "Home" : "Away"}
+                            </Badge>
                           </div>
                         </div>
                         <Button
@@ -150,6 +178,13 @@ export function MatchesPage() {
                 <div className="space-y-3">
                   {recentMatches.map((match) => {
                     const competition = competitions.find(c => c.id === match.competitionId);
+                    const homeTeamName = teams[match.homeTeamId] || `Team ${match.homeTeamId}`;
+                    const awayTeamName = teams[match.awayTeamId] || `Team ${match.awayTeamId}`;
+                    const isHomeGame = match.homeTeamId === gameState?.playerTeamId;
+                    const playerScore = isHomeGame ? match.homeScore : match.awayScore;
+                    const opponentScore = isHomeGame ? match.awayScore : match.homeScore;
+                    const won = playerScore > opponentScore;
+                    const drawn = playerScore === opponentScore;
                     return (
                       <div
                         key={match.id}
@@ -158,18 +193,25 @@ export function MatchesPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-4">
                             <div className="text-center flex-1">
-                              <p className="font-medium">Home Team {match.homeTeamId}</p>
+                              <p className={`font-medium ${isHomeGame ? "text-primary font-bold" : ""}`}>
+                                {homeTeamName}
+                              </p>
                             </div>
-                            <div className="text-3xl font-bold px-6">
+                            <div className={`text-3xl font-bold px-6 ${won ? "text-green-600" : drawn ? "text-yellow-600" : "text-red-600"}`}>
                               {match.homeScore} - {match.awayScore}
                             </div>
                             <div className="text-center flex-1">
-                              <p className="font-medium">Away Team {match.awayTeamId}</p>
+                              <p className={`font-medium ${!isHomeGame ? "text-primary font-bold" : ""}`}>
+                                {awayTeamName}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center justify-center gap-4 mt-2 text-sm text-muted-foreground">
                             <span>{format(new Date(match.date), "MMM d, yyyy")}</span>
                             <Badge variant="outline">{competition?.name || "League"}</Badge>
+                            <Badge variant={won ? "default" : drawn ? "secondary" : "destructive"}>
+                              {won ? "Win" : drawn ? "Draw" : "Loss"}
+                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -211,20 +253,25 @@ export function MatchesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {competition.standings.map((standing, index) => (
-                        <tr key={standing.teamId} className="border-b border-border hover:bg-muted">
-                          <td className="py-3 px-4 text-sm font-medium">{index + 1}</td>
-                          <td className="py-3 px-4 text-sm">Team {standing.teamId}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.played}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.won}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.drawn}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.lost}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.goalsFor}</td>
-                          <td className="py-3 px-4 text-sm text-center">{standing.goalsAgainst}</td>
-                          <td className="py-3 px-4 text-sm text-center font-medium">{standing.goalDifference}</td>
-                          <td className="py-3 px-4 text-sm text-center font-bold">{standing.points}</td>
-                        </tr>
-                      ))}
+                      {competition.standings.map((standing, index) => {
+                        const isPlayerTeam = standing.teamId === gameState?.playerTeamId;
+                        return (
+                          <tr key={standing.teamId} className={`border-b border-border hover:bg-muted ${isPlayerTeam ? "bg-primary/5" : ""}`}>
+                            <td className="py-3 px-4 text-sm font-medium">{index + 1}</td>
+                            <td className={`py-3 px-4 text-sm ${isPlayerTeam ? "font-bold text-primary" : ""}`}>
+                              {standing.teamName}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.played}</td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.won}</td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.drawn}</td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.lost}</td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.goalsFor}</td>
+                            <td className="py-3 px-4 text-sm text-center">{standing.goalsAgainst}</td>
+                            <td className="py-3 px-4 text-sm text-center font-medium">{standing.goalDifference}</td>
+                            <td className="py-3 px-4 text-sm text-center font-bold">{standing.points}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
