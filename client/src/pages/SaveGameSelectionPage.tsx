@@ -22,6 +22,8 @@ export default function SaveGameSelectionPage() {
   const { user, logout, setActiveSaveGame } = useAuth();
   const [saveGames, setSaveGames] = useState<SaveGame[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [creationProgress, setCreationProgress] = useState("");
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [newGameName, setNewGameName] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -61,6 +63,14 @@ export default function SaveGameSelectionPage() {
     }
 
     try {
+      setShowNewGameDialog(false);
+      setIsCreating(true);
+      setCreationProgress("Creating your team...");
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setCreationProgress("Generating AI teams and players...");
+
       const response = await fetch("/api/savegames", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,11 +86,22 @@ export default function SaveGameSelectionPage() {
         throw new Error(error.error || "Failed to create save game");
       }
 
+      setCreationProgress("Setting up competitions...");
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setCreationProgress("Finalizing your save game...");
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const saveGame = await response.json();
+      
+      setCreationProgress("Loading game...");
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       setActiveSaveGame(saveGame);
-      setShowNewGameDialog(false);
     } catch (err: any) {
+      setIsCreating(false);
       setError(err.message || "Failed to create save game");
+      setShowNewGameDialog(true);
     }
   };
 
@@ -118,6 +139,32 @@ export default function SaveGameSelectionPage() {
       console.error("Failed to delete save game:", err);
     }
   };
+
+  if (isCreating) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Creating Your Game</CardTitle>
+            <CardDescription className="text-center">
+              Please wait while we set up your futsal empire...
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-16 h-16 border-4 border-[#40916C] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-center text-lg font-medium">{creationProgress}</p>
+            </div>
+            <div className="text-sm text-muted-foreground text-center space-y-1">
+              <p>• Generating 40+ AI teams</p>
+              <p>• Creating 520+ players with unique attributes</p>
+              <p>• Setting up 3 competitions</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] p-8">
