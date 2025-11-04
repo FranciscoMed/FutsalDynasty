@@ -5,10 +5,10 @@ import { calculateOverallRating } from "@shared/schema";
 export class CompetitionEngine {
   constructor(private storage: IStorage) {}
 
-  async createLeagueCompetition(season: number, playerTeamId: number): Promise<Competition> {
+  async createLeagueCompetition(season: number, playerTeamId: number, saveGameId?: number): Promise<Competition> {
     console.log(`Creating league competition for season ${season}`);
     
-    const aiTeams = await this.generateAITeams(11);
+    const aiTeams = await this.generateAITeams(11, 0, 40, 70, saveGameId);
     const playerTeam = await this.storage.getTeam(playerTeamId);
     
     if (!playerTeam) {
@@ -17,11 +17,12 @@ export class CompetitionEngine {
     
     const allTeamIds = [playerTeamId, ...aiTeams.map(t => t.id)];
     
-    const fixtures = await this.generateLeagueFixtures(allTeamIds, season);
+    const fixtures = await this.generateLeagueFixtures(allTeamIds, season, saveGameId);
     
     const standings = await this.initializeStandings(allTeamIds);
     
     const competition = await this.storage.createCompetition({
+      saveGameId,
       name: `Futsal League ${season}`,
       type: "league",
       season,
@@ -35,7 +36,7 @@ export class CompetitionEngine {
     return competition;
   }
 
-  private async generateAITeams(count: number, startIndex: number = 0, minReputation: number = 40, maxReputation: number = 70): Promise<Team[]> {
+  private async generateAITeams(count: number, startIndex: number = 0, minReputation: number = 40, maxReputation: number = 70, saveGameId?: number): Promise<Team[]> {
     const teamNames = [
       { name: "City Warriors", abbr: "CWA" },
       { name: "United Stars", abbr: "UST" },
@@ -147,6 +148,7 @@ export class CompetitionEngine {
       const reputation = minReputation + Math.floor(Math.random() * (maxReputation - minReputation + 1));
       
       const team = await this.storage.createTeam({
+        saveGameId,
         name,
         abbreviation: abbr,
         reputation,
@@ -160,7 +162,7 @@ export class CompetitionEngine {
         isPlayerTeam: false,
       });
 
-      await this.generateAISquad(team.id, reputation);
+      await this.generateAISquad(team.id, reputation, saveGameId);
       
       teams.push(team);
     }
@@ -168,16 +170,17 @@ export class CompetitionEngine {
     return teams;
   }
 
-  async createSecondDivisionLeague(season: number): Promise<Competition> {
+  async createSecondDivisionLeague(season: number, saveGameId?: number): Promise<Competition> {
     console.log(`Creating Second Division league for season ${season}`);
     
-    const aiTeams = await this.generateAITeams(12, 12, 30, 50);
+    const aiTeams = await this.generateAITeams(12, 12, 30, 50, saveGameId);
     const allTeamIds = aiTeams.map(t => t.id);
     
-    const fixtures = await this.generateLeagueFixtures(allTeamIds, season);
+    const fixtures = await this.generateLeagueFixtures(allTeamIds, season, saveGameId);
     const standings = this.initializeStandings(allTeamIds);
     
     const competition = await this.storage.createCompetition({
+      saveGameId,
       name: `Second Division ${season}`,
       type: "league",
       season,
@@ -191,16 +194,17 @@ export class CompetitionEngine {
     return competition;
   }
 
-  async createCupCompetition(season: number): Promise<Competition> {
+  async createCupCompetition(season: number, saveGameId?: number): Promise<Competition> {
     console.log(`Creating National Cup for season ${season}`);
     
-    const aiTeams = await this.generateAITeams(16, 24, 35, 65);
+    const aiTeams = await this.generateAITeams(16, 24, 35, 65, saveGameId);
     const allTeamIds = aiTeams.map(t => t.id);
     
-    const fixtures = await this.generateCupFixtures(allTeamIds, season);
+    const fixtures = await this.generateCupFixtures(allTeamIds, season, saveGameId);
     const standings: LeagueStanding[] = [];
     
     const competition = await this.storage.createCompetition({
+      saveGameId,
       name: `National Cup ${season}`,
       type: "cup",
       season,
@@ -214,7 +218,7 @@ export class CompetitionEngine {
     return competition;
   }
 
-  private async generateCupFixtures(teamIds: number[], season: number): Promise<Match[]> {
+  private async generateCupFixtures(teamIds: number[], season: number, saveGameId?: number): Promise<Match[]> {
     const fixtures: Omit<Match, "id">[] = [];
     const startDate = new Date(season, 8, 1);
     
@@ -229,6 +233,7 @@ export class CompetitionEngine {
       
       for (let i = 0; i < shuffled.length; i += 2) {
         fixtures.push({
+          saveGameId,
           competitionId: 0,
           competitionType: "cup",
           homeTeamId: shuffled[i],
@@ -270,7 +275,7 @@ export class CompetitionEngine {
     return fixtures as Match[];
   }
 
-  private async generateAISquad(teamId: number, baseRating: number): Promise<void> {
+  async generateAISquad(teamId: number, baseRating: number, saveGameId?: number): Promise<void> {
     const firstNames = ["João", "Pedro", "Lucas", "Rafael", "Gabriel", "Miguel", "Carlos", "Andre", "Ricardo", "Fernando", "Diego", "Paulo", "Marco", "Luis", "Antonio"];
     const lastNames = ["Silva", "Santos", "Costa", "Oliveira", "Pereira", "Rodrigues", "Alves", "Fernandes", "Lima", "Gomes", "Ribeiro", "Carvalho", "Martins", "Araujo", "Sousa"];
 
@@ -315,6 +320,7 @@ export class CompetitionEngine {
       const currentAbility = calculateOverallRating(attributes, position);
 
       await this.storage.createPlayer({
+        saveGameId,
         name: `${firstName} ${lastName}`,
         age,
         position,
@@ -348,7 +354,7 @@ export class CompetitionEngine {
     }
   }
 
-  private async generateLeagueFixtures(teamIds: number[], season: number): Promise<Match[]> {
+  private async generateLeagueFixtures(teamIds: number[], season: number, saveGameId?: number): Promise<Match[]> {
     const fixtures: Omit<Match, "id">[] = [];
     const numTeams = teamIds.length;
     
@@ -376,6 +382,7 @@ export class CompetitionEngine {
         matchDate.setDate(matchDate.getDate() + (round * 7));
 
         fixtures.push({
+          saveGameId,
           competitionId: 0,
           competitionType: "league",
           homeTeamId: teamIds[home],

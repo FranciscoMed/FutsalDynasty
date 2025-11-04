@@ -4,8 +4,11 @@ import { storage } from "./dbStorage";
 import { GameEngine } from "./gameEngine";
 import { CompetitionEngine } from "./competitionEngine";
 import { MatchEngine } from "./matchEngine";
+import { setupAuthRoutes } from "./authRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  setupAuthRoutes(app, storage);
+  
   const competitionEngine = new CompetitionEngine(storage);
 
   app.post("/api/game/initialize", async (req, res) => {
