@@ -4,8 +4,8 @@ import type { Match, MatchEvent, MatchStats, Player, Team } from "@shared/schema
 export class MatchEngine {
   constructor(private storage: IStorage) {}
 
-  async simulateMatch(matchId: number): Promise<Match> {
-    const match = await this.storage.getMatch(matchId);
+  async simulateMatch(saveGameId: number, matchId: number): Promise<Match> {
+    const match = await this.storage.getMatch(saveGameId, matchId);
     if (!match) {
       throw new Error("Match not found");
     }
@@ -14,15 +14,15 @@ export class MatchEngine {
       return match;
     }
 
-    const homeTeam = await this.storage.getTeam(match.homeTeamId);
-    const awayTeam = await this.storage.getTeam(match.awayTeamId);
+    const homeTeam = await this.storage.getTeam(saveGameId, match.homeTeamId);
+    const awayTeam = await this.storage.getTeam(saveGameId, match.awayTeamId);
 
     if (!homeTeam || !awayTeam) {
       throw new Error("Teams not found");
     }
 
-    const homePlayers = await this.storage.getPlayersByTeam(match.homeTeamId);
-    const awayPlayers = await this.storage.getPlayersByTeam(match.awayTeamId);
+    const homePlayers = await this.storage.getPlayersByTeam(saveGameId, match.homeTeamId);
+    const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, match.awayTeamId);
 
     const homeRating = this.calculateTeamRating(homePlayers);
     const awayRating = this.calculateTeamRating(awayPlayers);
@@ -54,7 +54,7 @@ export class MatchEngine {
     const homeStats = this.generateMatchStats(homeStrength, awayStrength, homeScore);
     const awayStats = this.generateMatchStats(awayStrength, homeStrength, awayScore);
 
-    const updatedMatch = await this.storage.updateMatch(matchId, {
+    const updatedMatch = await this.storage.updateMatch(saveGameId, matchId, {
       homeScore,
       awayScore,
       played: true,

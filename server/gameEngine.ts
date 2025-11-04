@@ -4,8 +4,8 @@ import type { GameState, Player, PlayerAttributes } from "@shared/schema";
 export class GameEngine {
   constructor(private storage: IStorage) {}
 
-  async advanceOneDay(): Promise<GameState> {
-    const gameState = await this.storage.getGameState();
+  async advanceOneDay(saveGameId: number): Promise<GameState> {
+    const gameState = await this.storage.getGameState(saveGameId);
     const currentDate = new Date(gameState.currentDate);
     
     currentDate.setDate(currentDate.getDate() + 1);
@@ -16,10 +16,10 @@ export class GameEngine {
     const monthChanged = newMonth !== oldMonth;
     
     if (monthChanged) {
-      await this.processMonthlyEvents(gameState, currentDate);
+      await this.processMonthlyEvents(saveGameId, gameState, currentDate);
     }
     
-    const updatedState = await this.storage.updateGameState({
+    const updatedState = await this.storage.updateGameState(saveGameId, {
       currentDate,
       currentMonth: newMonth,
     });
@@ -27,44 +27,44 @@ export class GameEngine {
     return updatedState;
   }
 
-  async advanceDays(days: number): Promise<GameState> {
-    let currentState = await this.storage.getGameState();
+  async advanceDays(saveGameId: number, days: number): Promise<GameState> {
+    let currentState = await this.storage.getGameState(saveGameId);
     
     for (let i = 0; i < days; i++) {
-      currentState = await this.advanceOneDay();
+      currentState = await this.advanceOneDay(saveGameId);
     }
     
     return currentState;
   }
 
-  async advanceToDate(targetDate: Date): Promise<GameState> {
-    const gameState = await this.storage.getGameState();
+  async advanceToDate(saveGameId: number, targetDate: Date): Promise<GameState> {
+    const gameState = await this.storage.getGameState(saveGameId);
     const currentDate = new Date(gameState.currentDate);
     const target = new Date(targetDate);
     
     while (currentDate < target) {
-      await this.advanceOneDay();
+      await this.advanceOneDay(saveGameId);
       currentDate.setDate(currentDate.getDate() + 1);
     }
     
-    return await this.storage.getGameState();
+    return await this.storage.getGameState(saveGameId);
   }
 
-  private async processMonthlyEvents(gameState: GameState, newDate: Date): Promise<void> {
+  private async processMonthlyEvents(saveGameId: number, gameState: GameState, newDate: Date): Promise<void> {
     const newMonth = newDate.getMonth() + 1;
     const newYear = newDate.getFullYear();
     
     console.log(`Processing monthly events for month ${newMonth}/${newYear}`);
     
-    await this.processMonthlyPayments(gameState);
+    await this.processMonthlyPayments(saveGameId, gameState);
     
-    await this.processPlayerDevelopment(gameState, newDate);
+    await this.processPlayerDevelopment(saveGameId, gameState, newDate);
     
-    await this.processPlayerAging(gameState, newMonth);
+    await this.processPlayerAging(saveGameId, gameState, newMonth);
     
-    await this.updateSeasonIfNeeded(gameState, newMonth, newYear);
+    await this.updateSeasonIfNeeded(saveGameId, gameState, newMonth, newYear);
     
-    await this.storage.createInboxMessage({
+    await this.storage.createInboxMessage(saveGameId, {
       category: "news",
       subject: `Monthly Report - ${this.getMonthName(newMonth)} ${newYear}`,
       body: `Your monthly report for ${this.getMonthName(newMonth)} is ready.\n\nKey highlights:\n- Player development continues\n- Wages have been paid\n- Check your finances for detailed breakdown`,
@@ -75,22 +75,22 @@ export class GameEngine {
       priority: "medium",
     });
     
-    await this.storage.updateGameState({
+    await this.storage.updateGameState(saveGameId, {
       lastTrainingReportMonth: newMonth,
     });
   }
 
-  private async processMonthlyPayments(gameState: GameState): Promise<void> {
-    const players = await this.storage.getPlayersByTeam(gameState.playerTeamId);
+  private async processMonthlyPayments(saveGameId: number, gameState: GameState): Promise<void> {
+    const players = await this.storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
     const totalWages = players.reduce((sum, p) => sum + p.contract.salary, 0);
     
-    const club = await this.storage.getClub();
+    const club = await this.storage.getClub(saveGameId);
     if (club) {
-      await this.storage.updateClub({
+      await this.storage.updateClub(saveGameId, {
         budget: club.budget - totalWages,
       });
       
-      await this.storage.createFinancialTransaction({
+      await this.storage.createFinancialTransaction(saveGameId, {
         date: new Date(gameState.currentDate),
         type: "expense",
         category: "wage",
@@ -100,12 +100,12 @@ export class GameEngine {
     }
   }
 
-  private async processPlayerDevelopment(gameState: GameState, reportDate: Date): Promise<void> {
-    const players = await this.storage.getPlayersByTeam(gameState.playerTeamId);
+  private async processPlayerDevelopment(saveGameId: number, gameState: GameState, reportDate: Date): Promise<void> {
+    const players = await this.storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
     const trainingReport: Array<{ playerName: string; changes: string[] }> = [];
     
     for (const player of players) {
-      const { improvements } = await this.developPlayer(player);
+      const { improvements } = await this.developPlayer(saveGameId, player);
       if (improvements.length > 0 && improvements[0] !== "No significant changes") {
         trainingReport.push({
           playerName: player.name,
@@ -115,11 +115,11 @@ export class GameEngine {
     }
     
     if (trainingReport.length > 0) {
-      await this.generateTrainingReport(reportDate, trainingReport);
+      await this.generateTrainingReport(saveGameId, reportDate, trainingReport);
     }
   }
 
-  private async developPlayer(player: Player): Promise<{ improvements: string[] }> {
+  private async developPlayer(saveGameId: number, player: Player): Promise<{ improvements: string[] }> {
     const age = player.age;
     let baseGrowthRate = 0;
     
@@ -160,7 +160,7 @@ export class GameEngine {
         player.potential
       );
       
-      await this.storage.updatePlayer(player.id, {
+      await this.storage.updatePlayer(saveGameId, player.id, {
         attributes: updatedPlayer.attributes,
         currentAbility: newCurrentAbility,
       });
@@ -170,7 +170,7 @@ export class GameEngine {
       const decline = Math.floor(Math.random() * 2);
       const declinedAttributes = this.applyAttributeDecline(player, decline);
       
-      await this.storage.updatePlayer(player.id, declinedAttributes);
+      await this.storage.updatePlayer(saveGameId, player.id, declinedAttributes);
       improvements.push(`Overall ability declined by ${decline}`);
       
       return { improvements };
@@ -247,6 +247,7 @@ export class GameEngine {
   }
 
   private async generateTrainingReport(
+    saveGameId: number,
     reportDate: Date,
     trainingReport: Array<{ playerName: string; changes: string[] }>
   ): Promise<void> {
@@ -264,7 +265,7 @@ export class GameEngine {
       reportBody += `\n`;
     });
     
-    await this.storage.createInboxMessage({
+    await this.storage.createInboxMessage(saveGameId, {
       category: "squad",
       subject: `Training Report - ${monthName} ${year}`,
       body: reportBody,
@@ -276,25 +277,25 @@ export class GameEngine {
     });
   }
 
-  private async processPlayerAging(gameState: GameState, newMonth: number): Promise<void> {
+  private async processPlayerAging(saveGameId: number, gameState: GameState, newMonth: number): Promise<void> {
     if (newMonth === 7) {
-      const allPlayers = await this.storage.getAllPlayers();
+      const allPlayers = await this.storage.getAllPlayers(saveGameId);
       
       for (const player of allPlayers) {
-        await this.storage.updatePlayer(player.id, {
+        await this.storage.updatePlayer(saveGameId, player.id, {
           age: player.age + 1,
         });
       }
     }
   }
 
-  private async updateSeasonIfNeeded(gameState: GameState, newMonth: number, newYear: number): Promise<void> {
+  private async updateSeasonIfNeeded(saveGameId: number, gameState: GameState, newMonth: number, newYear: number): Promise<void> {
     if (newMonth === 7) {
-      await this.storage.updateGameState({
+      await this.storage.updateGameState(saveGameId, {
         season: newYear,
       });
       
-      await this.storage.createInboxMessage({
+      await this.storage.createInboxMessage(saveGameId, {
         category: "news",
         subject: `New Season ${newYear}/${newYear + 1}`,
         body: `Welcome to the new season!\n\nThe ${newYear}/${newYear + 1} season has begun. Good luck!`,
@@ -315,7 +316,7 @@ export class GameEngine {
     return months[month - 1];
   }
 
-  async processMatchDay(matchId: number): Promise<void> {
+  async processMatchDay(saveGameId: number, matchId: number): Promise<void> {
     console.log(`Processing match day for match ${matchId}`);
   }
 }

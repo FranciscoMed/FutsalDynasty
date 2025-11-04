@@ -75,7 +75,10 @@ export interface IStorage {
   initializeGame(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
+// DEPRECATED: MemStorage is not maintained for multi-save-game support and should not be used.
+// The application uses DbStorage instead. This class is kept for reference only.
+// @ts-ignore - This class no longer implements IStorage as it lacks saveGameId isolation
+export class MemStorage {
   private players: Map<number, Player>;
   private teams: Map<number, Team>;
   private matches: Map<number, Match>;
@@ -453,4 +456,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// DEPRECATED: Do not use. Application uses DbStorage from ./dbStorage.ts
+// export const storage = new MemStorage();

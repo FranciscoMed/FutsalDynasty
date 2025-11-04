@@ -20,8 +20,7 @@ export class SeedEngine {
 
     console.log(`Seeding new game for saveGameId: ${saveGameId}`);
 
-    const playerTeam = await this.storage.createTeam({
-      saveGameId,
+    const playerTeam = await this.storage.createTeam(saveGameId, {
       name: playerTeamName,
       abbreviation: playerTeamAbbr,
       reputation: 55,
@@ -43,8 +42,7 @@ export class SeedEngine {
     const comp2 = await this.competitionEngine.createSecondDivisionLeague(season, saveGameId);
     const comp3 = await this.competitionEngine.createCupCompetition(season, saveGameId);
 
-    const gameState = await this.storage.createGameState({
-      saveGameId,
+    const gameState = await this.storage.createGameState(saveGameId, {
       currentDate: new Date(season, 7, 1),
       season,
       currentMonth: 8,
@@ -54,8 +52,7 @@ export class SeedEngine {
       lastTrainingReportMonth: 7,
     });
 
-    const club = await this.storage.createClub({
-      saveGameId,
+    const club = await this.storage.createClub(saveGameId, {
       name: playerTeamName,
       stadium: `${playerTeamName} Stadium`,
       reputation: 55,
