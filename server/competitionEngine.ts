@@ -35,30 +35,121 @@ export class CompetitionEngine {
     return competition;
   }
 
-  private async generateAITeams(count: number): Promise<Team[]> {
+  private async generateAITeams(count: number, startIndex: number = 0, minReputation: number = 40, maxReputation: number = 70): Promise<Team[]> {
     const teamNames = [
       { name: "City Warriors", abbr: "CWA" },
       { name: "United Stars", abbr: "UST" },
       { name: "Athletic Club", abbr: "ATH" },
       { name: "Sporting FC", abbr: "SPO" },
       { name: "Rangers FC", abbr: "RAN" },
-      { name: "Dynamo", abbr: "DYN" },
-      { name: "Olympia", abbr: "OLY" },
+      { name: "Dynamo United", abbr: "DYN" },
+      { name: "Olympia FC", abbr: "OLY" },
       { name: "Phoenix FC", abbr: "PHX" },
       { name: "Titans United", abbr: "TIT" },
       { name: "Lightning FC", abbr: "LIG" },
       { name: "Thunder FC", abbr: "THU" },
+      { name: "Cosmos FC", abbr: "COS" },
+      { name: "Victory United", abbr: "VIC" },
+      { name: "Royal FC", abbr: "ROY" },
+      { name: "Crown Athletic", abbr: "CRO" },
+      { name: "Empire Futsal", abbr: "EMP" },
+      { name: "Galaxy Stars", abbr: "GAL" },
+      { name: "Stellar FC", abbr: "STE" },
+      { name: "Nova United", abbr: "NOV" },
+      { name: "Zenith FC", abbr: "ZEN" },
+      { name: "Apex Warriors", abbr: "APX" },
+      { name: "Summit FC", abbr: "SUM" },
+      { name: "Peak United", abbr: "PEK" },
+      { name: "Horizon FC", abbr: "HOR" },
+      { name: "Eclipse United", abbr: "ECL" },
+      { name: "Meteor FC", abbr: "MET" },
+      { name: "Velocity United", abbr: "VEL" },
+      { name: "Tempest FC", abbr: "TEM" },
+      { name: "Blaze United", abbr: "BLA" },
+      { name: "Inferno FC", abbr: "INF" },
+      { name: "Vortex United", abbr: "VOR" },
+      { name: "Cyclone FC", abbr: "CYC" },
+      { name: "Storm Athletic", abbr: "STO" },
+      { name: "Hurricane FC", abbr: "HUR" },
+      { name: "Tornado United", abbr: "TOR" },
+      { name: "Avalanche FC", abbr: "AVA" },
+      { name: "Glacier United", abbr: "GLA" },
+      { name: "Frost FC", abbr: "FRO" },
+      { name: "Ice Warriors", abbr: "ICE" },
+      { name: "Polar United", abbr: "POL" },
+      { name: "Arctic FC", abbr: "ARC" },
+      { name: "Volcano United", abbr: "VOL" },
+      { name: "Lava FC", abbr: "LAV" },
+      { name: "Magma United", abbr: "MAG" },
+      { name: "Crystal FC", abbr: "CRY" },
+      { name: "Diamond United", abbr: "DIA" },
+      { name: "Emerald FC", abbr: "EME" },
+      { name: "Sapphire United", abbr: "SAP" },
+      { name: "Ruby FC", abbr: "RUB" },
+      { name: "Jade United", abbr: "JAD" },
+      { name: "Opal FC", abbr: "OPA" },
+      { name: "Platinum United", abbr: "PLA" },
+      { name: "Gold FC", abbr: "GOL" },
+      { name: "Silver United", abbr: "SIL" },
+      { name: "Bronze FC", abbr: "BRO" },
+      { name: "Iron Warriors", abbr: "IRO" },
+      { name: "Steel United", abbr: "STE" },
+      { name: "Titanium FC", abbr: "TIT" },
+      { name: "Cobalt United", abbr: "COB" },
+      { name: "Mercury FC", abbr: "MER" },
+      { name: "Neptune United", abbr: "NEP" },
+      { name: "Jupiter FC", abbr: "JUP" },
+      { name: "Saturn United", abbr: "SAT" },
+      { name: "Mars FC", abbr: "MAR" },
+      { name: "Venus United", abbr: "VEN" },
+      { name: "Orion FC", abbr: "ORI" },
+      { name: "Andromeda United", abbr: "AND" },
+      { name: "Pegasus FC", abbr: "PEG" },
+      { name: "Dragon United", abbr: "DRA" },
+      { name: "Griffin FC", abbr: "GRI" },
+      { name: "Eagle United", abbr: "EAG" },
+      { name: "Falcon FC", abbr: "FAL" },
+      { name: "Hawk United", abbr: "HAW" },
+      { name: "Raven FC", abbr: "RAV" },
+      { name: "Wolf United", abbr: "WOL" },
+      { name: "Lion FC", abbr: "LIO" },
+      { name: "Tiger United", abbr: "TIG" },
+      { name: "Panther FC", abbr: "PAN" },
+      { name: "Jaguar United", abbr: "JAG" },
+      { name: "Cheetah FC", abbr: "CHE" },
+      { name: "Leopard United", abbr: "LEO" },
+      { name: "Bear FC", abbr: "BEA" },
+      { name: "Shark United", abbr: "SHA" },
+      { name: "Dolphin FC", abbr: "DOL" },
+      { name: "Whale United", abbr: "WHA" },
+      { name: "Viper FC", abbr: "VIP" },
+      { name: "Cobra United", abbr: "COB" },
+      { name: "Python FC", abbr: "PYT" },
+      { name: "Scorpion United", abbr: "SCO" },
+      { name: "Spider FC", abbr: "SPI" },
+      { name: "Rhino United", abbr: "RHI" },
+      { name: "Buffalo FC", abbr: "BUF" },
+      { name: "Bison United", abbr: "BIS" },
+      { name: "Mustang FC", abbr: "MUS" },
+      { name: "Stallion United", abbr: "STA" },
+      { name: "Knight FC", abbr: "KNI" },
+      { name: "Warrior United", abbr: "WAR" },
+      { name: "Spartan FC", abbr: "SPA" },
+      { name: "Gladiator United", abbr: "GLA" },
+      { name: "Champion FC", abbr: "CHA" },
     ];
 
     const teams: Team[] = [];
 
-    for (let i = 0; i < Math.min(count, teamNames.length); i++) {
-      const { name, abbr } = teamNames[i];
+    for (let i = 0; i < Math.min(count, teamNames.length - startIndex); i++) {
+      const { name, abbr } = teamNames[startIndex + i];
+      
+      const reputation = minReputation + Math.floor(Math.random() * (maxReputation - minReputation + 1));
       
       const team = await this.storage.createTeam({
         name,
         abbreviation: abbr,
-        reputation: 40 + Math.floor(Math.random() * 30),
+        reputation,
         budget: 300000 + Math.floor(Math.random() * 400000),
         wageBudget: 30000 + Math.floor(Math.random() * 40000),
         stadium: `${name} Stadium`,
@@ -69,12 +160,114 @@ export class CompetitionEngine {
         isPlayerTeam: false,
       });
 
-      await this.generateAISquad(team.id, 40 + Math.floor(Math.random() * 30));
+      await this.generateAISquad(team.id, reputation);
       
       teams.push(team);
     }
 
     return teams;
+  }
+
+  async createSecondDivisionLeague(season: number): Promise<Competition> {
+    console.log(`Creating Second Division league for season ${season}`);
+    
+    const aiTeams = await this.generateAITeams(12, 12, 30, 50);
+    const allTeamIds = aiTeams.map(t => t.id);
+    
+    const fixtures = await this.generateLeagueFixtures(allTeamIds, season);
+    const standings = this.initializeStandings(allTeamIds);
+    
+    const competition = await this.storage.createCompetition({
+      name: `Second Division ${season}`,
+      type: "league",
+      season,
+      teams: allTeamIds,
+      fixtures,
+      standings,
+      currentMatchday: 0,
+      totalMatchdays: 22,
+    });
+    
+    return competition;
+  }
+
+  async createCupCompetition(season: number): Promise<Competition> {
+    console.log(`Creating National Cup for season ${season}`);
+    
+    const aiTeams = await this.generateAITeams(16, 24, 35, 65);
+    const allTeamIds = aiTeams.map(t => t.id);
+    
+    const fixtures = await this.generateCupFixtures(allTeamIds, season);
+    const standings: LeagueStanding[] = [];
+    
+    const competition = await this.storage.createCompetition({
+      name: `National Cup ${season}`,
+      type: "cup",
+      season,
+      teams: allTeamIds,
+      fixtures,
+      standings,
+      currentMatchday: 0,
+      totalMatchdays: 4,
+    });
+    
+    return competition;
+  }
+
+  private async generateCupFixtures(teamIds: number[], season: number): Promise<Match[]> {
+    const fixtures: Omit<Match, "id">[] = [];
+    const startDate = new Date(season, 8, 1);
+    
+    const rounds = Math.log2(teamIds.length);
+    let currentTeams = [...teamIds];
+    
+    for (let round = 0; round < rounds; round++) {
+      const matchDate = new Date(startDate);
+      matchDate.setDate(matchDate.getDate() + (round * 14));
+      
+      const shuffled = currentTeams.sort(() => Math.random() - 0.5);
+      
+      for (let i = 0; i < shuffled.length; i += 2) {
+        fixtures.push({
+          competitionId: 0,
+          competitionType: "cup",
+          homeTeamId: shuffled[i],
+          awayTeamId: shuffled[i + 1],
+          homeScore: 0,
+          awayScore: 0,
+          date: matchDate,
+          played: false,
+          events: [],
+          homeStats: {
+            possession: 0,
+            shots: 0,
+            shotsOnTarget: 0,
+            passes: 0,
+            passAccuracy: 0,
+            tackles: 0,
+            fouls: 0,
+            corners: 0,
+            saves: 0,
+          },
+          awayStats: {
+            possession: 0,
+            shots: 0,
+            shotsOnTarget: 0,
+            passes: 0,
+            passAccuracy: 0,
+            tackles: 0,
+            fouls: 0,
+            corners: 0,
+            saves: 0,
+          },
+          playerRatings: {},
+        });
+      }
+      
+      currentTeams = shuffled.slice(0, shuffled.length / 2);
+    }
+    
+    return fixtures as Match[];
   }
 
   private async generateAISquad(teamId: number, baseRating: number): Promise<void> {

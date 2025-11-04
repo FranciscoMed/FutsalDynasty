@@ -102,9 +102,12 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - Player ratings (6.0-10.0 scale)
    - Home advantage modifier
 
-4. **League Competition**
-   - 12-team league with player team + 11 AI teams
-   - Round-robin fixture generation (22 matchdays)
+4. **Multiple Competitions**
+   - **First Division**: 12-team league with player team + 11 AI teams (reputation 40-70)
+   - **Second Division**: 12-team league with AI teams (reputation 30-50)
+   - **National Cup**: 16-team knockout tournament (reputation 35-65)
+   - Round-robin fixture generation for leagues (22 matchdays each)
+   - Single-elimination bracket for cup competition (4 rounds)
    - Live league standings with points, GD, and form
    - Automated fixture scheduling
 
@@ -127,16 +130,31 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - Read/unread tracking
    - Training and monthly reports
 
+### Club Database
+
+The game features 100+ fictitious clubs with creative names spanning multiple themes:
+- **Space & Cosmos**: Galaxy Stars, Meteor FC, Neptune United, Orion FC
+- **Weather & Elements**: Thunder FC, Storm Athletic, Avalanche FC, Inferno FC
+- **Animals & Wildlife**: Lion FC, Eagle United, Dragon United, Shark United
+- **Precious Materials**: Diamond United, Platinum United, Gold FC, Crystal FC
+- **Warriors & Legends**: Spartans FC, Knight FC, Gladiator United, Champion FC
+
+All clubs are assigned:
+- Reputation ratings (30-70 range based on division)
+- Unique abbreviations (3 letters)
+- Full squads with 13 players each
+- Stadiums, budgets, and tactical setups
+
 ### Planned Features
 
 - Transfer market system
-- Cup competitions
 - Continental competitions
 - Advanced tactical customization
 - Scouting system
-- Injury system with recovery
+- Enhanced injury system with recovery
 - Player personality traits
-- Statistics dashboard
+- Comprehensive statistics dashboard
+- Promotion/relegation between divisions
 
 ## Architecture
 

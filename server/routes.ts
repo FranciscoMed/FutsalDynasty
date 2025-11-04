@@ -13,7 +13,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.initializeGame();
       
       const gameState = await storage.getGameState();
+      
       await competitionEngine.createLeagueCompetition(gameState.season, gameState.playerTeamId);
+      
+      await competitionEngine.createSecondDivisionLeague(gameState.season);
+      
+      await competitionEngine.createCupCompetition(gameState.season);
       
       res.json({ success: true });
     } catch (error) {
