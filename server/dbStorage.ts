@@ -395,8 +395,87 @@ export class DbStorage implements IStorage {
   }
 
   async deleteSaveGame(id: number): Promise<boolean> {
+    const saveGame = await this.getSaveGame(id);
+    if (saveGame) {
+      await this.cleanupSaveGameData(id);
+    }
     await db.delete(saveGames).where(eq(saveGames.id, id));
     return true;
+  }
+
+  async cleanupSaveGameData(saveGameId: number): Promise<{ deletedRecords: number }> {
+    let deletedCount = 0;
+
+    const playersDeleted = await db.delete(players).where(eq(players.saveGameId, saveGameId));
+    deletedCount += playersDeleted.rowCount || 0;
+
+    const matchesDeleted = await db.delete(matches).where(eq(matches.saveGameId, saveGameId));
+    deletedCount += matchesDeleted.rowCount || 0;
+
+    const competitionsDeleted = await db.delete(competitions).where(eq(competitions.saveGameId, saveGameId));
+    deletedCount += competitionsDeleted.rowCount || 0;
+
+    const teamsDeleted = await db.delete(teams).where(eq(teams.saveGameId, saveGameId));
+    deletedCount += teamsDeleted.rowCount || 0;
+
+    const transferOffersDeleted = await db.delete(transferOffers).where(eq(transferOffers.saveGameId, saveGameId));
+    deletedCount += transferOffersDeleted.rowCount || 0;
+
+    const inboxMessagesDeleted = await db.delete(inboxMessages).where(eq(inboxMessages.saveGameId, saveGameId));
+    deletedCount += inboxMessagesDeleted.rowCount || 0;
+
+    const financialTransactionsDeleted = await db.delete(financialTransactions).where(eq(financialTransactions.saveGameId, saveGameId));
+    deletedCount += financialTransactionsDeleted.rowCount || 0;
+
+    const clubsDeleted = await db.delete(clubs).where(eq(clubs.saveGameId, saveGameId));
+    deletedCount += clubsDeleted.rowCount || 0;
+
+    const gameStatesDeleted = await db.delete(gameStates).where(eq(gameStates.saveGameId, saveGameId));
+    deletedCount += gameStatesDeleted.rowCount || 0;
+
+    console.log(`Cleaned up ${deletedCount} records for saveGameId ${saveGameId}`);
+
+    return { deletedRecords: deletedCount };
+  }
+
+  async findOrphanedSaveGameIds(): Promise<number[]> {
+    const allSaveGameIds = new Set<number>();
+
+    const playerIds = await db.selectDistinct({ saveGameId: players.saveGameId }).from(players);
+    playerIds.forEach(p => p.saveGameId && allSaveGameIds.add(p.saveGameId));
+
+    const teamIds = await db.selectDistinct({ saveGameId: teams.saveGameId }).from(teams);
+    teamIds.forEach(t => t.saveGameId && allSaveGameIds.add(t.saveGameId));
+
+    const matchIds = await db.selectDistinct({ saveGameId: matches.saveGameId }).from(matches);
+    matchIds.forEach(m => m.saveGameId && allSaveGameIds.add(m.saveGameId));
+
+    const competitionIds = await db.selectDistinct({ saveGameId: competitions.saveGameId }).from(competitions);
+    competitionIds.forEach(c => c.saveGameId && allSaveGameIds.add(c.saveGameId));
+
+    const transferOfferIds = await db.selectDistinct({ saveGameId: transferOffers.saveGameId }).from(transferOffers);
+    transferOfferIds.forEach(t => t.saveGameId && allSaveGameIds.add(t.saveGameId));
+
+    const inboxMessageIds = await db.selectDistinct({ saveGameId: inboxMessages.saveGameId }).from(inboxMessages);
+    inboxMessageIds.forEach(i => i.saveGameId && allSaveGameIds.add(i.saveGameId));
+
+    const financialTransactionIds = await db.selectDistinct({ saveGameId: financialTransactions.saveGameId }).from(financialTransactions);
+    financialTransactionIds.forEach(f => f.saveGameId && allSaveGameIds.add(f.saveGameId));
+
+    const clubIds = await db.selectDistinct({ saveGameId: clubs.saveGameId }).from(clubs);
+    clubIds.forEach(c => c.saveGameId && allSaveGameIds.add(c.saveGameId));
+
+    const gameStateIds = await db.selectDistinct({ saveGameId: gameStates.saveGameId }).from(gameStates);
+    gameStateIds.forEach(g => g.saveGameId && allSaveGameIds.add(g.saveGameId));
+
+    const validSaveGames = await db.select({ id: saveGames.id }).from(saveGames);
+    const validSaveGameIds = new Set(validSaveGames.map(sg => sg.id));
+
+    const orphanedIds = Array.from(allSaveGameIds).filter(id => !validSaveGameIds.has(id));
+
+    console.log(`Found ${orphanedIds.length} orphaned saveGameIds: ${orphanedIds.join(', ')}`);
+
+    return orphanedIds;
   }
 
   async initializeGame(): Promise<void> {

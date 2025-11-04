@@ -71,6 +71,8 @@ export interface IStorage {
   createSaveGame(saveGame: Omit<SaveGame, "id">): Promise<SaveGame>;
   updateSaveGame(id: number, saveGame: Partial<SaveGame>): Promise<SaveGame | undefined>;
   deleteSaveGame(id: number): Promise<boolean>;
+  cleanupSaveGameData(saveGameId: number): Promise<{ deletedRecords: number }>;
+  findOrphanedSaveGameIds(): Promise<number[]>;
   
   initializeGame(): Promise<void>;
 }

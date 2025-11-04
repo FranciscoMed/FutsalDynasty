@@ -258,4 +258,36 @@ export function setupAuthRoutes(app: Express, storage: IStorage) {
       res.status(500).json({ error: "Failed to delete save game" });
     }
   });
+
+  app.post("/api/admin/cleanup-orphaned-data", async (req: Request, res: Response): Promise<void> => {
+    if (!req.session.userId) {
+      res.status(401).json({ error: "Not authenticated" });
+      return;
+    }
+
+    try {
+      const orphanedSaveGameIds = await storage.findOrphanedSaveGameIds();
+      
+      let totalDeleted = 0;
+      const cleanedSaveGames: number[] = [];
+      
+      for (const saveGameId of orphanedSaveGameIds) {
+        const result = await storage.cleanupSaveGameData(saveGameId);
+        totalDeleted += result.deletedRecords;
+        cleanedSaveGames.push(saveGameId);
+      }
+
+      res.json({ 
+        success: true, 
+        message: orphanedSaveGameIds.length === 0 
+          ? "No orphaned data found" 
+          : `Cleaned up data for ${orphanedSaveGameIds.length} orphaned save game(s)`,
+        orphanedSaveGameIds: cleanedSaveGames,
+        deletedRecords: totalDeleted 
+      });
+    } catch (error) {
+      console.error("Cleanup orphaned data error:", error);
+      res.status(500).json({ error: "Failed to cleanup orphaned data" });
+    }
+  });
 }
