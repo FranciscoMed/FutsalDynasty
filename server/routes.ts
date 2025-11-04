@@ -1,13 +1,23 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./dbStorage";
+import { GameEngine } from "./gameEngine";
+import { CompetitionEngine } from "./competitionEngine";
+import { MatchEngine } from "./matchEngine";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const competitionEngine = new CompetitionEngine(storage);
+
   app.post("/api/game/initialize", async (req, res) => {
     try {
       await storage.initializeGame();
+      
+      const gameState = await storage.getGameState();
+      await competitionEngine.createLeagueCompetition(gameState.season, gameState.playerTeamId);
+      
       res.json({ success: true });
     } catch (error) {
+      console.error("Failed to initialize game:", error);
       res.status(500).json({ error: "Failed to initialize game" });
     }
   });
@@ -189,6 +199,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ error: "Failed to get financial transactions" });
+    }
+  });
+
+  const gameEngine = new GameEngine(storage);
+  const matchEngine = new MatchEngine(storage);
+
+  app.post("/api/matches/:id/simulate", async (req, res) => {
+    try {
+      const matchId = parseInt(req.params.id);
+      const match = await matchEngine.simulateMatch(matchId);
+      
+      await competitionEngine.updateStandings(match.competitionId, match);
+      
+      await storage.createInboxMessage({
+        category: "match",
+        subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
+        body: `Your match has been completed.\n\nFinal Score: ${match.homeScore} - ${match.awayScore}\n\nCheck the match details for full statistics.`,
+        from: "Match Officials",
+        date: match.date,
+        read: false,
+        starred: false,
+        priority: "high",
+        actionLink: `/matches/${matchId}`,
+      });
+      
+      res.json(match);
+    } catch (error) {
+      console.error("Error simulating match:", error);
+      res.status(500).json({ error: "Failed to simulate match" });
+    }
+  });
+
+  app.post("/api/game/advance-day", async (req, res) => {
+    try {
+      const gameState = await gameEngine.advanceOneDay();
+      res.json(gameState);
+    } catch (error) {
+      console.error("Error advancing day:", error);
+      res.status(500).json({ error: "Failed to advance day" });
+    }
+  });
+
+  app.post("/api/game/advance-days", async (req, res) => {
+    try {
+      const { days } = req.body;
+      const gameState = await gameEngine.advanceDays(days);
+      res.json(gameState);
+    } catch (error) {
+      console.error("Error advancing days:", error);
+      res.status(500).json({ error: "Failed to advance days" });
+    }
+  });
+
+  app.post("/api/game/advance-to-date", async (req, res) => {
+    try {
+      const { date } = req.body;
+      const gameState = await gameEngine.advanceToDate(new Date(date));
+      res.json(gameState);
+    } catch (error) {
+      console.error("Error advancing to date:", error);
+      res.status(500).json({ error: "Failed to advance to date" });
     }
   });
 

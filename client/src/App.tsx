@@ -10,6 +10,7 @@ import { InboxPage } from "./pages/InboxPage";
 import { TrainingPage } from "./pages/TrainingPage";
 import { FinancesPage } from "./pages/FinancesPage";
 import { ClubPage } from "./pages/ClubPage";
+import { MatchesPage } from "./pages/MatchesPage";
 import { useFutsalManager } from "./lib/stores/useFutsalManager";
 import "@fontsource/inter";
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" component={HomePage} />
           <Route path="/squad" component={SquadPage} />
           <Route path="/tactics" component={TacticsPage} />
+          <Route path="/matches" component={MatchesPage} />
           <Route path="/inbox" component={InboxPage} />
           <Route path="/training" component={TrainingPage} />
           <Route path="/finances" component={FinancesPage} />

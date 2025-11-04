@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Mail, Calendar, TrendingUp, Users } from "lucide-react";
+import { Mail, Calendar, TrendingUp, Users, FastForward, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 export function HomePage() {
   const { 
@@ -12,10 +13,13 @@ export function HomePage() {
     inboxMessages, 
     players,
     club,
+    gameState,
     loadGameData,
     loading,
     initialized
   } = useFutsalManager();
+
+  const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
     if (initialized) {
@@ -28,6 +32,34 @@ export function HomePage() {
   const averageAge = players.length > 0 
     ? Math.round(players.reduce((sum, p) => sum + p.age, 0) / players.length)
     : 0;
+
+  const handleAdvanceDay = async () => {
+    setAdvancing(true);
+    try {
+      await fetch("/api/game/advance-day", { method: "POST" });
+      await loadGameData();
+    } catch (error) {
+      console.error("Failed to advance day:", error);
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
+  const handleAdvanceDays = async (days: number) => {
+    setAdvancing(true);
+    try {
+      await fetch("/api/game/advance-days", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ days }),
+      });
+      await loadGameData();
+    } catch (error) {
+      console.error("Failed to advance days:", error);
+    } finally {
+      setAdvancing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -97,6 +129,55 @@ export function HomePage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="bg-gradient-to-r from-primary/10 to-success/10">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Time Management
+            </span>
+            {gameState && (
+              <div className="text-sm font-normal text-muted-foreground">
+                {format(new Date(gameState.currentDate), "MMMM d, yyyy")} - Season {gameState.season}
+              </div>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              onClick={handleAdvanceDay} 
+              disabled={advancing}
+              className="flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              {advancing ? "Processing..." : "Advance 1 Day"}
+            </Button>
+            <Button 
+              onClick={() => handleAdvanceDays(7)} 
+              disabled={advancing}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FastForward className="w-4 h-4" />
+              {advancing ? "Processing..." : "Advance 1 Week"}
+            </Button>
+            <Button 
+              onClick={() => handleAdvanceDays(30)} 
+              disabled={advancing}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FastForward className="w-4 h-4" />
+              {advancing ? "Processing..." : "Advance 1 Month"}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-3">
+            Advance time to process training, contracts, and upcoming matches
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

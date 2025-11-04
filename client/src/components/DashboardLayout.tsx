@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   Home, Users, Zap, GraduationCap, TrendingUp, Trophy, 
-  Mail, DollarSign, Building, Bell 
+  Mail, DollarSign, Building, Calendar 
 } from "lucide-react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { path: "/", label: "Home", icon: Home },
     { path: "/squad", label: "Squad", icon: Users },
     { path: "/tactics", label: "Tactics", icon: Zap },
+    { path: "/matches", label: "Matches", icon: Calendar },
     { path: "/training", label: "Training", icon: GraduationCap },
     { path: "/transfers", label: "Transfers", icon: TrendingUp },
     { path: "/competitions", label: "Competitions", icon: Trophy },

@@ -1,3 +1,5 @@
+import { pgTable, serial, varchar, integer, boolean, timestamp, jsonb, text } from "drizzle-orm/pg-core";
+
 export type Position = "Goalkeeper" | "Defender" | "Winger" | "Pivot";
 
 export type Formation = "2-2" | "3-1" | "4-0" | "1-2-1" | "1-3" | "2-1-1";
@@ -294,3 +296,128 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
   
   return Math.round(overall);
 }
+
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  abbreviation: varchar("abbreviation", { length: 10 }).notNull(),
+  reputation: integer("reputation").notNull(),
+  budget: integer("budget").notNull(),
+  wageBudget: integer("wage_budget").notNull(),
+  stadium: varchar("stadium", { length: 255 }).notNull(),
+  formation: varchar("formation", { length: 10 }).notNull().$type<Formation>(),
+  tacticalPreset: varchar("tactical_preset", { length: 20 }).notNull().$type<TacticalPreset>(),
+  startingLineup: jsonb("starting_lineup").notNull().$type<number[]>(),
+  substitutes: jsonb("substitutes").notNull().$type<number[]>(),
+  isPlayerTeam: boolean("is_player_team").notNull().default(false),
+});
+
+export const players = pgTable("players", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  age: integer("age").notNull(),
+  position: varchar("position", { length: 20 }).notNull().$type<Position>(),
+  nationality: varchar("nationality", { length: 100 }).notNull(),
+  attributes: jsonb("attributes").notNull().$type<PlayerAttributes>(),
+  potential: integer("potential").notNull(),
+  currentAbility: integer("current_ability").notNull(),
+  form: integer("form").notNull(),
+  morale: integer("morale").notNull(),
+  fitness: integer("fitness").notNull(),
+  condition: integer("condition").notNull(),
+  injured: boolean("injured").notNull().default(false),
+  injuryDaysRemaining: integer("injury_days_remaining").notNull().default(0),
+  suspended: boolean("suspended").notNull().default(false),
+  suspensionMatchesRemaining: integer("suspension_matches_remaining").notNull().default(0),
+  yellowCards: integer("yellow_cards").notNull().default(0),
+  redCards: integer("red_cards").notNull().default(0),
+  contract: jsonb("contract").notNull().$type<PlayerContract>(),
+  value: integer("value").notNull(),
+  teamId: integer("team_id").notNull(),
+  trainingFocus: jsonb("training_focus").notNull().$type<{ primary: string; secondary: string; intensity: TrainingIntensity }>(),
+});
+
+export const matches = pgTable("matches", {
+  id: serial("id").primaryKey(),
+  competitionId: integer("competition_id").notNull(),
+  competitionType: varchar("competition_type", { length: 20 }).notNull().$type<CompetitionType>(),
+  homeTeamId: integer("home_team_id").notNull(),
+  awayTeamId: integer("away_team_id").notNull(),
+  homeScore: integer("home_score").notNull().default(0),
+  awayScore: integer("away_score").notNull().default(0),
+  date: timestamp("date").notNull(),
+  played: boolean("played").notNull().default(false),
+  events: jsonb("events").notNull().$type<MatchEvent[]>().default([]),
+  homeStats: jsonb("home_stats").notNull().$type<MatchStats>(),
+  awayStats: jsonb("away_stats").notNull().$type<MatchStats>(),
+  playerRatings: jsonb("player_ratings").notNull().$type<Record<number, number>>().default({}),
+});
+
+export const competitions = pgTable("competitions", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 20 }).notNull().$type<CompetitionType>(),
+  season: integer("season").notNull(),
+  teams: jsonb("teams").notNull().$type<number[]>(),
+  standings: jsonb("standings").notNull().$type<LeagueStanding[]>(),
+  currentMatchday: integer("current_matchday").notNull().default(0),
+  totalMatchdays: integer("total_matchdays").notNull(),
+});
+
+export const transferOffers = pgTable("transfer_offers", {
+  id: serial("id").primaryKey(),
+  playerId: integer("player_id").notNull(),
+  fromTeamId: integer("from_team_id").notNull(),
+  toTeamId: integer("to_team_id").notNull(),
+  offerAmount: integer("offer_amount").notNull(),
+  wageOffer: integer("wage_offer").notNull(),
+  status: varchar("status", { length: 20 }).notNull().$type<"pending" | "accepted" | "rejected">(),
+  date: timestamp("date").notNull(),
+});
+
+export const inboxMessages = pgTable("inbox_messages", {
+  id: serial("id").primaryKey(),
+  category: varchar("category", { length: 20 }).notNull().$type<InboxCategory>(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  body: text("body").notNull(),
+  from: varchar("from", { length: 255 }).notNull(),
+  date: timestamp("date").notNull(),
+  read: boolean("read").notNull().default(false),
+  starred: boolean("starred").notNull().default(false),
+  priority: varchar("priority", { length: 10 }).notNull().$type<"low" | "medium" | "high">(),
+  actionLink: varchar("action_link", { length: 500 }),
+});
+
+export const financialTransactions = pgTable("financial_transactions", {
+  id: serial("id").primaryKey(),
+  date: timestamp("date").notNull(),
+  type: varchar("type", { length: 10 }).notNull().$type<"income" | "expense">(),
+  category: varchar("category", { length: 20 }).notNull().$type<"match_day" | "prize_money" | "transfer" | "wage" | "facility" | "sponsorship">(),
+  amount: integer("amount").notNull(),
+  description: varchar("description", { length: 500 }).notNull(),
+});
+
+export const clubs = pgTable("clubs", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  stadium: varchar("stadium", { length: 255 }).notNull(),
+  reputation: integer("reputation").notNull(),
+  budget: integer("budget").notNull(),
+  wageBudget: integer("wage_budget").notNull(),
+  trainingFacilityLevel: integer("training_facility_level").notNull().default(1),
+  stadiumCapacity: integer("stadium_capacity").notNull(),
+  youthAcademyLevel: integer("youth_academy_level").notNull().default(1),
+  staff: jsonb("staff").notNull().$type<{ assistantCoach: boolean; fitnessCoach: boolean; scout: boolean }>(),
+  boardObjectives: jsonb("board_objectives").notNull().$type<{ description: string; target: string; importance: "low" | "medium" | "high"; completed: boolean }[]>(),
+});
+
+export const gameStates = pgTable("game_states", {
+  id: serial("id").primaryKey(),
+  currentDate: timestamp("current_date").notNull(),
+  season: integer("season").notNull(),
+  currentMonth: integer("current_month").notNull(),
+  playerTeamId: integer("player_team_id").notNull(),
+  nextMatchId: integer("next_match_id"),
+  monthlyTrainingInProgress: boolean("monthly_training_in_progress").notNull().default(true),
+  lastTrainingReportMonth: integer("last_training_report_month").notNull(),
+});
