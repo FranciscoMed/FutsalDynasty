@@ -284,6 +284,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/matches/upcoming", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const gameState = await storage.getGameState(saveGameId);
+      const competitions = await storage.getAllCompetitions(saveGameId);
+      
+      const upcomingFixtures: any[] = [];
+      
+      for (const competition of competitions) {
+        if (!competition.teams.includes(gameState.playerTeamId)) continue;
+        
+        const upcomingMatches = competition.fixtures
+          .filter(match => 
+            !match.played && 
+            (match.homeTeamId === gameState.playerTeamId || match.awayTeamId === gameState.playerTeamId)
+          )
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        if (upcomingMatches.length > 0) {
+          for (const match of upcomingMatches) {
+            const homeTeam = await storage.getTeam(saveGameId, match.homeTeamId);
+            const awayTeam = await storage.getTeam(saveGameId, match.awayTeamId);
+            
+            upcomingFixtures.push({
+              ...match,
+              competitionName: competition.name,
+              competitionType: competition.type,
+              homeTeamName: homeTeam?.name || 'Unknown',
+              awayTeamName: awayTeam?.name || 'Unknown',
+            });
+          }
+        }
+      }
+      
+      upcomingFixtures.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      res.json(upcomingFixtures);
+    } catch (error) {
+      console.error("Error fetching upcoming fixtures:", error);
+      res.status(500).json({ error: "Failed to get upcoming fixtures" });
+    }
+  });
+
   app.get("/api/finances", async (req, res) => {
     const saveGameId = requireSaveGame(req, res);
     if (saveGameId === null) return;
@@ -307,7 +352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const matchId = parseInt(req.params.id);
       const match = await matchEngine.simulateMatch(saveGameId, matchId);
       
-      await competitionEngine.updateStandings(saveGameId, match.competitionId, match);
+      await competitionEngine.updateStandings(match.competitionId, match, saveGameId);
       
       await storage.createInboxMessage(saveGameId, {
         category: "match",

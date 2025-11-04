@@ -11,6 +11,7 @@ import { TrainingPage } from "./pages/TrainingPage";
 import { FinancesPage } from "./pages/FinancesPage";
 import { ClubPage } from "./pages/ClubPage";
 import { MatchesPage } from "./pages/MatchesPage";
+import { CompetitionsPage } from "./pages/CompetitionsPage";
 import AuthPage from "./pages/AuthPage";
 import SaveGameSelectionPage from "./pages/SaveGameSelectionPage";
 import { useAuth } from "./lib/stores/useAuth";
@@ -71,9 +72,7 @@ function App() {
           <Route path="/transfers">
             <ComingSoonPage title="Transfers" />
           </Route>
-          <Route path="/competitions">
-            <ComingSoonPage title="Competitions" />
-          </Route>
+          <Route path="/competitions" component={CompetitionsPage} />
         </Switch>
       </DashboardLayout>
     </QueryClientProvider>
