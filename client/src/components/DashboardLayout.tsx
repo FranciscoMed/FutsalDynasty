@@ -44,9 +44,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               return (
                 <li key={item.path}>
                   <Link href={item.path}>
-                    <a
+                    <div
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors cursor-pointer",
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted text-foreground"
@@ -59,7 +59,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           {item.badge}
                         </Badge>
                       )}
-                    </a>
+                    </div>
                   </Link>
                 </li>
               );

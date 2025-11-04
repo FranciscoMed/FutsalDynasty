@@ -10,13 +10,15 @@ import { internalToDisplay, type Player } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function SquadPage() {
-  const { players, loadGameData } = useFutsalManager();
+  const { players, loadGameData, loading, initialized } = useFutsalManager();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [filterPosition, setFilterPosition] = useState<string>("all");
 
   useEffect(() => {
-    loadGameData();
-  }, []);
+    if (initialized) {
+      loadGameData();
+    }
+  }, [initialized]);
 
   const filteredPlayers = filterPosition === "all" 
     ? players 

@@ -75,19 +75,33 @@ export const useFutsalManager = create<FutsalManagerState>()(
           fetch("/api/club"),
         ]);
         
+        if (!gameStateRes.ok || !teamRes.ok || !playersRes.ok || !inboxRes.ok || !clubRes.ok) {
+          console.error("Failed to load some game data - server returned errors");
+          set({ loading: false });
+          return;
+        }
+        
         const gameState = await gameStateRes.json();
         const playerTeam = await teamRes.json();
         const players = await playersRes.json();
         const inboxMessages = await inboxRes.json();
         const club = await clubRes.json();
         
-        const unreadCount = inboxMessages.filter((m: InboxMessage) => !m.read).length;
+        if (gameState.error || playerTeam.error || players.error || inboxMessages.error || club.error) {
+          console.error("Received error payloads from server");
+          set({ loading: false });
+          return;
+        }
+        
+        const unreadCount = Array.isArray(inboxMessages) 
+          ? inboxMessages.filter((m: InboxMessage) => !m.read).length 
+          : 0;
         
         set({
           gameState,
           playerTeam,
-          players,
-          inboxMessages,
+          players: Array.isArray(players) ? players : [],
+          inboxMessages: Array.isArray(inboxMessages) ? inboxMessages : [],
           club,
           unreadInboxCount: unreadCount,
         });

@@ -9,13 +9,15 @@ import { Mail, MailOpen, Star, Trash2, Filter } from "lucide-react";
 import { format } from "date-fns";
 
 export function InboxPage() {
-  const { inboxMessages, markMessageAsRead, loadGameData, refreshInbox } = useFutsalManager();
+  const { inboxMessages, markMessageAsRead, loadGameData, refreshInbox, loading, initialized } = useFutsalManager();
   const [selectedMessage, setSelectedMessage] = useState<InboxMessage | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
   useEffect(() => {
-    loadGameData();
-  }, []);
+    if (initialized) {
+      loadGameData();
+    }
+  }, [initialized]);
 
   const categories = ["all", "urgent", "match", "financial", "squad", "competition", "news"];
 

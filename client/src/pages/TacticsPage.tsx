@@ -7,14 +7,16 @@ import { type Formation, type TacticalPreset, internalToDisplay } from "@shared/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function TacticsPage() {
-  const { players, playerTeam, updatePlayerTeam, loadGameData } = useFutsalManager();
+  const { players, playerTeam, updatePlayerTeam, loadGameData, loading, initialized } = useFutsalManager();
   const [formation, setFormation] = useState<Formation>("2-2");
   const [tacticalPreset, setTacticalPreset] = useState<TacticalPreset>("Balanced");
   const [startingLineup, setStartingLineup] = useState<number[]>([]);
 
   useEffect(() => {
-    loadGameData();
-  }, []);
+    if (initialized) {
+      loadGameData();
+    }
+  }, [initialized]);
 
   useEffect(() => {
     if (playerTeam) {

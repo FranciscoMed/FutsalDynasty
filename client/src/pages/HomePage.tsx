@@ -12,12 +12,16 @@ export function HomePage() {
     inboxMessages, 
     players,
     club,
-    loadGameData
+    loadGameData,
+    loading,
+    initialized
   } = useFutsalManager();
 
   useEffect(() => {
-    loadGameData();
-  }, []);
+    if (initialized) {
+      loadGameData();
+    }
+  }, [initialized]);
 
   const recentMessages = inboxMessages.slice(0, 5);
   const squadCount = players.length;

@@ -7,17 +7,23 @@ import { HomePage } from "./pages/HomePage";
 import { SquadPage } from "./pages/SquadPage";
 import { TacticsPage } from "./pages/TacticsPage";
 import { InboxPage } from "./pages/InboxPage";
+import { TrainingPage } from "./pages/TrainingPage";
+import { FinancesPage } from "./pages/FinancesPage";
+import { ClubPage } from "./pages/ClubPage";
 import { useFutsalManager } from "./lib/stores/useFutsalManager";
 import "@fontsource/inter";
 
 function App() {
-  const { initialized, initializeGame, loadGameData } = useFutsalManager();
+  const { initialized, initializeGame } = useFutsalManager();
 
   useEffect(() => {
-    if (!initialized) {
-      initializeGame();
-    }
-  }, [initialized]);
+    const init = async () => {
+      if (!initialized) {
+        await initializeGame();
+      }
+    };
+    init();
+  }, [initialized, initializeGame]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -27,20 +33,14 @@ function App() {
           <Route path="/squad" component={SquadPage} />
           <Route path="/tactics" component={TacticsPage} />
           <Route path="/inbox" component={InboxPage} />
-          <Route path="/training">
-            <ComingSoonPage title="Training" />
-          </Route>
+          <Route path="/training" component={TrainingPage} />
+          <Route path="/finances" component={FinancesPage} />
+          <Route path="/club" component={ClubPage} />
           <Route path="/transfers">
             <ComingSoonPage title="Transfers" />
           </Route>
           <Route path="/competitions">
             <ComingSoonPage title="Competitions" />
-          </Route>
-          <Route path="/finances">
-            <ComingSoonPage title="Finances" />
-          </Route>
-          <Route path="/club">
-            <ComingSoonPage title="Club" />
           </Route>
         </Switch>
       </DashboardLayout>

@@ -15,8 +15,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/game/state", async (req, res) => {
     try {
       const gameState = await storage.getGameState();
+      if (!gameState) {
+        res.status(404).json({ error: "Game state not found" });
+        return;
+      }
       res.json(gameState);
     } catch (error) {
+      console.error("Error getting game state:", error);
       res.status(500).json({ error: "Failed to get game state" });
     }
   });
@@ -140,8 +145,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/club", async (req, res) => {
     try {
       const club = await storage.getClub();
+      if (!club) {
+        res.status(404).json({ error: "Club not found. Please initialize the game first." });
+        return;
+      }
       res.json(club);
     } catch (error) {
+      console.error("Error getting club:", error);
       res.status(500).json({ error: "Failed to get club" });
     }
   });
