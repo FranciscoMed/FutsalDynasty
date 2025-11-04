@@ -9,6 +9,8 @@ import {
   type FinancialTransaction,
   type Club,
   type GameState,
+  type User,
+  type SaveGame,
   type PlayerAttributes,
   calculateOverallRating,
   players,
@@ -20,6 +22,8 @@ import {
   financialTransactions,
   clubs,
   gameStates,
+  users,
+  saveGames,
 } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -264,6 +268,62 @@ export class DbStorage implements IStorage {
     const { competitions, ...stateData } = state;
     await db.update(gameStates).set(stateData).where(eq(gameStates.id, existing[0].id));
     return await this.getGameState();
+  }
+
+  async createGameState(state: Omit<GameState, "id">): Promise<GameState> {
+    const { competitions, ...stateData } = state;
+    const result = await db.insert(gameStates).values(stateData).returning();
+    return await this.getGameState();
+  }
+
+  async createClub(club: Omit<Club, "id">): Promise<Club> {
+    const result = await db.insert(clubs).values(club).returning();
+    return result[0] as Club;
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0] as User | undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0] as User | undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0] as User | undefined;
+  }
+
+  async createUser(user: Omit<User, "id">): Promise<User> {
+    const result = await db.insert(users).values(user).returning();
+    return result[0] as User;
+  }
+
+  async getSaveGame(id: number): Promise<SaveGame | undefined> {
+    const result = await db.select().from(saveGames).where(eq(saveGames.id, id)).limit(1);
+    return result[0] as SaveGame | undefined;
+  }
+
+  async getSaveGamesByUser(userId: number): Promise<SaveGame[]> {
+    const result = await db.select().from(saveGames).where(eq(saveGames.userId, userId)).orderBy(desc(saveGames.updatedAt));
+    return result as SaveGame[];
+  }
+
+  async createSaveGame(saveGame: Omit<SaveGame, "id">): Promise<SaveGame> {
+    const result = await db.insert(saveGames).values(saveGame).returning();
+    return result[0] as SaveGame;
+  }
+
+  async updateSaveGame(id: number, saveGame: Partial<SaveGame>): Promise<SaveGame | undefined> {
+    const result = await db.update(saveGames).set({ ...saveGame, updatedAt: new Date() }).where(eq(saveGames.id, id)).returning();
+    return result[0] as SaveGame | undefined;
+  }
+
+  async deleteSaveGame(id: number): Promise<boolean> {
+    await db.delete(saveGames).where(eq(saveGames.id, id));
+    return true;
   }
 
   async initializeGame(): Promise<void> {

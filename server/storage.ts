@@ -9,6 +9,8 @@ import {
   type Club,
   type GameState,
   type PlayerAttributes,
+  type User,
+  type SaveGame,
   calculateOverallRating,
 } from "@shared/schema";
 
@@ -53,9 +55,22 @@ export interface IStorage {
   
   getClub(): Promise<Club | undefined>;
   updateClub(club: Partial<Club>): Promise<Club | undefined>;
+  createClub(club: Omit<Club, "id">): Promise<Club>;
   
   getGameState(): Promise<GameState>;
   updateGameState(state: Partial<GameState>): Promise<GameState>;
+  createGameState(state: Omit<GameState, "id">): Promise<GameState>;
+  
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: Omit<User, "id">): Promise<User>;
+  
+  getSaveGame(id: number): Promise<SaveGame | undefined>;
+  getSaveGamesByUser(userId: number): Promise<SaveGame[]>;
+  createSaveGame(saveGame: Omit<SaveGame, "id">): Promise<SaveGame>;
+  updateSaveGame(id: number, saveGame: Partial<SaveGame>): Promise<SaveGame | undefined>;
+  deleteSaveGame(id: number): Promise<boolean>;
   
   initializeGame(): Promise<void>;
 }
