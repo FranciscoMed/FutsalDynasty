@@ -146,18 +146,56 @@ export class CompetitionEngine {
       
       const reputation = minReputation + Math.floor(Math.random() * (maxReputation - minReputation + 1));
       
+      const budget = 300000 + Math.floor(Math.random() * 400000);
+      const wageBudget = 30000 + Math.floor(Math.random() * 40000);
+      const stadium = `${name} Stadium`;
+      
       const team = await this.storage.createTeam(saveGameId, {
         name,
         abbreviation: abbr,
         reputation,
-        budget: 300000 + Math.floor(Math.random() * 400000),
-        wageBudget: 30000 + Math.floor(Math.random() * 40000),
-        stadium: `${name} Stadium`,
+        budget,
+        wageBudget,
+        stadium,
         formation: "2-2",
         tacticalPreset: "Balanced",
         startingLineup: [],
         substitutes: [],
         isPlayerTeam: false,
+      });
+
+      const trainingLevel = Math.max(1, Math.min(5, Math.floor(reputation / 20)));
+      const stadiumCapacity = 3000 + Math.floor((reputation / 100) * 7000);
+      const youthLevel = Math.max(1, Math.min(5, Math.floor(reputation / 25)));
+
+      await this.storage.createClub(saveGameId, {
+        name,
+        stadium,
+        reputation,
+        budget,
+        wageBudget,
+        trainingFacilityLevel: trainingLevel,
+        stadiumCapacity,
+        youthAcademyLevel: youthLevel,
+        staff: {
+          assistantCoach: reputation >= 50,
+          fitnessCoach: reputation >= 60,
+          scout: reputation >= 70,
+        },
+        boardObjectives: [
+          {
+            description: reputation >= 60 ? "Win the league title" : reputation >= 45 ? "Finish in top 6" : "Avoid relegation",
+            target: reputation >= 60 ? "1st place" : reputation >= 45 ? "Top 6" : "Stay in division",
+            importance: "high" as const,
+            completed: false,
+          },
+          {
+            description: "Maintain financial stability",
+            target: "Positive balance",
+            importance: "medium" as const,
+            completed: false,
+          },
+        ],
       });
 
       await this.generateAISquad(team.id, reputation, saveGameId);
