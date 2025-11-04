@@ -14,14 +14,23 @@ import { MatchesPage } from "./pages/MatchesPage";
 import AuthPage from "./pages/AuthPage";
 import SaveGameSelectionPage from "./pages/SaveGameSelectionPage";
 import { useAuth } from "./lib/stores/useAuth";
+import { useFutsalManager } from "./lib/stores/useFutsalManager";
 import "@fontsource/inter";
 
 function App() {
   const { isAuthenticated, isLoading, activeSaveGame, checkSession } = useAuth();
+  const { loadGameData } = useFutsalManager();
 
   useEffect(() => {
     checkSession();
   }, [checkSession]);
+
+  useEffect(() => {
+    if (activeSaveGame) {
+      console.log("Loading game data for save game:", activeSaveGame.id);
+      loadGameData();
+    }
+  }, [activeSaveGame, loadGameData]);
 
   if (isLoading) {
     return (
