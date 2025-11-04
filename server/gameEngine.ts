@@ -1,5 +1,5 @@
 import type { IStorage } from "./storage";
-import type { GameState, Player } from "@shared/schema";
+import type { GameState, Player, PlayerAttributes } from "@shared/schema";
 
 export class GameEngine {
   constructor(private storage: IStorage) {}
@@ -58,7 +58,7 @@ export class GameEngine {
     
     await this.processMonthlyPayments(gameState);
     
-    await this.processPlayerDevelopment(gameState);
+    await this.processPlayerDevelopment(gameState, newDate);
     
     await this.processPlayerAging(gameState, newMonth);
     
@@ -100,28 +100,39 @@ export class GameEngine {
     }
   }
 
-  private async processPlayerDevelopment(gameState: GameState): Promise<void> {
+  private async processPlayerDevelopment(gameState: GameState, reportDate: Date): Promise<void> {
     const players = await this.storage.getPlayersByTeam(gameState.playerTeamId);
+    const trainingReport: Array<{ playerName: string; changes: string[] }> = [];
     
     for (const player of players) {
-      await this.developPlayer(player);
+      const { improvements } = await this.developPlayer(player);
+      if (improvements.length > 0 && improvements[0] !== "No significant changes") {
+        trainingReport.push({
+          playerName: player.name,
+          changes: improvements,
+        });
+      }
+    }
+    
+    if (trainingReport.length > 0) {
+      await this.generateTrainingReport(reportDate, trainingReport);
     }
   }
 
-  private async developPlayer(player: Player): Promise<void> {
+  private async developPlayer(player: Player): Promise<{ improvements: string[] }> {
     const age = player.age;
-    let growthRate = 0;
+    let baseGrowthRate = 0;
     
     if (age <= 21) {
-      growthRate = 0.015;
-    } else if (age <= 26) {
-      growthRate = 0.005;
+      baseGrowthRate = 24 + Math.floor(Math.random() * 17);
+    } else if (age <= 25) {
+      baseGrowthRate = 16 + Math.floor(Math.random() * 13);
     } else if (age <= 29) {
-      growthRate = 0;
+      baseGrowthRate = 8 + Math.floor(Math.random() * 13);
     } else if (age <= 32) {
-      growthRate = -0.005;
+      baseGrowthRate = 4 + Math.floor(Math.random() * 9);
     } else {
-      growthRate = -0.015;
+      baseGrowthRate = -Math.floor(Math.random() * 6);
     }
     
     const trainingIntensityMultiplier = {
@@ -132,26 +143,137 @@ export class GameEngine {
     
     const potentialGap = player.potential - player.currentAbility;
     const canGrow = potentialGap > 5;
+    const improvements: string[] = [];
     
-    if (canGrow && growthRate > 0) {
-      const actualGrowth = growthRate * trainingIntensityMultiplier;
-      const improvement = Math.floor(Math.random() * 3) + 1;
+    if (canGrow && baseGrowthRate > 0) {
+      const actualGrowth = Math.round(baseGrowthRate * trainingIntensityMultiplier);
+      
+      const { updatedPlayer, changes } = this.applyTrainingFocusGrowth(
+        player,
+        actualGrowth,
+        player.trainingFocus.primary,
+        player.trainingFocus.secondary
+      );
       
       const newCurrentAbility = Math.min(
-        player.currentAbility + improvement,
+        updatedPlayer.currentAbility,
         player.potential
       );
       
       await this.storage.updatePlayer(player.id, {
+        attributes: updatedPlayer.attributes,
         currentAbility: newCurrentAbility,
       });
-    } else if (growthRate < 0) {
-      const decline = Math.floor(Math.random() * 2);
       
-      await this.storage.updatePlayer(player.id, {
-        currentAbility: Math.max(player.currentAbility - decline, 50),
-      });
+      return { improvements: changes };
+    } else if (baseGrowthRate < 0) {
+      const decline = Math.floor(Math.random() * 2);
+      const declinedAttributes = this.applyAttributeDecline(player, decline);
+      
+      await this.storage.updatePlayer(player.id, declinedAttributes);
+      improvements.push(`Overall ability declined by ${decline}`);
+      
+      return { improvements };
     }
+    
+    return { improvements: ["No significant changes"] };
+  }
+
+  private applyTrainingFocusGrowth(
+    player: Player,
+    totalGrowth: number,
+    primaryFocus: string,
+    secondaryFocus: string
+  ): { updatedPlayer: Player; changes: string[] } {
+    const changes: string[] = [];
+    const updatedPlayer = { ...player, attributes: { ...player.attributes } };
+    
+    const focusMapping: Record<string, string[]> = {
+      technical: ['passing', 'dribbling', 'shooting', 'ballControl'],
+      physical: ['pace', 'stamina', 'strength', 'agility'],
+      defensive: ['tackling', 'positioning', 'marking', 'interceptions'],
+      mental: ['vision', 'decisionMaking', 'composure', 'workRate'],
+    };
+    
+    const primaryGrowth = Math.round(totalGrowth * 0.7);
+    const secondaryGrowth = Math.round(totalGrowth * 0.3);
+    
+    const primaryAttrs = focusMapping[primaryFocus] || ['passing'];
+    const secondaryAttrs = focusMapping[secondaryFocus] || ['stamina'];
+    
+    primaryAttrs.forEach(attr => {
+      const growth = Math.floor(primaryGrowth / primaryAttrs.length);
+      const oldValue = updatedPlayer.attributes[attr as keyof PlayerAttributes] as number || 100;
+      const newValue = Math.min(oldValue + growth, 200);
+      (updatedPlayer.attributes as any)[attr] = newValue;
+      if (growth > 0) {
+        changes.push(`${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${oldValue} → ${newValue} (+${growth})`);
+      }
+    });
+    
+    secondaryAttrs.forEach(attr => {
+      if (!primaryAttrs.includes(attr)) {
+        const growth = Math.floor(secondaryGrowth / secondaryAttrs.length);
+        const oldValue = updatedPlayer.attributes[attr as keyof PlayerAttributes] as number || 100;
+        const newValue = Math.min(oldValue + growth, 200);
+        (updatedPlayer.attributes as any)[attr] = newValue;
+      }
+    });
+    
+    const attrs = updatedPlayer.attributes;
+    const avgAbility = Math.round(
+      (attrs.pace + attrs.shooting + attrs.passing + attrs.dribbling +
+       attrs.tackling + attrs.stamina) / 6
+    );
+    updatedPlayer.currentAbility = avgAbility;
+    
+    return { updatedPlayer, changes };
+  }
+
+  private applyAttributeDecline(player: Player, decline: number): Partial<Player> {
+    const attrs = player.attributes;
+    return {
+      attributes: {
+        ...attrs,
+        pace: Math.max(attrs.pace - decline, 50),
+        shooting: Math.max(attrs.shooting - decline, 50),
+        passing: Math.max(attrs.passing - decline, 50),
+        dribbling: Math.max(attrs.dribbling - decline, 50),
+        tackling: Math.max(attrs.tackling - decline, 50),
+        stamina: Math.max(attrs.stamina - decline, 50),
+      },
+      currentAbility: Math.max(player.currentAbility - decline, 50),
+    };
+  }
+
+  private async generateTrainingReport(
+    reportDate: Date,
+    trainingReport: Array<{ playerName: string; changes: string[] }>
+  ): Promise<void> {
+    const monthName = this.getMonthName(reportDate.getMonth() + 1);
+    const year = reportDate.getFullYear();
+    
+    let reportBody = `Training Report for ${monthName} ${year}\n\n`;
+    reportBody += `The following players have shown improvement this month:\n\n`;
+    
+    trainingReport.forEach(({ playerName, changes }) => {
+      reportBody += `${playerName}:\n`;
+      changes.forEach(change => {
+        reportBody += `  • ${change}\n`;
+      });
+      reportBody += `\n`;
+    });
+    
+    await this.storage.createInboxMessage({
+      category: "squad",
+      subject: `Training Report - ${monthName} ${year}`,
+      body: reportBody,
+      from: "Coaching Staff",
+      date: reportDate,
+      read: false,
+      starred: false,
+      priority: "medium",
+    });
   }
 
   private async processPlayerAging(gameState: GameState, newMonth: number): Promise<void> {
