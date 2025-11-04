@@ -11,20 +11,41 @@ import { TrainingPage } from "./pages/TrainingPage";
 import { FinancesPage } from "./pages/FinancesPage";
 import { ClubPage } from "./pages/ClubPage";
 import { MatchesPage } from "./pages/MatchesPage";
-import { useFutsalManager } from "./lib/stores/useFutsalManager";
+import AuthPage from "./pages/AuthPage";
+import SaveGameSelectionPage from "./pages/SaveGameSelectionPage";
+import { useAuth } from "./lib/stores/useAuth";
 import "@fontsource/inter";
 
 function App() {
-  const { initialized, initializeGame } = useFutsalManager();
+  const { isAuthenticated, isLoading, activeSaveGame, checkSession } = useAuth();
 
   useEffect(() => {
-    const init = async () => {
-      if (!initialized) {
-        await initializeGame();
-      }
-    };
-    init();
-  }, [initialized, initializeGame]);
+    checkSession();
+  }, [checkSession]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1B4332] to-[#2D6A4F]">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthPage />
+      </QueryClientProvider>
+    );
+  }
+
+  if (!activeSaveGame) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <SaveGameSelectionPage />
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
