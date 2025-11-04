@@ -1,73 +1,62 @@
-import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useState } from "react";
-import { KeyboardControls } from "@react-three/drei";
-// import { useAudio } from "./lib/stores/useAudio";
+import { useEffect } from "react";
+import { Route, Switch } from "wouter";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { DashboardLayout } from "./components/DashboardLayout";
+import { HomePage } from "./pages/HomePage";
+import { SquadPage } from "./pages/SquadPage";
+import { TacticsPage } from "./pages/TacticsPage";
+import { InboxPage } from "./pages/InboxPage";
+import { useFutsalManager } from "./lib/stores/useFutsalManager";
 import "@fontsource/inter";
 
-// Import our game components
-
-// Define control keys for the game
-// const controls = [
-//   { name: "forward", keys: ["KeyW", "ArrowUp"] },
-//   { name: "backward", keys: ["KeyS", "ArrowDown"] },
-//   { name: "leftward", keys: ["KeyA", "ArrowLeft"] },
-//   { name: "rightward", keys: ["KeyD", "ArrowRight"] },
-//   { name: "punch", keys: ["KeyJ"] },
-//   { name: "kick", keys: ["KeyK"] },
-//   { name: "block", keys: ["KeyL"] },
-//   { name: "special", keys: ["Space"] },
-// ];
-
-// Main App component
 function App() {
-  //const { gamePhase } = useFighting();
-  const [showCanvas, setShowCanvas] = useState(false);
+  const { initialized, initializeGame, loadGameData } = useFutsalManager();
 
-  // Show the canvas once everything is loaded
   useEffect(() => {
-    setShowCanvas(true);
-  }, []);
+    if (!initialized) {
+      initializeGame();
+    }
+  }, [initialized]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}/>
-    // {showCanvas && (
-    //   <KeyboardControls map={controls}>
-    //     {gamePhase === 'menu' && <Menu />}
+    <QueryClientProvider client={queryClient}>
+      <DashboardLayout>
+        <Switch>
+          <Route path="/" component={HomePage} />
+          <Route path="/squad" component={SquadPage} />
+          <Route path="/tactics" component={TacticsPage} />
+          <Route path="/inbox" component={InboxPage} />
+          <Route path="/training">
+            <ComingSoonPage title="Training" />
+          </Route>
+          <Route path="/transfers">
+            <ComingSoonPage title="Transfers" />
+          </Route>
+          <Route path="/competitions">
+            <ComingSoonPage title="Competitions" />
+          </Route>
+          <Route path="/finances">
+            <ComingSoonPage title="Finances" />
+          </Route>
+          <Route path="/club">
+            <ComingSoonPage title="Club" />
+          </Route>
+        </Switch>
+      </DashboardLayout>
+    </QueryClientProvider>
+  );
+}
 
-    //     {gamePhase === 'character_selection' && <CharacterSelection />}
-
-    //     {(gamePhase === 'fighting' || gamePhase === 'round_end' || gamePhase === 'match_end') && (
-    //       <>
-    //         <Canvas
-    //           shadows
-    //           camera={{
-    //             position: [0, 2, 8],
-    //             fov: 45,
-    //             near: 0.1,
-    //             far: 1000
-    //           }}
-    //           gl={{
-    //             antialias: true,
-    //             powerPreference: "default"
-    //           }}
-    //         >
-    //           <color attach="background" args={["#111111"]} />
-
-    //           {/* Lighting */}
-    //           <Lights />
-
-    //           <Suspense fallback={null}>
-    //           </Suspense>
-    //         </Canvas>
-    //         <GameUI />
-    //       </>
-    //     )}
-
-    //     <ShortcutManager />
-    //     <SoundManager />
-    //   </KeyboardControls>
-    // )}
-    //</div>
+function ComingSoonPage({ title }: { title: string }) {
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+      <div className="text-center py-12 text-muted-foreground">
+        <p className="text-xl mb-2">Coming Soon</p>
+        <p>This feature is under development</p>
+      </div>
+    </div>
   );
 }
 
