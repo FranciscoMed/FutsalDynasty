@@ -15,51 +15,51 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  getPlayer(id: number): Promise<Player | undefined>;
-  getAllPlayers(): Promise<Player[]>;
-  getPlayersByTeam(teamId: number): Promise<Player[]>;
-  createPlayer(player: Omit<Player, "id">): Promise<Player>;
-  updatePlayer(id: number, player: Partial<Player>): Promise<Player | undefined>;
+  getPlayer(saveGameId: number, id: number): Promise<Player | undefined>;
+  getAllPlayers(saveGameId: number): Promise<Player[]>;
+  getPlayersByTeam(saveGameId: number, teamId: number): Promise<Player[]>;
+  createPlayer(saveGameId: number, player: Omit<Player, "id">): Promise<Player>;
+  updatePlayer(saveGameId: number, id: number, player: Partial<Player>): Promise<Player | undefined>;
   
-  getTeam(id: number): Promise<Team | undefined>;
-  getAllTeams(): Promise<Team[]>;
-  createTeam(team: Omit<Team, "id">): Promise<Team>;
-  updateTeam(id: number, team: Partial<Team>): Promise<Team | undefined>;
+  getTeam(saveGameId: number, id: number): Promise<Team | undefined>;
+  getAllTeams(saveGameId: number): Promise<Team[]>;
+  createTeam(saveGameId: number, team: Omit<Team, "id">): Promise<Team>;
+  updateTeam(saveGameId: number, id: number, team: Partial<Team>): Promise<Team | undefined>;
   
-  getMatch(id: number): Promise<Match | undefined>;
-  getAllMatches(): Promise<Match[]>;
-  getMatchesByCompetition(competitionId: number): Promise<Match[]>;
-  createMatch(match: Omit<Match, "id">): Promise<Match>;
-  updateMatch(id: number, match: Partial<Match>): Promise<Match | undefined>;
+  getMatch(saveGameId: number, id: number): Promise<Match | undefined>;
+  getAllMatches(saveGameId: number): Promise<Match[]>;
+  getMatchesByCompetition(saveGameId: number, competitionId: number): Promise<Match[]>;
+  createMatch(saveGameId: number, match: Omit<Match, "id">): Promise<Match>;
+  updateMatch(saveGameId: number, id: number, match: Partial<Match>): Promise<Match | undefined>;
   
-  getCompetition(id: number): Promise<Competition | undefined>;
-  getAllCompetitions(): Promise<Competition[]>;
-  createCompetition(competition: Omit<Competition, "id">): Promise<Competition>;
-  updateCompetition(id: number, competition: Partial<Competition>): Promise<Competition | undefined>;
+  getCompetition(saveGameId: number, id: number): Promise<Competition | undefined>;
+  getAllCompetitions(saveGameId: number): Promise<Competition[]>;
+  createCompetition(saveGameId: number, competition: Omit<Competition, "id">): Promise<Competition>;
+  updateCompetition(saveGameId: number, id: number, competition: Partial<Competition>): Promise<Competition | undefined>;
   
-  getTransferOffer(id: number): Promise<TransferOffer | undefined>;
-  getAllTransferOffers(): Promise<TransferOffer[]>;
-  getTransferOffersByTeam(teamId: number): Promise<TransferOffer[]>;
-  createTransferOffer(offer: Omit<TransferOffer, "id">): Promise<TransferOffer>;
-  updateTransferOffer(id: number, offer: Partial<TransferOffer>): Promise<TransferOffer | undefined>;
+  getTransferOffer(saveGameId: number, id: number): Promise<TransferOffer | undefined>;
+  getAllTransferOffers(saveGameId: number): Promise<TransferOffer[]>;
+  getTransferOffersByTeam(saveGameId: number, teamId: number): Promise<TransferOffer[]>;
+  createTransferOffer(saveGameId: number, offer: Omit<TransferOffer, "id">): Promise<TransferOffer>;
+  updateTransferOffer(saveGameId: number, id: number, offer: Partial<TransferOffer>): Promise<TransferOffer | undefined>;
   
-  getInboxMessage(id: number): Promise<InboxMessage | undefined>;
-  getAllInboxMessages(): Promise<InboxMessage[]>;
-  createInboxMessage(message: Omit<InboxMessage, "id">): Promise<InboxMessage>;
-  updateInboxMessage(id: number, message: Partial<InboxMessage>): Promise<InboxMessage | undefined>;
-  deleteInboxMessage(id: number): Promise<boolean>;
+  getInboxMessage(saveGameId: number, id: number): Promise<InboxMessage | undefined>;
+  getAllInboxMessages(saveGameId: number): Promise<InboxMessage[]>;
+  createInboxMessage(saveGameId: number, message: Omit<InboxMessage, "id">): Promise<InboxMessage>;
+  updateInboxMessage(saveGameId: number, id: number, message: Partial<InboxMessage>): Promise<InboxMessage | undefined>;
+  deleteInboxMessage(saveGameId: number, id: number): Promise<boolean>;
   
-  getFinancialTransaction(id: number): Promise<FinancialTransaction | undefined>;
-  getAllFinancialTransactions(): Promise<FinancialTransaction[]>;
-  createFinancialTransaction(transaction: Omit<FinancialTransaction, "id">): Promise<FinancialTransaction>;
+  getFinancialTransaction(saveGameId: number, id: number): Promise<FinancialTransaction | undefined>;
+  getAllFinancialTransactions(saveGameId: number): Promise<FinancialTransaction[]>;
+  createFinancialTransaction(saveGameId: number, transaction: Omit<FinancialTransaction, "id">): Promise<FinancialTransaction>;
   
-  getClub(): Promise<Club | undefined>;
-  updateClub(club: Partial<Club>): Promise<Club | undefined>;
-  createClub(club: Omit<Club, "id">): Promise<Club>;
+  getClub(saveGameId: number): Promise<Club | undefined>;
+  updateClub(saveGameId: number, club: Partial<Club>): Promise<Club | undefined>;
+  createClub(saveGameId: number, club: Omit<Club, "id">): Promise<Club>;
   
-  getGameState(): Promise<GameState>;
-  updateGameState(state: Partial<GameState>): Promise<GameState>;
-  createGameState(state: Omit<GameState, "id">): Promise<GameState>;
+  getGameState(saveGameId: number): Promise<GameState>;
+  updateGameState(saveGameId: number, state: Partial<GameState>): Promise<GameState>;
+  createGameState(saveGameId: number, state: Omit<GameState, "id">): Promise<GameState>;
   
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;

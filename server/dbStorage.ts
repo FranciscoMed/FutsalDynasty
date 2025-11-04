@@ -25,86 +25,114 @@ import {
   users,
   saveGames,
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DbStorage implements IStorage {
-  async getPlayer(id: number): Promise<Player | undefined> {
-    const result = await db.select().from(players).where(eq(players.id, id)).limit(1);
+  async getPlayer(saveGameId: number, id: number): Promise<Player | undefined> {
+    const result = await db.select().from(players)
+      .where(and(eq(players.saveGameId, saveGameId), eq(players.id, id)))
+      .limit(1);
     return result[0] as Player | undefined;
   }
 
-  async getAllPlayers(): Promise<Player[]> {
-    const result = await db.select().from(players);
+  async getAllPlayers(saveGameId: number): Promise<Player[]> {
+    const result = await db.select().from(players)
+      .where(eq(players.saveGameId, saveGameId));
     return result as Player[];
   }
 
-  async getPlayersByTeam(teamId: number): Promise<Player[]> {
-    const result = await db.select().from(players).where(eq(players.teamId, teamId));
+  async getPlayersByTeam(saveGameId: number, teamId: number): Promise<Player[]> {
+    const result = await db.select().from(players)
+      .where(and(eq(players.saveGameId, saveGameId), eq(players.teamId, teamId)));
     return result as Player[];
   }
 
-  async createPlayer(player: Omit<Player, "id">): Promise<Player> {
-    const result = await db.insert(players).values(player).returning();
+  async createPlayer(saveGameId: number, player: Omit<Player, "id">): Promise<Player> {
+    const result = await db.insert(players)
+      .values({ ...player, saveGameId })
+      .returning();
     return result[0] as Player;
   }
 
-  async updatePlayer(id: number, player: Partial<Player>): Promise<Player | undefined> {
-    const result = await db.update(players).set(player).where(eq(players.id, id)).returning();
+  async updatePlayer(saveGameId: number, id: number, player: Partial<Player>): Promise<Player | undefined> {
+    const result = await db.update(players)
+      .set(player)
+      .where(and(eq(players.saveGameId, saveGameId), eq(players.id, id)))
+      .returning();
     return result[0] as Player | undefined;
   }
 
-  async getTeam(id: number): Promise<Team | undefined> {
-    const result = await db.select().from(teams).where(eq(teams.id, id)).limit(1);
+  async getTeam(saveGameId: number, id: number): Promise<Team | undefined> {
+    const result = await db.select().from(teams)
+      .where(and(eq(teams.saveGameId, saveGameId), eq(teams.id, id)))
+      .limit(1);
     return result[0] as Team | undefined;
   }
 
-  async getAllTeams(): Promise<Team[]> {
-    const result = await db.select().from(teams);
+  async getAllTeams(saveGameId: number): Promise<Team[]> {
+    const result = await db.select().from(teams)
+      .where(eq(teams.saveGameId, saveGameId));
     return result as Team[];
   }
 
-  async createTeam(team: Omit<Team, "id">): Promise<Team> {
-    const result = await db.insert(teams).values(team).returning();
+  async createTeam(saveGameId: number, team: Omit<Team, "id">): Promise<Team> {
+    const result = await db.insert(teams)
+      .values({ ...team, saveGameId })
+      .returning();
     return result[0] as Team;
   }
 
-  async updateTeam(id: number, team: Partial<Team>): Promise<Team | undefined> {
-    const result = await db.update(teams).set(team).where(eq(teams.id, id)).returning();
+  async updateTeam(saveGameId: number, id: number, team: Partial<Team>): Promise<Team | undefined> {
+    const result = await db.update(teams)
+      .set(team)
+      .where(and(eq(teams.saveGameId, saveGameId), eq(teams.id, id)))
+      .returning();
     return result[0] as Team | undefined;
   }
 
-  async getMatch(id: number): Promise<Match | undefined> {
-    const result = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
+  async getMatch(saveGameId: number, id: number): Promise<Match | undefined> {
+    const result = await db.select().from(matches)
+      .where(and(eq(matches.saveGameId, saveGameId), eq(matches.id, id)))
+      .limit(1);
     return result[0] as Match | undefined;
   }
 
-  async getAllMatches(): Promise<Match[]> {
-    const result = await db.select().from(matches);
+  async getAllMatches(saveGameId: number): Promise<Match[]> {
+    const result = await db.select().from(matches)
+      .where(eq(matches.saveGameId, saveGameId));
     return result as Match[];
   }
 
-  async getMatchesByCompetition(competitionId: number): Promise<Match[]> {
-    const result = await db.select().from(matches).where(eq(matches.competitionId, competitionId));
+  async getMatchesByCompetition(saveGameId: number, competitionId: number): Promise<Match[]> {
+    const result = await db.select().from(matches)
+      .where(and(eq(matches.saveGameId, saveGameId), eq(matches.competitionId, competitionId)));
     return result as Match[];
   }
 
-  async createMatch(match: Omit<Match, "id">): Promise<Match> {
-    const result = await db.insert(matches).values(match).returning();
+  async createMatch(saveGameId: number, match: Omit<Match, "id">): Promise<Match> {
+    const result = await db.insert(matches)
+      .values({ ...match, saveGameId })
+      .returning();
     return result[0] as Match;
   }
 
-  async updateMatch(id: number, match: Partial<Match>): Promise<Match | undefined> {
-    const result = await db.update(matches).set(match).where(eq(matches.id, id)).returning();
+  async updateMatch(saveGameId: number, id: number, match: Partial<Match>): Promise<Match | undefined> {
+    const result = await db.update(matches)
+      .set(match)
+      .where(and(eq(matches.saveGameId, saveGameId), eq(matches.id, id)))
+      .returning();
     return result[0] as Match | undefined;
   }
 
-  async getCompetition(id: number): Promise<Competition | undefined> {
-    const result = await db.select().from(competitions).where(eq(competitions.id, id)).limit(1);
+  async getCompetition(saveGameId: number, id: number): Promise<Competition | undefined> {
+    const result = await db.select().from(competitions)
+      .where(and(eq(competitions.saveGameId, saveGameId), eq(competitions.id, id)))
+      .limit(1);
     if (!result[0]) return undefined;
     
     const comp = result[0];
-    const compMatches = await this.getMatchesByCompetition(id);
+    const compMatches = await this.getMatchesByCompetition(saveGameId, id);
     
     return {
       id: comp.id,
@@ -119,12 +147,13 @@ export class DbStorage implements IStorage {
     } as Competition;
   }
 
-  async getAllCompetitions(): Promise<Competition[]> {
-    const result = await db.select().from(competitions);
+  async getAllCompetitions(saveGameId: number): Promise<Competition[]> {
+    const result = await db.select().from(competitions)
+      .where(eq(competitions.saveGameId, saveGameId));
     const comps: Competition[] = [];
     
     for (const comp of result) {
-      const compMatches = await this.getMatchesByCompetition(comp.id);
+      const compMatches = await this.getMatchesByCompetition(saveGameId, comp.id);
       comps.push({
         id: comp.id,
         name: comp.name,
@@ -141,111 +170,147 @@ export class DbStorage implements IStorage {
     return comps;
   }
 
-  async createCompetition(competition: Omit<Competition, "id">): Promise<Competition> {
+  async createCompetition(saveGameId: number, competition: Omit<Competition, "id">): Promise<Competition> {
     const { fixtures, ...compData } = competition;
-    const result = await db.insert(competitions).values(compData).returning();
+    const result = await db.insert(competitions)
+      .values({ ...compData, saveGameId })
+      .returning();
     const created = result[0];
     
     for (const match of fixtures) {
-      await this.createMatch({ ...match, competitionId: created.id });
+      await this.createMatch(saveGameId, { ...match, competitionId: created.id });
     }
     
-    return await this.getCompetition(created.id) as Competition;
+    return await this.getCompetition(saveGameId, created.id) as Competition;
   }
 
-  async updateCompetition(id: number, competition: Partial<Competition>): Promise<Competition | undefined> {
+  async updateCompetition(saveGameId: number, id: number, competition: Partial<Competition>): Promise<Competition | undefined> {
     const { fixtures, ...compData } = competition;
-    await db.update(competitions).set(compData).where(eq(competitions.id, id));
-    return await this.getCompetition(id);
+    await db.update(competitions)
+      .set(compData)
+      .where(and(eq(competitions.saveGameId, saveGameId), eq(competitions.id, id)));
+    return await this.getCompetition(saveGameId, id);
   }
 
-  async getTransferOffer(id: number): Promise<TransferOffer | undefined> {
-    const result = await db.select().from(transferOffers).where(eq(transferOffers.id, id)).limit(1);
+  async getTransferOffer(saveGameId: number, id: number): Promise<TransferOffer | undefined> {
+    const result = await db.select().from(transferOffers)
+      .where(and(eq(transferOffers.saveGameId, saveGameId), eq(transferOffers.id, id)))
+      .limit(1);
     return result[0] as TransferOffer | undefined;
   }
 
-  async getAllTransferOffers(): Promise<TransferOffer[]> {
-    const result = await db.select().from(transferOffers);
+  async getAllTransferOffers(saveGameId: number): Promise<TransferOffer[]> {
+    const result = await db.select().from(transferOffers)
+      .where(eq(transferOffers.saveGameId, saveGameId));
     return result as TransferOffer[];
   }
 
-  async getTransferOffersByTeam(teamId: number): Promise<TransferOffer[]> {
-    const result = await db.select().from(transferOffers);
+  async getTransferOffersByTeam(saveGameId: number, teamId: number): Promise<TransferOffer[]> {
+    const result = await db.select().from(transferOffers)
+      .where(eq(transferOffers.saveGameId, saveGameId));
     return (result as TransferOffer[]).filter(
       o => o.toTeamId === teamId || o.fromTeamId === teamId
     );
   }
 
-  async createTransferOffer(offer: Omit<TransferOffer, "id">): Promise<TransferOffer> {
-    const result = await db.insert(transferOffers).values(offer).returning();
+  async createTransferOffer(saveGameId: number, offer: Omit<TransferOffer, "id">): Promise<TransferOffer> {
+    const result = await db.insert(transferOffers)
+      .values({ ...offer, saveGameId })
+      .returning();
     return result[0] as TransferOffer;
   }
 
-  async updateTransferOffer(id: number, offer: Partial<TransferOffer>): Promise<TransferOffer | undefined> {
-    const result = await db.update(transferOffers).set(offer).where(eq(transferOffers.id, id)).returning();
+  async updateTransferOffer(saveGameId: number, id: number, offer: Partial<TransferOffer>): Promise<TransferOffer | undefined> {
+    const result = await db.update(transferOffers)
+      .set(offer)
+      .where(and(eq(transferOffers.saveGameId, saveGameId), eq(transferOffers.id, id)))
+      .returning();
     return result[0] as TransferOffer | undefined;
   }
 
-  async getInboxMessage(id: number): Promise<InboxMessage | undefined> {
-    const result = await db.select().from(inboxMessages).where(eq(inboxMessages.id, id)).limit(1);
+  async getInboxMessage(saveGameId: number, id: number): Promise<InboxMessage | undefined> {
+    const result = await db.select().from(inboxMessages)
+      .where(and(eq(inboxMessages.saveGameId, saveGameId), eq(inboxMessages.id, id)))
+      .limit(1);
     return result[0] as InboxMessage | undefined;
   }
 
-  async getAllInboxMessages(): Promise<InboxMessage[]> {
-    const result = await db.select().from(inboxMessages).orderBy(desc(inboxMessages.date));
+  async getAllInboxMessages(saveGameId: number): Promise<InboxMessage[]> {
+    const result = await db.select().from(inboxMessages)
+      .where(eq(inboxMessages.saveGameId, saveGameId))
+      .orderBy(desc(inboxMessages.date));
     return result as InboxMessage[];
   }
 
-  async createInboxMessage(message: Omit<InboxMessage, "id">): Promise<InboxMessage> {
-    const result = await db.insert(inboxMessages).values(message).returning();
+  async createInboxMessage(saveGameId: number, message: Omit<InboxMessage, "id">): Promise<InboxMessage> {
+    const result = await db.insert(inboxMessages)
+      .values({ ...message, saveGameId })
+      .returning();
     return result[0] as InboxMessage;
   }
 
-  async updateInboxMessage(id: number, message: Partial<InboxMessage>): Promise<InboxMessage | undefined> {
-    const result = await db.update(inboxMessages).set(message).where(eq(inboxMessages.id, id)).returning();
+  async updateInboxMessage(saveGameId: number, id: number, message: Partial<InboxMessage>): Promise<InboxMessage | undefined> {
+    const result = await db.update(inboxMessages)
+      .set(message)
+      .where(and(eq(inboxMessages.saveGameId, saveGameId), eq(inboxMessages.id, id)))
+      .returning();
     return result[0] as InboxMessage | undefined;
   }
 
-  async deleteInboxMessage(id: number): Promise<boolean> {
-    await db.delete(inboxMessages).where(eq(inboxMessages.id, id));
+  async deleteInboxMessage(saveGameId: number, id: number): Promise<boolean> {
+    await db.delete(inboxMessages)
+      .where(and(eq(inboxMessages.saveGameId, saveGameId), eq(inboxMessages.id, id)));
     return true;
   }
 
-  async getFinancialTransaction(id: number): Promise<FinancialTransaction | undefined> {
-    const result = await db.select().from(financialTransactions).where(eq(financialTransactions.id, id)).limit(1);
+  async getFinancialTransaction(saveGameId: number, id: number): Promise<FinancialTransaction | undefined> {
+    const result = await db.select().from(financialTransactions)
+      .where(and(eq(financialTransactions.saveGameId, saveGameId), eq(financialTransactions.id, id)))
+      .limit(1);
     return result[0] as FinancialTransaction | undefined;
   }
 
-  async getAllFinancialTransactions(): Promise<FinancialTransaction[]> {
-    const result = await db.select().from(financialTransactions).orderBy(desc(financialTransactions.date));
+  async getAllFinancialTransactions(saveGameId: number): Promise<FinancialTransaction[]> {
+    const result = await db.select().from(financialTransactions)
+      .where(eq(financialTransactions.saveGameId, saveGameId))
+      .orderBy(desc(financialTransactions.date));
     return result as FinancialTransaction[];
   }
 
-  async createFinancialTransaction(transaction: Omit<FinancialTransaction, "id">): Promise<FinancialTransaction> {
-    const result = await db.insert(financialTransactions).values(transaction).returning();
+  async createFinancialTransaction(saveGameId: number, transaction: Omit<FinancialTransaction, "id">): Promise<FinancialTransaction> {
+    const result = await db.insert(financialTransactions)
+      .values({ ...transaction, saveGameId })
+      .returning();
     return result[0] as FinancialTransaction;
   }
 
-  async getClub(): Promise<Club | undefined> {
-    const result = await db.select().from(clubs).limit(1);
+  async getClub(saveGameId: number): Promise<Club | undefined> {
+    const result = await db.select().from(clubs)
+      .where(eq(clubs.saveGameId, saveGameId))
+      .limit(1);
     return result[0] as Club | undefined;
   }
 
-  async updateClub(club: Partial<Club>): Promise<Club | undefined> {
-    const existing = await this.getClub();
+  async updateClub(saveGameId: number, club: Partial<Club>): Promise<Club | undefined> {
+    const existing = await this.getClub(saveGameId);
     if (!existing) return undefined;
-    const result = await db.update(clubs).set(club).where(eq(clubs.id, existing.id)).returning();
+    const result = await db.update(clubs)
+      .set(club)
+      .where(and(eq(clubs.saveGameId, saveGameId), eq(clubs.id, existing.id)))
+      .returning();
     return result[0] as Club | undefined;
   }
 
-  async getGameState(): Promise<GameState> {
-    const result = await db.select().from(gameStates).limit(1);
+  async getGameState(saveGameId: number): Promise<GameState> {
+    const result = await db.select().from(gameStates)
+      .where(eq(gameStates.saveGameId, saveGameId))
+      .limit(1);
     if (!result[0]) {
       throw new Error("Game state not found");
     }
     
     const state = result[0];
-    const comps = await this.getAllCompetitions();
+    const comps = await this.getAllCompetitions(saveGameId);
     
     return {
       currentDate: state.currentDate,
@@ -259,25 +324,33 @@ export class DbStorage implements IStorage {
     };
   }
 
-  async updateGameState(state: Partial<GameState>): Promise<GameState> {
-    const existing = await db.select().from(gameStates).limit(1);
+  async updateGameState(saveGameId: number, state: Partial<GameState>): Promise<GameState> {
+    const existing = await db.select().from(gameStates)
+      .where(eq(gameStates.saveGameId, saveGameId))
+      .limit(1);
     if (!existing[0]) {
       throw new Error("Game state not found");
     }
     
     const { competitions, ...stateData } = state;
-    await db.update(gameStates).set(stateData).where(eq(gameStates.id, existing[0].id));
-    return await this.getGameState();
+    await db.update(gameStates)
+      .set(stateData)
+      .where(and(eq(gameStates.saveGameId, saveGameId), eq(gameStates.id, existing[0].id)));
+    return await this.getGameState(saveGameId);
   }
 
-  async createGameState(state: Omit<GameState, "id">): Promise<GameState> {
+  async createGameState(saveGameId: number, state: Omit<GameState, "id">): Promise<GameState> {
     const { competitions, ...stateData } = state;
-    const result = await db.insert(gameStates).values(stateData).returning();
-    return await this.getGameState();
+    const result = await db.insert(gameStates)
+      .values({ ...stateData, saveGameId })
+      .returning();
+    return await this.getGameState(saveGameId);
   }
 
-  async createClub(club: Omit<Club, "id">): Promise<Club> {
-    const result = await db.insert(clubs).values(club).returning();
+  async createClub(saveGameId: number, club: Omit<Club, "id">): Promise<Club> {
+    const result = await db.insert(clubs)
+      .values({ ...club, saveGameId })
+      .returning();
     return result[0] as Club;
   }
 
