@@ -243,6 +243,25 @@ export function displayToInternal(value: number): number {
   return value * 10;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  email: string;
+  createdAt: Date;
+}
+
+export interface SaveGame {
+  id: number;
+  userId: number;
+  name: string;
+  currentDate: Date;
+  season: number;
+  playerTeamId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export function calculateOverallRating(attributes: PlayerAttributes, position: Position): number {
   let overall = 0;
   
@@ -299,6 +318,7 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
 
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   name: varchar("name", { length: 255 }).notNull(),
   abbreviation: varchar("abbreviation", { length: 10 }).notNull(),
   reputation: integer("reputation").notNull(),
@@ -314,6 +334,7 @@ export const teams = pgTable("teams", {
 
 export const players = pgTable("players", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   name: varchar("name", { length: 255 }).notNull(),
   age: integer("age").notNull(),
   position: varchar("position", { length: 20 }).notNull().$type<Position>(),
@@ -339,6 +360,7 @@ export const players = pgTable("players", {
 
 export const matches = pgTable("matches", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   competitionId: integer("competition_id").notNull(),
   competitionType: varchar("competition_type", { length: 20 }).notNull().$type<CompetitionType>(),
   homeTeamId: integer("home_team_id").notNull(),
@@ -355,6 +377,7 @@ export const matches = pgTable("matches", {
 
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   name: varchar("name", { length: 255 }).notNull(),
   type: varchar("type", { length: 20 }).notNull().$type<CompetitionType>(),
   season: integer("season").notNull(),
@@ -366,6 +389,7 @@ export const competitions = pgTable("competitions", {
 
 export const transferOffers = pgTable("transfer_offers", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   playerId: integer("player_id").notNull(),
   fromTeamId: integer("from_team_id").notNull(),
   toTeamId: integer("to_team_id").notNull(),
@@ -377,6 +401,7 @@ export const transferOffers = pgTable("transfer_offers", {
 
 export const inboxMessages = pgTable("inbox_messages", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   category: varchar("category", { length: 20 }).notNull().$type<InboxCategory>(),
   subject: varchar("subject", { length: 500 }).notNull(),
   body: text("body").notNull(),
@@ -390,6 +415,7 @@ export const inboxMessages = pgTable("inbox_messages", {
 
 export const financialTransactions = pgTable("financial_transactions", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   date: timestamp("date").notNull(),
   type: varchar("type", { length: 10 }).notNull().$type<"income" | "expense">(),
   category: varchar("category", { length: 20 }).notNull().$type<"match_day" | "prize_money" | "transfer" | "wage" | "facility" | "sponsorship">(),
@@ -399,6 +425,7 @@ export const financialTransactions = pgTable("financial_transactions", {
 
 export const clubs = pgTable("clubs", {
   id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
   name: varchar("name", { length: 255 }).notNull(),
   stadium: varchar("stadium", { length: 255 }).notNull(),
   reputation: integer("reputation").notNull(),
@@ -420,4 +447,42 @@ export const gameStates = pgTable("game_states", {
   nextMatchId: integer("next_match_id"),
   monthlyTrainingInProgress: boolean("monthly_training_in_progress").notNull().default(true),
   lastTrainingReportMonth: integer("last_training_report_month").notNull(),
+  saveGameId: integer("save_game_id"),
+});
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const saveGames = pgTable("save_games", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  currentDate: timestamp("current_date").notNull(),
+  season: integer("season").notNull(),
+  playerTeamId: integer("player_team_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const trainingReports = pgTable("training_reports", {
+  id: serial("id").primaryKey(),
+  saveGameId: integer("save_game_id"),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  playerImprovements: jsonb("player_improvements").notNull().$type<{
+    playerId: number;
+    playerName: string;
+    improvements: {
+      attribute: string;
+      oldValue: number;
+      newValue: number;
+      change: number;
+    }[];
+  }[]>(),
+  date: timestamp("date").notNull().defaultNow(),
 });
