@@ -1,0 +1,92 @@
+We need to refactor the matches and competitions display to provide better organization:
+
+Matches Dashboard: Show only upcoming fixtures for the user's team
+Competitions Dashboard: Display league tables and knockout brackets for all competitions the user's team participates in
+Current State
+The codebase currently has:
+
+MatchesPage.tsx - Shows matches
+Competition data stored in PostgreSQL via dbStorage.ts
+Competition engine in competitionEngine.ts
+Requirements
+1. Matches Dashboard (MatchesPage.tsx)
+What to Display:
+
+Only show upcoming fixtures (matches not yet played) for the user's team
+Group fixtures by competition (First Division, National Cup, etc.)
+Sort by date (earliest first)
+Show for each fixture:
+Date and time
+Home team vs Away team
+Competition name
+Venue
+"Simulate Match" button for matches on the current game date
+What to Remove:
+
+Past results (move these to a separate "Results" section or page)
+League tables (move to Competitions page)
+Fixtures from other teams (not involving the user)
+API Endpoint Needed:
+
+2. Competitions Dashboard (New Page)
+Create: client/src/pages/CompetitionsPage.tsx
+
+What to Display:
+
+For League Competitions (First Division, Second Division):
+
+Full league table with columns:
+Position
+Team name
+Played (P)
+Won (W)
+Drawn (D)
+Lost (L)
+Goals For (GF)
+Goals Against (GA)
+Goal Difference (GD)
+Points (Pts)
+Form (last 5 results: W/D/L)
+Highlight the user's team row
+Show current matchday number
+Display promotion/relegation zones if applicable
+For Knockout Competitions (National Cup):
+
+Tournament bracket diagram
+Show all rounds (Round of 16, Quarter-finals, Semi-finals, Final)
+Display match results for completed rounds
+Show upcoming matches for current round
+Highlight user's team progress
+Use a visual tree/bracket structure
+API Endpoints Needed:
+
+3. Navigation Updates
+Update: client/src/components/ui/navigation.tsx (or wherever navigation is defined)
+
+Add route for the new Competitions page:
+
+4. Database/Storage Updates
+Ensure these methods exist in dbStorage.ts:
+
+5. UI Components to Create
+League Table Component (client/src/components/LeagueTable.tsx):
+
+Responsive table
+Highlight user's team
+Sort by points/GD
+Show form indicators (W/D/L badges)
+Knockout Bracket Component (client/src/components/KnockoutBracket.tsx):
+
+Visual tournament tree
+Responsive design for mobile
+Highlight user's team matches
+Show scores for completed matches
+Use connecting lines between rounds
+6. Styling Considerations
+Use Tailwind CSS classes (already in the project)
+Ensure mobile responsiveness
+Use Radix UI components for consistent styling
+Add visual indicators:
+Green highlight for user's team
+Gold/silver/bronze for top 3 positions
+Red zone for relegation positions
