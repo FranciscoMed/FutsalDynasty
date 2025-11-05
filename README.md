@@ -37,9 +37,11 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 - **Vite** - Build tool and dev server
 - **Wouter** - Lightweight routing
 - **TanStack Query** - Data fetching and caching
-- **Zustand** - State management
-- **Radix UI** - Accessible UI components
+- **Zustand** - State management with subscribeWithSelector
+- **Radix UI** - Accessible UI components (Dialog, Progress, Card, Badge, etc.)
 - **Tailwind CSS** - Utility-first styling
+- **Sonner** - Toast notifications
+- **Lucide React** - Icon library
 - **date-fns** - Date manipulation
 
 ### Backend
@@ -62,29 +64,49 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 ├── client/                  # Frontend application
 │   ├── src/
 │   │   ├── pages/          # Page components
-│   │   │   ├── HomePage.tsx
+│   │   │   ├── HomePage.tsx            # Dashboard with Smart Continue
 │   │   │   ├── SquadPage.tsx
 │   │   │   ├── TacticsPage.tsx
 │   │   │   ├── MatchesPage.tsx
+│   │   │   ├── CompetitionsPage.tsx
 │   │   │   ├── TrainingPage.tsx
 │   │   │   ├── InboxPage.tsx
 │   │   │   ├── FinancesPage.tsx
 │   │   │   └── ClubPage.tsx
 │   │   ├── components/     # Reusable UI components
-│   │   │   └── ui/        # Radix UI components
+│   │   │   ├── ContinueButton.tsx      # Smart Continue button
+│   │   │   ├── AdvancementOverlay.tsx  # Progress overlay
+│   │   │   ├── NavigationLock.tsx      # Navigation blocker
+│   │   │   ├── SeasonSummaryModal.tsx  # Season review dialog
+│   │   │   ├── MatchPreparationPopup.tsx
+│   │   │   ├── DashboardLayout.tsx     # App layout
+│   │   │   ├── KnockoutBracket.tsx
+│   │   │   ├── LeagueTable.tsx
+│   │   │   └── ui/                     # Radix UI components
+│   │   ├── hooks/          # Custom React hooks
+│   │   │   ├── useContinue.tsx         # Smart event detection
+│   │   │   └── useMatchDay.tsx
 │   │   └── lib/           # Utilities and stores
+│   │       ├── advancementEngine.ts    # Time progression orchestrator
+│   │       ├── queryClient.ts
+│   │       ├── utils.ts
 │   │       └── stores/    # Zustand state management
+│   │           ├── useFutsalManager.ts # Main game store
+│   │           └── advancementStore.ts # Advancement state
 │   └── index.html         # HTML entry point
 │
 ├── server/                 # Backend application
 │   ├── index.ts           # Server entry point
-│   ├── routes.ts          # API route definitions
-│   ├── db.ts              # Database connection
-│   ├── storage.ts         # Storage interface
+│   ├── routes.ts          # API route definitions (50+ endpoints)
+│   ├── authRoutes.ts      # Authentication routes
+│   ├── db.ts              # Database connection (Drizzle + Neon)
+│   ├── storage.ts         # Storage interface (IStorage)
 │   ├── dbStorage.ts       # PostgreSQL implementation
 │   ├── gameEngine.ts      # Game time and event processing
 │   ├── competitionEngine.ts # League and fixture management
-│   └── matchEngine.ts     # Match simulation logic
+│   ├── matchEngine.ts     # Match simulation logic
+│   ├── seedEngine.ts      # Initial data generation
+│   └── vite.ts            # Vite dev server integration
 │
 └── shared/                # Shared code
     └── schema.ts          # TypeScript interfaces and DB schema
@@ -102,7 +124,28 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - Active save game context management
    - Save game isolation (users can only access their own saves)
 
-2. **Player Management**
+2. **Smart Continue System** ⭐ *NEW*
+   - Intelligent event detection (matches, training, contracts, month-end, season-end)
+   - Single "Continue" button that auto-advances to next important event
+   - Smooth animated time progression (10-100ms per day with GPU acceleration)
+   - Dynamic speed calculation based on days to advance
+   - Real-time progress tracking with animated overlay
+   - Pause/Resume/Stop controls during advancement
+   - Event-specific handling:
+     - **Matches**: Stops advancement, shows match preparation popup
+     - **Training Completion**: Auto-processes, shows success notification
+     - **Month End**: Auto-processes financial updates, shows info notification
+     - **Contract Expiry**: Shows warning notification, continues
+     - **Season End**: Stops advancement, shows comprehensive season summary modal
+   - Navigation lock during time progression
+   - Toast notifications for all events (powered by Sonner)
+   - Season Summary Modal with:
+     - Squad statistics (size, average age, average rating)
+     - Board objectives completion tracking
+     - Financial summary (budget, wage budget)
+     - Performance rating based on objectives achieved
+
+3. **Player Management**
    - Dual-scale attribute system (0-200 internal, 0-20 display)
    - Detailed player attributes (shooting, passing, dribbling, pace, etc.)
    - Player contracts with salaries and release clauses
@@ -134,10 +177,17 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 
 6. **Time Progression**
    - Calendar-based game time
-   - Day-by-day advancement
-   - Monthly event processing
+   - Intelligent event-driven advancement system
+   - Multiple advancement endpoints:
+     - `POST /api/game/advance-day` - Single day advancement
+     - `POST /api/game/advance-until` - Day-by-day with stop support
+     - `POST /api/game/advance-to-event` - Batch advance to target event
+     - `GET /api/game/next-event` - Detect next actionable event
+     - `GET /api/game/events-in-range` - Get all events in date range
+   - Monthly event processing (finances, training, contracts)
    - Season transitions (July)
    - Automatic player aging
+   - Priority-based event system (1=highest to 5=lowest)
 
 7. **Financial Management**
    - Transfer budget tracking
@@ -160,16 +210,31 @@ The game initializes with a starting team containing:
 - Starting club facilities and budget
 - Initial welcome message from board
 
+### Event System
+
+The game features a priority-based event system for intelligent time advancement:
+
+| Event Type | Priority | Action | Notification |
+|------------|----------|--------|--------------|
+| Match | 1 (Highest) | Stop, show tactics | Info toast |
+| Training Completion | 2 | Auto-process | Success toast |
+| Contract Expiry | 3 | Notify only | Warning toast |
+| Month End | 4 | Auto-process | Info toast |
+| Season End | 5 | Stop, show summary | Success toast |
+
 ### Planned Features
 
-- Transfer market system
-- Continental competitions
-- Advanced tactical customization
-- Scouting system
-- Enhanced injury system with recovery
-- Player personality traits
+- Transfer market system with AI negotiations
+- Continental competitions (UEFA Futsal Cup equivalent)
+- Advanced tactical customization (custom formations)
+- Scouting system with player discovery
+- Enhanced injury system with recovery times
+- Player personality traits and mentoring
 - Comprehensive statistics dashboard
 - Promotion/relegation between divisions
+- Press conferences and media interactions
+- Staff hiring and development
+- Youth academy with player generation
 
 ## Architecture
 
@@ -180,17 +245,31 @@ The frontend follows a component-based architecture with:
 - **Pages**: Full-page components for each route
 - **Components**: Reusable UI components built with Radix UI
 - **Stores**: Zustand stores for global state management
-- **API Layer**: TanStack Query for data fetching
+  - `useFutsalManager` - Main game state (teams, players, matches)
+  - `useAdvancementStore` - Time advancement state (progress, events, pause/resume)
+- **API Layer**: TanStack Query for data fetching and caching
+- **Custom Hooks**: 
+  - `useContinue` - Smart event detection and button logic
+  - `useMatchDay` - Match day detection and handling
+- **Engines**:
+  - `advancementEngine` - Orchestrates time progression with animation
+- **Components**:
+  - `ContinueButton` - Smart button with dynamic label and icon
+  - `AdvancementOverlay` - Full-screen progress display with controls
+  - `NavigationLock` - Prevents navigation during advancement
+  - `SeasonSummaryModal` - Comprehensive season review dialog
+  - `MatchPreparationPopup` - Match day tactics confirmation
 
 Key pages:
-- `HomePage`: Dashboard overview
+- `HomePage`: Dashboard overview with Smart Continue button
 - `SquadPage`: Player roster management
 - `TacticsPage`: Formation and lineup setup
 - `MatchesPage`: Fixtures and results
+- `CompetitionsPage`: League tables and competition overview
 - `TrainingPage`: Player development
-- `InboxPage`: Message center
-- `FinancesPage`: Budget overview
-- `ClubPage`: Facilities and staff
+- `InboxPage`: Message center with categorized messages
+- `FinancesPage`: Budget overview and transaction history
+- `ClubPage`: Facilities and staff management
 
 ### Backend Architecture
 
@@ -420,19 +499,32 @@ The application will be available at `http://localhost:5000`
    - Modify schema in `shared/schema.ts`
    - Run `npm run db:push` to sync changes
    - Update `server/dbStorage.ts` if needed
+   - Test with existing save games
 
 2. **Adding Features**
    - Create/modify game engines in `server/`
-   - Add API routes in `server/routes.ts`
-   - Create/update UI components in `client/src/`
+   - Add API routes in `server/routes.ts` or `server/authRoutes.ts`
+   - Create/update UI components in `client/src/components/`
+   - Add pages in `client/src/pages/`
+   - Create custom hooks in `client/src/hooks/` if needed
    - Update TypeScript interfaces in `shared/schema.ts`
+   - Add state management in `client/src/lib/stores/` if needed
 
-3. **Testing**
+3. **Testing Smart Continue System**
+   - Click "Continue" button on dashboard
+   - Observe animated time progression
+   - Test pause/resume/stop controls
+   - Verify match day stops correctly
+   - Check season summary modal appears at season end
+   - Test toast notifications for all event types
+
+4. **General Testing**
    - Register a new user account
    - Create a new save game
    - Test time progression features
-   - Simulate matches
+   - Simulate matches and check results
    - Verify data persistence and isolation
+   - Test all competitions (league, cup)
 
 ### Code Style
 
@@ -442,6 +534,11 @@ The application will be available at `http://localhost:5000`
 - Async/await for asynchronous operations
 - All player attributes stored on 0-200 scale internally
 - All UI displays show 0-20 scale as whole numbers
+- Zustand stores with subscribeWithSelector for optimized re-renders
+- TanStack Query for all API calls with proper caching
+- Radix UI for accessible, composable components
+- Tailwind CSS with custom utility classes
+- GPU-accelerated animations with CSS transforms
 
 ## API Documentation
 
@@ -464,9 +561,16 @@ The application will be available at `http://localhost:5000`
 - `POST /api/game/initialize` - Initialize new game (creates initial data for active save)
 - `GET /api/game/state` - Get current game state
 - `PATCH /api/game/state` - Update game state
-- `POST /api/game/advance-day` - Advance one day
-- `POST /api/game/advance-days` - Advance multiple days
-- `POST /api/game/advance-month` - Advance one month
+
+### Time Advancement (Smart Continue System)
+
+- `POST /api/game/advance-day` - Advance one day (legacy)
+- `POST /api/game/advance-until` - Day-by-day advancement with cancellation support
+- `POST /api/game/advance-to-event` - Batch advance to target event
+- `GET /api/game/next-event` - Get next actionable event with priority
+- `GET /api/game/events-in-range` - Get all events in date range
+- `POST /api/game/advance-days` - Advance multiple days (legacy)
+- `POST /api/game/advance-month` - Advance one month (legacy)
 
 ### Teams
 

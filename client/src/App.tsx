@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Route, Switch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
+import { Toaster } from "./components/ui/sonner";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { HomePage } from "./pages/HomePage";
 import { SquadPage } from "./pages/SquadPage";
@@ -75,6 +76,7 @@ function App() {
           <Route path="/competitions" component={CompetitionsPage} />
         </Switch>
       </DashboardLayout>
+      <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
 }

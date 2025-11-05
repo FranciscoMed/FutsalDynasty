@@ -418,5 +418,202 @@ export class GameEngine {
 
     return nextMatch || null;
   }
+
+  /**
+   * Get the next actionable event for the player
+   * Returns the highest priority event that requires user action
+   * Priority: 1 = Match, 2 = Training Completion, 3 = Contract Expiry, 4 = Month End, 5 = Season End
+   */
+  async getNextEvent(saveGameId: number): Promise<import("@shared/schema").NextEvent | null> {
+    const gameState = await this.storage.getGameState(saveGameId);
+    const currentDate = new Date(gameState.currentDate);
+    
+    // Get all potential events
+    const events: import("@shared/schema").NextEvent[] = [];
+
+    // 1. Check for next match (highest priority)
+    const nextMatch = await this.getNextUnplayedMatchForPlayer(saveGameId);
+    if (nextMatch) {
+      const matchDate = new Date(nextMatch.date);
+      const daysUntil = Math.ceil((matchDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      events.push({
+        type: "match",
+        date: nextMatch.date,
+        daysUntil,
+        description: `Match: ${nextMatch.homeTeamName || 'Home'} vs ${nextMatch.awayTeamName || 'Away'}`,
+        priority: 1,
+        details: {
+          matchId: nextMatch.id,
+          competitionId: nextMatch.competitionId,
+          competitionName: nextMatch.competitionName,
+          homeTeamId: nextMatch.homeTeamId,
+          awayTeamId: nextMatch.awayTeamId,
+        },
+      });
+    }
+
+    // 2. Check for training completion (medium priority)
+    // For now, training is processed automatically monthly, so we'll skip this
+    // This can be implemented later if we add weekly training reports
+
+    // 3. Check for contract expiries (low priority)
+    const players = await this.storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
+    for (const player of players) {
+      // Check if contract expires within 6 months
+      const contractEndDate = new Date(currentDate);
+      contractEndDate.setMonth(contractEndDate.getMonth() + player.contract.length);
+      
+      const sixMonthsFromNow = new Date(currentDate);
+      sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+      
+      if (contractEndDate <= sixMonthsFromNow) {
+        const daysUntil = Math.ceil((contractEndDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        events.push({
+          type: "contract_expiry",
+          date: contractEndDate.toISOString(),
+          daysUntil,
+          description: `${player.name}'s contract expiring`,
+          priority: 3,
+          details: {
+            playerId: player.id,
+            playerName: player.name,
+          },
+        });
+      }
+    }
+
+    // 4. Check for month end (financial processing)
+    const nextMonthStart = new Date(currentDate);
+    nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+    nextMonthStart.setDate(1);
+    
+    const daysUntilMonthEnd = Math.ceil((nextMonthStart.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    events.push({
+      type: "month_end",
+      date: nextMonthStart.toISOString(),
+      daysUntil: daysUntilMonthEnd,
+      description: "End of month - Financial report",
+      priority: 4,
+      details: {
+        month: nextMonthStart.getMonth() + 1,
+        year: nextMonthStart.getFullYear(),
+      },
+    });
+
+    // 5. Check for season end (typically May/June - assume June 30th)
+    const seasonEndDate = new Date(currentDate.getFullYear(), 5, 30); // June 30th
+    
+    // If we're past June, check next year
+    if (currentDate > seasonEndDate) {
+      seasonEndDate.setFullYear(seasonEndDate.getFullYear() + 1);
+    }
+    
+    if (currentDate < seasonEndDate) {
+      const daysUntilSeasonEnd = Math.ceil((seasonEndDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      events.push({
+        type: "season_end",
+        date: seasonEndDate.toISOString(),
+        daysUntil: daysUntilSeasonEnd,
+        description: "End of season",
+        priority: 5,
+        details: {
+          season: gameState.season,
+        },
+      });
+    }
+
+    // Sort by priority (lowest number = highest priority), then by days until
+    events.sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      return a.daysUntil - b.daysUntil;
+    });
+
+    // Return the highest priority event
+    return events[0] || null;
+  }
+
+  /**
+   * Get all events within a date range
+   * Used to show what will happen during time advancement
+   */
+  async getEventsInRange(
+    saveGameId: number,
+    startDate: string,
+    endDate: string
+  ): Promise<import("@shared/schema").GameEvent[]> {
+    const gameState = await this.storage.getGameState(saveGameId);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    const events: import("@shared/schema").GameEvent[] = [];
+    let eventIdCounter = 0;
+
+    // Get all matches in range
+    const competitions = await this.storage.getAllCompetitions(saveGameId);
+    for (const competition of competitions) {
+      const matchesInRange = competition.fixtures.filter(match => {
+        const matchDate = new Date(match.date);
+        return (
+          matchDate >= start &&
+          matchDate <= end &&
+          !match.played &&
+          (match.homeTeamId === gameState.playerTeamId || 
+           match.awayTeamId === gameState.playerTeamId)
+        );
+      });
+
+      for (const match of matchesInRange) {
+        events.push({
+          id: `match-${eventIdCounter++}`,
+          type: "match",
+          date: match.date.toISOString(),
+          description: `Match in ${competition.name}`,
+          priority: 1,
+          processed: false,
+          details: {
+            matchId: match.id,
+            competitionId: competition.id,
+            homeTeamId: match.homeTeamId,
+            awayTeamId: match.awayTeamId,
+          },
+        });
+      }
+    }
+
+    // Add month boundaries in range
+    let currentMonth = new Date(start);
+    currentMonth.setDate(1);
+    currentMonth.setMonth(currentMonth.getMonth() + 1);
+    
+    while (currentMonth <= end) {
+      events.push({
+        id: `month-end-${eventIdCounter++}`,
+        type: "month_end",
+        date: currentMonth.toISOString(),
+        description: `Monthly report - ${this.getMonthName(currentMonth.getMonth() + 1)}`,
+        priority: 4,
+        processed: false,
+        details: {
+          month: currentMonth.getMonth() + 1,
+          year: currentMonth.getFullYear(),
+        },
+      });
+      
+      currentMonth.setMonth(currentMonth.getMonth() + 1);
+    }
+
+    // Sort by date
+    events.sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    return events;
+  }
 }
 

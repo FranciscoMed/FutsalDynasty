@@ -14,6 +14,37 @@ export type InboxCategory = "urgent" | "match" | "financial" | "squad" | "compet
 
 export type CompetitionType = "league" | "cup" | "continental" | "super_cup";
 
+export type EventType = "match" | "training_completion" | "contract_expiry" | "month_end" | "season_end";
+
+export interface NextEvent {
+  type: EventType;
+  date: string;
+  daysUntil: number;
+  description: string;
+  priority: number; // 1 = highest (match), 5 = lowest
+  details?: {
+    matchId?: number;
+    playerId?: number;
+    competitionId?: number;
+    [key: string]: any;
+  };
+}
+
+export interface GameEvent {
+  id: string;
+  type: EventType;
+  date: string;
+  description: string;
+  priority: number;
+  processed: boolean;
+  details?: {
+    matchId?: number;
+    playerId?: number;
+    competitionId?: number;
+    [key: string]: any;
+  };
+}
+
 export interface PlayerAttributes {
   shooting: number;
   passing: number;

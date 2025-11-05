@@ -628,6 +628,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get next actionable event
+  app.get("/api/game/next-event", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      if (!nextEvent) {
+        res.status(404).json({ error: "No upcoming events" });
+        return;
+      }
+      res.json(nextEvent);
+    } catch (error) {
+      console.error("Error getting next event:", error);
+      res.status(500).json({ error: "Failed to get next event" });
+    }
+  });
+
+  // Get events in date range
+  app.get("/api/game/events-in-range", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        res.status(400).json({ error: "startDate and endDate are required" });
+        return;
+      }
+
+      const events = await gameEngine.getEventsInRange(
+        saveGameId,
+        startDate as string,
+        endDate as string
+      );
+      res.json(events);
+    } catch (error) {
+      console.error("Error getting events in range:", error);
+      res.status(500).json({ error: "Failed to get events in range" });
+    }
+  });
+
+  // Advance to next event (batch mode)
+  app.post("/api/game/advance-to-event", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      
+      if (!nextEvent) {
+        res.status(404).json({ error: "No upcoming events" });
+        return;
+      }
+
+      const gameState = await storage.getGameState(saveGameId);
+      const currentDate = new Date(gameState.currentDate);
+      const targetDate = new Date(nextEvent.date);
+      
+      // Calculate days to advance
+      const daysToAdvance = Math.ceil((targetDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Advance days
+      let daysAdvanced = 0;
+      for (let i = 0; i < daysToAdvance; i++) {
+        await gameEngine.advanceOneDay(saveGameId);
+        daysAdvanced++;
+      }
+
+      const updatedGameState = await storage.getGameState(saveGameId);
+      
+      res.json({
+        daysAdvanced,
+        stoppedAt: updatedGameState.currentDate,
+        event: nextEvent,
+        gameState: updatedGameState,
+      });
+    } catch (error) {
+      console.error("Error advancing to event:", error);
+      res.status(500).json({ error: "Failed to advance to event" });
+    }
+  });
+
+  // Advance one day at a time (for stoppable advancement with animation)
+  app.post("/api/game/advance-until", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const { targetDate, currentDay } = req.body;
+      
+      if (!targetDate) {
+        res.status(400).json({ error: "targetDate is required" });
+        return;
+      }
+
+      // Advance one day
+      const result = await gameEngine.advanceOneDay(saveGameId);
+      const gameState = await storage.getGameState(saveGameId);
+      
+      const target = new Date(targetDate);
+      const current = new Date(gameState.currentDate);
+      
+      // Check if we've reached the target or encountered a match
+      const complete = current >= target;
+      
+      // Check for next event on this day
+      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      const hasEventToday = nextEvent && 
+        new Date(nextEvent.date).toDateString() === current.toDateString() &&
+        nextEvent.type === "match";
+
+      res.json({
+        currentDate: gameState.currentDate,
+        complete: complete || hasEventToday,
+        nextEvent: hasEventToday ? nextEvent : undefined,
+        matchesToday: result.matchesToday || [],
+        gameState,
+      });
+    } catch (error) {
+      console.error("Error in advance-until:", error);
+      res.status(500).json({ error: "Failed to advance" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

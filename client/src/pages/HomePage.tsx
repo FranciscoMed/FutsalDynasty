@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { useMatchDay } from "@/hooks/useMatchDay";
 import { MatchPreparationPopup } from "@/components/MatchPreparationPopup";
+import { SeasonSummaryModal } from "@/components/SeasonSummaryModal";
+import { ContinueButton } from "@/components/ContinueButton";
+import { AdvancementOverlay } from "@/components/AdvancementOverlay";
+import { useAdvancementStore } from "@/lib/stores/advancementStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Mail, Calendar, TrendingUp, Users, FastForward, Play } from "lucide-react";
+import { Mail, Calendar, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -26,7 +30,8 @@ export function HomePage() {
   } = useFutsalManager();
 
   const { nextMatch, hasMatchToday, refetch: refetchMatchDay } = useMatchDay();
-  const [advancing, setAdvancing] = useState(false);
+  const { isAdvancing } = useAdvancementStore();
+  const [showSeasonSummary, setShowSeasonSummary] = useState(false);
 
   useEffect(() => {
     if (initialized) {
@@ -48,43 +53,14 @@ export function HomePage() {
     ? Math.round(players.reduce((sum, p) => sum + p.age, 0) / players.length)
     : 0;
 
-  const handleAdvanceDay = async () => {
-    setAdvancing(true);
-    try {
-      const response = await fetch("/api/game/advance-day", { method: "POST" });
-      const result = await response.json();
-      
-      await loadGameData();
-      
-      // Check if there are matches today after advancing
-      await refetchMatchDay();
-      
-      // The useEffect will automatically trigger the popup if hasMatchToday becomes true
-    } catch (error) {
-      console.error("Failed to advance day:", error);
-    } finally {
-      setAdvancing(false);
-    }
-  };
-
-  const handleAdvanceDays = async (days: number) => {
-    setAdvancing(true);
-    try {
-      await fetch("/api/game/advance-days", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ days }),
-      });
-      await loadGameData();
-      
-      // Check for matches after advancing multiple days
-      await refetchMatchDay();
-      
-      // The useEffect will automatically trigger the popup if hasMatchToday becomes true
-    } catch (error) {
-      console.error("Failed to advance days:", error);
-    } finally {
-      setAdvancing(false);
+  const handleContinueComplete = async (result?: { showSeasonSummary?: boolean }) => {
+    // Reload game data after advancement completes
+    await loadGameData();
+    await refetchMatchDay();
+    
+    // Show season summary if season ended
+    if (result?.showSeasonSummary) {
+      setShowSeasonSummary(true);
     }
   };
 
@@ -93,6 +69,10 @@ export function HomePage() {
     setPendingMatch(null);
     // Refetch to update match status
     refetchMatchDay();
+  };
+  
+  const handleCloseSeasonSummary = () => {
+    setShowSeasonSummary(false);
   };
 
   return (
@@ -178,37 +158,13 @@ export function HomePage() {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              onClick={handleAdvanceDay} 
-              disabled={advancing}
-              className="flex items-center gap-2"
-            >
-              <Play className="w-4 h-4" />
-              {advancing ? "Processing..." : "Advance 1 Day"}
-            </Button>
-            <Button 
-              onClick={() => handleAdvanceDays(7)} 
-              disabled={advancing}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <FastForward className="w-4 h-4" />
-              {advancing ? "Processing..." : "Advance 1 Week"}
-            </Button>
-            <Button 
-              onClick={() => handleAdvanceDays(30)} 
-              disabled={advancing}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <FastForward className="w-4 h-4" />
-              {advancing ? "Processing..." : "Advance 1 Month"}
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-3">
-            Advance time to process training, contracts, and upcoming matches
+        <CardContent className="space-y-4">
+          <ContinueButton
+            onComplete={handleContinueComplete}
+            className="w-full"
+          />
+          <p className="text-sm text-muted-foreground text-center">
+            Automatically advances to the next important event (matches, training, etc.)
           </p>
         </CardContent>
       </Card>
@@ -303,6 +259,19 @@ export function HomePage() {
           onClose={handleCloseMatchPopup}
         />
       )}
+
+      {/* Advancement Overlay - shows during time advancement */}
+      {isAdvancing && (
+        <AdvancementOverlay
+          onComplete={handleContinueComplete}
+        />
+      )}
+      
+      {/* Season Summary Modal - appears after season ends */}
+      <SeasonSummaryModal
+        open={showSeasonSummary}
+        onClose={handleCloseSeasonSummary}
+      />
     </div>
   );
 }
