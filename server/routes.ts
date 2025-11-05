@@ -248,14 +248,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         comp.teams.includes(gameState.playerTeamId)
       );
       
-      // Resolve team names in standings
+      // Batch fetch all teams once to avoid N+1 query problem
+      const allTeams = await storage.getAllTeams(saveGameId);
+      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
+      
+      // Enrich competitions with team names in standings and fixtures
       for (const competition of playerCompetitions) {
+        // Resolve team names in standings
         for (const standing of competition.standings) {
-          const team = await storage.getTeam(saveGameId, standing.teamId);
-          if (team) {
-            standing.teamName = team.name;
-          }
+          standing.teamName = teamMap.get(standing.teamId) || 'Unknown';
         }
+        
+        // Enrich fixtures with team names
+        competition.fixtures = competition.fixtures.map(fixture => ({
+          ...fixture,
+          homeTeamName: teamMap.get(fixture.homeTeamId) || 'Unknown',
+          awayTeamName: teamMap.get(fixture.awayTeamId) || 'Unknown',
+        }));
       }
       
       res.json(playerCompetitions);
@@ -278,7 +287,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         match.awayTeamId === gameState.playerTeamId
       );
       
-      res.json(playerMatches);
+      // Sort by date (most recent first) and apply pagination
+      const limit = parseInt(req.query.limit as string) || 50; // Default to 50 matches
+      const sortedMatches = playerMatches
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, limit);
+      
+      // Batch fetch all teams once to avoid N+1 query problem
+      const allTeams = await storage.getAllTeams(saveGameId);
+      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
+      
+      // Enrich matches with team names
+      const enrichedMatches = sortedMatches.map(match => ({
+        ...match,
+        homeTeamName: teamMap.get(match.homeTeamId) || 'Unknown',
+        awayTeamName: teamMap.get(match.awayTeamId) || 'Unknown',
+      }));
+      
+      res.json(enrichedMatches);
     } catch (error) {
       res.status(500).json({ error: "Failed to get matches" });
     }
@@ -291,6 +317,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const gameState = await storage.getGameState(saveGameId);
       const competitions = await storage.getAllCompetitions(saveGameId);
+      
+      // Batch fetch all teams once to avoid N+1 query problem
+      const allTeams = await storage.getAllTeams(saveGameId);
+      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
       
       const upcomingFixtures: any[] = [];
       
@@ -306,15 +336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (upcomingMatches.length > 0) {
           for (const match of upcomingMatches) {
-            const homeTeam = await storage.getTeam(saveGameId, match.homeTeamId);
-            const awayTeam = await storage.getTeam(saveGameId, match.awayTeamId);
-            
             upcomingFixtures.push({
               ...match,
               competitionName: competition.name,
               competitionType: competition.type,
-              homeTeamName: homeTeam?.name || 'Unknown',
-              awayTeamName: awayTeam?.name || 'Unknown',
+              homeTeamName: teamMap.get(match.homeTeamId) || 'Unknown',
+              awayTeamName: teamMap.get(match.awayTeamId) || 'Unknown',
             });
           }
         }
@@ -326,6 +353,193 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching upcoming fixtures:", error);
       res.status(500).json({ error: "Failed to get upcoming fixtures" });
+    }
+  });
+
+  // Get next unplayed match requiring user action
+  app.get("/api/matches/next-unplayed", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const nextMatch = await gameEngine.getNextUnplayedMatchForPlayer(saveGameId);
+      
+      if (!nextMatch) {
+        res.json(null);
+        return;
+      }
+
+      // Enrich with team names
+      const allTeams = await storage.getAllTeams(saveGameId);
+      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
+
+      const enrichedMatch = {
+        ...nextMatch,
+        homeTeamName: teamMap.get(nextMatch.homeTeamId) || 'Unknown',
+        awayTeamName: teamMap.get(nextMatch.awayTeamId) || 'Unknown',
+      };
+
+      res.json(enrichedMatch);
+    } catch (error) {
+      console.error("Error fetching next unplayed match:", error);
+      res.status(500).json({ error: "Failed to get next unplayed match" });
+    }
+  });
+
+  // Get match preparation data
+  app.get("/api/matches/:id/preparation", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const matchId = parseInt(req.params.id);
+      const gameState = await storage.getGameState(saveGameId);
+      
+      // Get match details
+      const match = await storage.getMatch(saveGameId, matchId);
+      if (!match) {
+        res.status(404).json({ error: "Match not found" });
+        return;
+      }
+
+      // Get teams
+      const homeTeam = await storage.getTeam(saveGameId, match.homeTeamId);
+      const awayTeam = await storage.getTeam(saveGameId, match.awayTeamId);
+      const playerTeam = await storage.getTeam(saveGameId, gameState.playerTeamId);
+
+      // Determine which is the opponent
+      const isHome = match.homeTeamId === gameState.playerTeamId;
+      const opponentTeam = isHome ? awayTeam : homeTeam;
+
+      // Get player team squad
+      const playerSquad = await storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
+
+      // Get opponent squad for analysis
+      const opponentSquad = await storage.getPlayersByTeam(
+        saveGameId,
+        opponentTeam!.id
+      );
+
+      // Calculate opponent team rating
+      const opponentRating = opponentSquad.reduce(
+        (sum, p) => sum + p.currentAbility, 
+        0
+      ) / opponentSquad.length;
+
+      // Get recent matches for form
+      const allMatches = await storage.getAllMatches(saveGameId);
+      const opponentRecentMatches = allMatches
+        .filter(m => 
+          m.played && 
+          (m.homeTeamId === opponentTeam!.id || m.awayTeamId === opponentTeam!.id)
+        )
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5);
+
+      // Calculate form
+      const opponentForm = opponentRecentMatches.map(m => {
+        const isOpponentHome = m.homeTeamId === opponentTeam!.id;
+        const opponentScore = isOpponentHome ? m.homeScore : m.awayScore;
+        const otherScore = isOpponentHome ? m.awayScore : m.homeScore;
+        
+        if (opponentScore > otherScore) return 'W';
+        if (opponentScore < otherScore) return 'L';
+        return 'D';
+      });
+
+      // Get top 3 opponent players
+      const topOpponentPlayers = opponentSquad
+        .sort((a, b) => b.currentAbility - a.currentAbility)
+        .slice(0, 3)
+        .map(p => ({
+          id: p.id,
+          name: p.name,
+          position: p.position,
+          rating: Math.round(p.currentAbility / 10),
+        }));
+
+      // Get competition info
+      const competition = await storage.getCompetition(saveGameId, match.competitionId);
+
+      res.json({
+        match: {
+          ...match,
+          homeTeamName: homeTeam?.name || 'Unknown',
+          awayTeamName: awayTeam?.name || 'Unknown',
+          competitionName: competition?.name || 'Unknown',
+        },
+        playerTeam: {
+          ...playerTeam,
+          squad: playerSquad,
+        },
+        opponent: {
+          team: opponentTeam,
+          rating: Math.round(opponentRating / 10),
+          form: opponentForm,
+          topPlayers: topOpponentPlayers,
+        },
+        isHome,
+        venue: isHome ? homeTeam?.stadium : awayTeam?.stadium,
+      });
+    } catch (error) {
+      console.error("Error fetching match preparation data:", error);
+      res.status(500).json({ error: "Failed to get match preparation data" });
+    }
+  });
+
+  // Confirm tactics before match simulation
+  app.post("/api/matches/:id/confirm-tactics", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const matchId = parseInt(req.params.id);
+      const { formation, tacticalPreset, startingLineup } = req.body;
+
+      const gameState = await storage.getGameState(saveGameId);
+      const match = await storage.getMatch(saveGameId, matchId);
+
+      if (!match) {
+        res.status(404).json({ error: "Match not found" });
+        return;
+      }
+
+      // Verify match involves player's team
+      if (match.homeTeamId !== gameState.playerTeamId && 
+          match.awayTeamId !== gameState.playerTeamId) {
+        res.status(403).json({ error: "This match doesn't involve your team" });
+        return;
+      }
+
+      // Validate lineup has exactly 5 starters
+      if (startingLineup && startingLineup.length !== 5) {
+        res.status(400).json({ error: "Starting lineup must have exactly 5 players" });
+        return;
+      }
+
+      // Update team tactics if provided
+      if (formation || tacticalPreset || startingLineup) {
+        const updateData: any = {};
+        if (formation) updateData.formation = formation;
+        if (tacticalPreset) updateData.tacticalPreset = tacticalPreset;
+        if (startingLineup) updateData.startingLineup = startingLineup;
+
+        await storage.updateTeam(saveGameId, gameState.playerTeamId, updateData);
+      }
+
+      // Mark match as confirmed (ready to simulate)
+      await storage.updateMatch(saveGameId, matchId, {
+        preparationStatus: "confirmed",
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Tactics confirmed. Match is ready to simulate.",
+        matchId,
+      });
+    } catch (error) {
+      console.error("Error confirming tactics:", error);
+      res.status(500).json({ error: "Failed to confirm tactics" });
     }
   });
 

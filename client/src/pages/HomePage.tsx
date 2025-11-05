@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
+import { useMatchDay } from "@/hooks/useMatchDay";
+import { MatchPreparationPopup } from "@/components/MatchPreparationPopup";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { Mail, Calendar, TrendingUp, Users, FastForward, Play } from "lucide-react";
@@ -16,9 +18,14 @@ export function HomePage() {
     gameState,
     loadGameData,
     loading,
-    initialized
+    initialized,
+    pendingMatchId,
+    showMatchPopup,
+    setPendingMatch,
+    setShowMatchPopup,
   } = useFutsalManager();
 
+  const { nextMatch, hasMatchToday, refetch: refetchMatchDay } = useMatchDay();
   const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
@@ -26,6 +33,14 @@ export function HomePage() {
       loadGameData();
     }
   }, [initialized]);
+
+  // Auto-show match preparation popup when match day is detected
+  useEffect(() => {
+    if (hasMatchToday && nextMatch && !showMatchPopup) {
+      setPendingMatch(nextMatch.id);
+      setShowMatchPopup(true);
+    }
+  }, [hasMatchToday, nextMatch, showMatchPopup, setPendingMatch, setShowMatchPopup]);
 
   const recentMessages = inboxMessages.slice(0, 5);
   const squadCount = players.length;
@@ -36,8 +51,15 @@ export function HomePage() {
   const handleAdvanceDay = async () => {
     setAdvancing(true);
     try {
-      await fetch("/api/game/advance-day", { method: "POST" });
+      const response = await fetch("/api/game/advance-day", { method: "POST" });
+      const result = await response.json();
+      
       await loadGameData();
+      
+      // Check if there are matches today after advancing
+      await refetchMatchDay();
+      
+      // The useEffect will automatically trigger the popup if hasMatchToday becomes true
     } catch (error) {
       console.error("Failed to advance day:", error);
     } finally {
@@ -54,11 +76,23 @@ export function HomePage() {
         body: JSON.stringify({ days }),
       });
       await loadGameData();
+      
+      // Check for matches after advancing multiple days
+      await refetchMatchDay();
+      
+      // The useEffect will automatically trigger the popup if hasMatchToday becomes true
     } catch (error) {
       console.error("Failed to advance days:", error);
     } finally {
       setAdvancing(false);
     }
+  };
+
+  const handleCloseMatchPopup = () => {
+    setShowMatchPopup(false);
+    setPendingMatch(null);
+    // Refetch to update match status
+    refetchMatchDay();
   };
 
   return (
@@ -261,6 +295,14 @@ export function HomePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Match Preparation Popup - appears automatically on match day */}
+      {showMatchPopup && pendingMatchId && (
+        <MatchPreparationPopup
+          matchId={pendingMatchId}
+          onClose={handleCloseMatchPopup}
+        />
+      )}
     </div>
   );
 }

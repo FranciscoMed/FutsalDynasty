@@ -4,7 +4,7 @@ import type { GameState, Player, PlayerAttributes } from "@shared/schema";
 export class GameEngine {
   constructor(private storage: IStorage) {}
 
-  async advanceOneDay(saveGameId: number): Promise<GameState> {
+  async advanceOneDay(saveGameId: number): Promise<GameState & { matchesToday?: any[] }> {
     const gameState = await this.storage.getGameState(saveGameId);
     const currentDate = new Date(gameState.currentDate);
     
@@ -23,8 +23,28 @@ export class GameEngine {
       currentDate,
       currentMonth: newMonth,
     });
+
+    // Check for matches on the new date
+    const matchesToday = await this.getMatchesOnDate(saveGameId, currentDate);
     
-    return updatedState;
+    // Filter to only matches involving the player's team that need preparation
+    const playerMatchesToday = matchesToday.filter(match => 
+      match.homeTeamId === gameState.playerTeamId || 
+      match.awayTeamId === gameState.playerTeamId
+    );
+
+    // Update nextMatchId if there's a player match today
+    if (playerMatchesToday.length > 0) {
+      const nextMatch = playerMatchesToday[0];
+      await this.storage.updateGameState(saveGameId, {
+        nextMatchId: nextMatch.id,
+      });
+    }
+    
+    return {
+      ...updatedState,
+      matchesToday: playerMatchesToday,
+    };
   }
 
   async advanceDays(saveGameId: number, days: number): Promise<GameState> {
@@ -318,6 +338,85 @@ export class GameEngine {
 
   async processMatchDay(saveGameId: number, matchId: number): Promise<void> {
     console.log(`Processing match day for match ${matchId}`);
+  }
+
+  /**
+   * Get all matches scheduled on a specific date
+   */
+  async getMatchesOnDate(saveGameId: number, date: Date): Promise<any[]> {
+    const allMatches = await this.storage.getAllMatches(saveGameId);
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return allMatches.filter(match => {
+      const matchDate = new Date(match.date);
+      matchDate.setHours(0, 0, 0, 0);
+      return matchDate.getTime() === targetDate.getTime() && !match.played;
+    });
+  }
+
+  /**
+   * Check if a match should show the preparation popup
+   * Returns true if the match involves the player's team and hasn't been played
+   */
+  async shouldShowMatchPopup(saveGameId: number, matchId: number): Promise<boolean> {
+    const match = await this.storage.getMatch(saveGameId, matchId);
+    if (!match || match.played) {
+      return false;
+    }
+
+    const gameState = await this.storage.getGameState(saveGameId);
+    const isPlayerMatch = 
+      match.homeTeamId === gameState.playerTeamId || 
+      match.awayTeamId === gameState.playerTeamId;
+
+    // Check if preparation status is pending or not set
+    const needsPreparation = !match.preparationStatus || match.preparationStatus === "pending";
+
+    return isPlayerMatch && needsPreparation;
+  }
+
+  /**
+   * Get the next unplayed match involving the player's team
+   * Returns null if no upcoming matches
+   */
+  async getNextUnplayedMatchForPlayer(saveGameId: number): Promise<any | null> {
+    const gameState = await this.storage.getGameState(saveGameId);
+    const competitions = await this.storage.getAllCompetitions(saveGameId);
+    
+    let upcomingMatches: any[] = [];
+
+    // Collect all unplayed matches involving the player's team
+    for (const competition of competitions) {
+      if (!competition.teams.includes(gameState.playerTeamId)) continue;
+
+      const playerMatches = competition.fixtures.filter(match =>
+        !match.played &&
+        (match.homeTeamId === gameState.playerTeamId || 
+         match.awayTeamId === gameState.playerTeamId)
+      );
+
+      upcomingMatches = upcomingMatches.concat(
+        playerMatches.map(match => ({
+          ...match,
+          competitionId: competition.id,
+          competitionName: competition.name,
+          competitionType: competition.type,
+        }))
+      );
+    }
+
+    // Sort by date (earliest first)
+    upcomingMatches.sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Return the next match that needs preparation
+    const nextMatch = upcomingMatches.find(match => 
+      !match.preparationStatus || match.preparationStatus === "pending"
+    );
+
+    return nextMatch || null;
   }
 }
 

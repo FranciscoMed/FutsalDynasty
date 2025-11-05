@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { LeagueTable } from "@/components/LeagueTable";
 import { KnockoutBracket } from "@/components/KnockoutBracket";
@@ -8,40 +9,27 @@ import type { Competition } from "@shared/schema";
 
 export function CompetitionsPage() {
   const { gameState, loading } = useFutsalManager();
-  const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [loadingCompetitions, setLoadingCompetitions] = useState(true);
 
-  useEffect(() => {
-    if (gameState) {
-      loadCompetitions();
-    }
-  }, [gameState]);
-
-  const loadCompetitions = async () => {
-    setLoadingCompetitions(true);
-    try {
+  // Fetch competitions with caching
+  const { data: competitions = [], isLoading: loadingCompetitions } = useQuery<Competition[]>({
+    queryKey: ["competitions", gameState?.playerTeamId],
+    queryFn: async () => {
       const response = await fetch("/api/competitions");
-      if (response.ok && gameState) {
-        const data = await response.json();
-        
-        // Client-side validation: filter fixtures and standings to player's team only
-        const validatedCompetitions = data.map((comp: Competition) => ({
-          ...comp,
-          fixtures: comp.fixtures.filter(fixture =>
-            fixture.homeTeamId === gameState.playerTeamId || 
-            fixture.awayTeamId === gameState.playerTeamId
-          ),
-          standings: comp.standings // Standings are already filtered by server, but team must be in competition
-        })).filter((comp: Competition) => comp.teams.includes(gameState.playerTeamId));
-        
-        setCompetitions(validatedCompetitions);
-      }
-    } catch (error) {
-      console.error("Failed to load competitions:", error);
-    } finally {
-      setLoadingCompetitions(false);
-    }
-  };
+      if (!response.ok) throw new Error("Failed to fetch competitions");
+      return response.json();
+    },
+    enabled: !!gameState,
+    staleTime: 30000, // Cache for 30 seconds
+  });
+
+  // Memoize filtered competitions to avoid recalculating on every render
+  const leagueCompetitions = useMemo(() => {
+    return competitions.filter(c => c.type === "league");
+  }, [competitions]);
+
+  const knockoutCompetitions = useMemo(() => {
+    return competitions.filter(c => c.type === "cup" || c.type === "continental" || c.type === "super_cup");
+  }, [competitions]);
 
   if (loading || loadingCompetitions || !gameState) {
     return (
@@ -50,9 +38,6 @@ export function CompetitionsPage() {
       </div>
     );
   }
-
-  const leagueCompetitions = competitions.filter(c => c.type === "league");
-  const knockoutCompetitions = competitions.filter(c => c.type === "cup" || c.type === "continental" || c.type === "super_cup");
 
   return (
     <div className="space-y-6">

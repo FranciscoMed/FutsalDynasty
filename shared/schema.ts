@@ -111,6 +111,8 @@ export interface MatchStats {
   saves: number;
 }
 
+export type MatchPreparationStatus = "pending" | "confirmed" | "simulating" | "completed";
+
 export interface Match {
   id: number;
   competitionId: number;
@@ -121,6 +123,7 @@ export interface Match {
   awayScore: number;
   date: Date;
   played: boolean;
+  preparationStatus?: MatchPreparationStatus;
   events: MatchEvent[];
   homeStats: MatchStats;
   awayStats: MatchStats;
@@ -369,6 +372,7 @@ export const matches = pgTable("matches", {
   awayScore: integer("away_score").notNull().default(0),
   date: timestamp("date").notNull(),
   played: boolean("played").notNull().default(false),
+  preparationStatus: varchar("preparation_status", { length: 20 }).default("pending").$type<MatchPreparationStatus>(),
   events: jsonb("events").notNull().$type<MatchEvent[]>().default([]),
   homeStats: jsonb("home_stats").notNull().$type<MatchStats>(),
   awayStats: jsonb("away_stats").notNull().$type<MatchStats>(),

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,95 +24,74 @@ interface UpcomingFixture {
 
 export function MatchesPage() {
   const { gameState, loadGameData, loading } = useFutsalManager();
-  const [upcomingFixtures, setUpcomingFixtures] = useState<UpcomingFixture[]>([]);
-  const [recentResults, setRecentResults] = useState<UpcomingFixture[]>([]);
-  const [simulating, setSimulating] = useState<number | null>(null);
-  const [loadingMatches, setLoadingMatches] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (gameState) {
-      loadMatches();
-    }
-  }, [gameState]);
+  // Fetch upcoming fixtures with caching
+  const { data: upcomingFixtures = [], isLoading: loadingUpcoming } = useQuery<UpcomingFixture[]>({
+    queryKey: ["matches", "upcoming", gameState?.playerTeamId],
+    queryFn: async () => {
+      const response = await fetch("/api/matches/upcoming");
+      if (!response.ok) throw new Error("Failed to fetch upcoming fixtures");
+      return response.json();
+    },
+    enabled: !!gameState,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
-  const loadMatches = async () => {
-    setLoadingMatches(true);
-    try {
-      const [upcomingRes, allMatchesRes, teamsResponse] = await Promise.all([
-        fetch("/api/matches/upcoming"),
-        fetch("/api/matches"),
-        fetch("/api/teams/all"),
-      ]);
+  // Fetch all matches (including played ones) with caching
+  const { data: allMatches = [], isLoading: loadingMatches } = useQuery<UpcomingFixture[]>({
+    queryKey: ["matches", "all", gameState?.playerTeamId],
+    queryFn: async () => {
+      const response = await fetch("/api/matches");
+      if (!response.ok) throw new Error("Failed to fetch matches");
+      return response.json();
+    },
+    enabled: !!gameState,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
-      if (upcomingRes.ok && gameState) {
-        const upcoming = await upcomingRes.json();
-        // Client-side validation: ensure all fixtures involve the player's team
-        const validatedFixtures = upcoming.filter((fixture: UpcomingFixture) =>
-          fixture.homeTeamId === gameState.playerTeamId || fixture.awayTeamId === gameState.playerTeamId
-        );
-        setUpcomingFixtures(validatedFixtures);
-      }
+  // Compute recent results from cached match data
+  const recentResults = useMemo(() => {
+    if (!gameState) return [];
+    
+    return allMatches
+      .filter(m => m.played)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
+  }, [allMatches, gameState]);
 
-      if (allMatchesRes.ok && gameState) {
-        const allMatches = await allMatchesRes.json();
-        
-        // Filter to only played matches involving the user's team (double-check server filtering)
-        const played = allMatches
-          .filter((m: any) => 
-            m.played && 
-            (m.homeTeamId === gameState.playerTeamId || m.awayTeamId === gameState.playerTeamId)
-          )
-          .sort((a: any, b: any) => 
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          .slice(0, 5);
-        
-        // Enrich with team names
-        if (teamsResponse.ok) {
-          const teams = await teamsResponse.json();
-          const teamMap = new Map(teams.map((t: any) => [t.id, t.name]));
-          
-          const enrichedResults = played.map((match: any) => ({
-            ...match,
-            homeTeamName: teamMap.get(match.homeTeamId) || `Team ${match.homeTeamId}`,
-            awayTeamName: teamMap.get(match.awayTeamId) || `Team ${match.awayTeamId}`,
-          }));
-          
-          setRecentResults(enrichedResults);
-        } else {
-          setRecentResults(played);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to load matches:", error);
-    } finally {
-      setLoadingMatches(false);
-    }
+  // Mutation for simulating a match
+  const simulateMatchMutation = useMutation({
+    mutationFn: async (matchId: number) => {
+      const response = await fetch(`/api/matches/${matchId}/simulate`, { 
+        method: "POST" 
+      });
+      if (!response.ok) throw new Error("Failed to simulate match");
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate and refetch match queries
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      loadGameData();
+    },
+  });
+
+  const handleSimulateMatch = (matchId: number) => {
+    simulateMatchMutation.mutate(matchId);
   };
 
-  const handleSimulateMatch = async (matchId: number) => {
-    setSimulating(matchId);
-    try {
-      await fetch(`/api/matches/${matchId}/simulate`, { method: "POST" });
-      await loadMatches();
-      await loadGameData();
-    } catch (error) {
-      console.error("Failed to simulate match:", error);
-    } finally {
-      setSimulating(null);
-    }
-  };
+  // Group fixtures by competition with memoization
+  const fixturesByCompetition = useMemo(() => {
+    return upcomingFixtures.reduce((acc, fixture) => {
+      if (!acc[fixture.competitionName]) {
+        acc[fixture.competitionName] = [];
+      }
+      acc[fixture.competitionName].push(fixture);
+      return acc;
+    }, {} as Record<string, UpcomingFixture[]>);
+  }, [upcomingFixtures]);
 
-  // Group fixtures by competition
-  const fixturesByCompetition = upcomingFixtures.reduce((acc, fixture) => {
-    if (!acc[fixture.competitionName]) {
-      acc[fixture.competitionName] = [];
-    }
-    acc[fixture.competitionName].push(fixture);
-    return acc;
-  }, {} as Record<string, UpcomingFixture[]>);
-
-  if (loading || loadingMatches || !gameState) {
+  if (loading || loadingUpcoming || loadingMatches || !gameState) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Loading matches...</p>
@@ -203,11 +183,11 @@ export function MatchesPage() {
                         {canSimulate && (
                           <Button
                             onClick={() => handleSimulateMatch(match.id)}
-                            disabled={simulating === match.id}
+                            disabled={simulateMatchMutation.isPending}
                             className="flex items-center gap-2 ml-4 bg-[#2D6A4F] hover:bg-[#1B4332]"
                           >
                             <Play className="w-4 h-4" />
-                            {simulating === match.id ? "Simulating..." : "Play Match"}
+                            {simulateMatchMutation.isPending ? "Simulating..." : "Play Match"}
                           </Button>
                         )}
                       </div>

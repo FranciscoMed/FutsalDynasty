@@ -11,6 +11,7 @@ A comprehensive web-based futsal management simulation game where players manage
 - [Architecture](#architecture)
 - [Database Schema](#database-schema)
 - [Game Engines](#game-engines)
+- [Multi-User System](#multi-user-system)
 - [Getting Started](#getting-started)
 - [Development](#development)
 - [API Documentation](#api-documentation)
@@ -19,12 +20,14 @@ A comprehensive web-based futsal management simulation game where players manage
 
 Futsal Manager is a full-stack web application that simulates the experience of managing a professional futsal team. The game features:
 
+- **Multi-User Support**: Create accounts, manage multiple save games per user
 - **Team Management**: Build and manage your squad with detailed player attributes
 - **Player Development**: Train players with customizable focus areas and intensity levels
 - **Match Simulation**: Real-time match simulation with minute-by-minute events
 - **League Competition**: Compete against AI teams in a full season format
 - **Financial Management**: Balance budgets, wages, and transfers
 - **Tactical Depth**: Choose formations and tactical presets to influence matches
+- **Inbox System**: Comprehensive message center for game notifications and reports
 
 ## Technology Stack
 
@@ -44,7 +47,9 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 - **Express** - Web server framework
 - **TypeScript** - Type safety
 - **Drizzle ORM** - Database ORM
-- **PostgreSQL (Neon)** - Database
+- **PostgreSQL (Neon)** - Serverless database
+- **express-session** - Session management
+- **bcryptjs** - Password hashing
 - **tsx** - TypeScript execution
 
 ### Shared
@@ -57,6 +62,14 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 ├── client/                  # Frontend application
 │   ├── src/
 │   │   ├── pages/          # Page components
+│   │   │   ├── HomePage.tsx
+│   │   │   ├── SquadPage.tsx
+│   │   │   ├── TacticsPage.tsx
+│   │   │   ├── MatchesPage.tsx
+│   │   │   ├── TrainingPage.tsx
+│   │   │   ├── InboxPage.tsx
+│   │   │   ├── FinancesPage.tsx
+│   │   │   └── ClubPage.tsx
 │   │   ├── components/     # Reusable UI components
 │   │   │   └── ui/        # Radix UI components
 │   │   └── lib/           # Utilities and stores
@@ -81,28 +94,36 @@ Futsal Manager is a full-stack web application that simulates the experience of 
 
 ### Implemented Features
 
-1. **Player Management**
+1. **Multi-User System**
+   - User registration and authentication
+   - Session-based authentication with HTTP-only cookies
+   - Password hashing with bcrypt (10 rounds)
+   - Multiple save games per user
+   - Active save game context management
+   - Save game isolation (users can only access their own saves)
+
+2. **Player Management**
    - Dual-scale attribute system (0-200 internal, 0-20 display)
    - Detailed player attributes (shooting, passing, dribbling, pace, etc.)
    - Player contracts with salaries and release clauses
    - Injury and suspension tracking
    - Form and morale systems
 
-2. **Training System**
+3. **Training System**
    - Monthly training cycles
    - Four focus areas: Technical, Physical, Defensive, Mental
    - Three intensity levels: Low, Medium, High
    - Age-based growth curves (peak development 16-21 years)
    - Automatic training reports via inbox
 
-3. **Match Simulation**
+4. **Match Simulation**
    - Real-time match simulation with events
    - Goals, cards, and substitutions
    - Match statistics (possession, shots, passes, etc.)
    - Player ratings (6.0-10.0 scale)
    - Home advantage modifier
 
-4. **Multiple Competitions**
+5. **Multiple Competitions**
    - **First Division**: 12-team league with player team + 11 AI teams (reputation 40-70)
    - **Second Division**: 12-team league with AI teams (reputation 30-50)
    - **National Cup**: 16-team knockout tournament (reputation 35-65)
@@ -111,39 +132,33 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - Live league standings with points, GD, and form
    - Automated fixture scheduling
 
-5. **Time Progression**
+6. **Time Progression**
    - Calendar-based game time
    - Day-by-day advancement
    - Monthly event processing
    - Season transitions (July)
    - Automatic player aging
 
-6. **Financial Management**
+7. **Financial Management**
    - Transfer budget tracking
    - Monthly wage payments
    - Financial transaction history
    - Budget alerts and notifications
 
-7. **Inbox System**
+8. **Inbox System**
    - Categorized messages (match, squad, financial, etc.)
    - Priority levels (low, medium, high)
    - Read/unread tracking
    - Training and monthly reports
+   - Unread message counter
 
 ### Club Database
 
-The game features 100+ fictitious clubs with creative names spanning multiple themes:
-- **Space & Cosmos**: Galaxy Stars, Meteor FC, Neptune United, Orion FC
-- **Weather & Elements**: Thunder FC, Storm Athletic, Avalanche FC, Inferno FC
-- **Animals & Wildlife**: Lion FC, Eagle United, Dragon United, Shark United
-- **Precious Materials**: Diamond United, Platinum United, Gold FC, Crystal FC
-- **Warriors & Legends**: Spartans FC, Knight FC, Gladiator United, Champion FC
-
-All clubs are assigned:
-- Reputation ratings (30-70 range based on division)
-- Unique abbreviations (3 letters)
-- Full squads with 13 players each
-- Stadiums, budgets, and tactical setups
+The game initializes with a starting team containing:
+- 15 players with varied attributes (displayed 8-16 on 0-20 scale)
+- Balanced squad composition (2 goalkeepers, defenders, wingers, pivots)
+- Starting club facilities and budget
+- Initial welcome message from board
 
 ### Planned Features
 
@@ -236,69 +251,131 @@ The storage layer uses an interface-based design:
 
 - **IStorage Interface**: Defines all data operations
 - **DbStorage Class**: PostgreSQL implementation using Drizzle ORM
-- **MemStorage Class**: In-memory implementation for testing
+
+All operations are scoped by `saveGameId` to ensure data isolation between users' save games.
 
 ## Database Schema
 
+### Multi-User Architecture
+
+The database uses a multi-tenant architecture with the following hierarchy:
+
+```
+Users (authentication)
+  └── SaveGames (user's game instances)
+       ├── GameState (current date, season, etc.)
+       ├── Players (all players in save game)
+       ├── Teams (all teams in save game)
+       ├── Matches (all matches in save game)
+       ├── Competitions (all competitions in save game)
+       ├── TransferOffers (all offers in save game)
+       ├── InboxMessages (all messages in save game)
+       ├── FinancialTransactions (all transactions in save game)
+       └── Clubs (club data in save game)
+```
+
 ### Core Tables
 
-**Players**
-- Player attributes (17 skill attributes)
+**users**
+- User authentication data (username, email, hashed password)
+- Created timestamp
+
+**saveGames**
+- Save game metadata (name, userId)
+- Created and updated timestamps
+
+**players**
+- Player attributes (17 skill attributes on 0-200 scale)
 - Contract details (salary, length, release clause)
 - Status (injured, suspended, form, morale, fitness)
 - Training focus settings
+- Foreign key: saveGameId
 
-**Teams**
+**teams**
 - Team information and finances
 - Formation and tactics
 - Starting lineup configuration
+- Foreign key: saveGameId
 
-**Matches**
+**matches**
 - Match details and scores
 - Events (goals, cards, substitutions)
 - Statistics for both teams
 - Player ratings
+- Foreign key: saveGameId
 
-**Competitions**
+**competitions**
 - Competition metadata
-- Fixture lists
+- Fixture lists (stored separately in matches table)
 - League standings
 - Current matchday tracking
+- Foreign key: saveGameId
 
-**InboxMessages**
+**inboxMessages**
 - Message categories and priorities
 - Read/unread status
 - Action links
+- Foreign key: saveGameId
 
-**FinancialTransactions**
+**financialTransactions**
 - Transaction type (income/expense)
 - Categories (wages, transfers, etc.)
 - Amount and description
+- Foreign key: saveGameId
 
-**Clubs**
+**clubs**
 - Club facilities (training, stadium, youth academy)
 - Staff (coaches, scouts)
 - Board objectives
+- Foreign key: saveGameId
 
-**GameState**
+**gameStates**
 - Current date and season
-- Active competitions
+- Active competitions (references competitions table)
 - Game progression state
+- Foreign key: saveGameId
 
 ### Attribute System
 
 The game uses a dual-scale attribute system:
 - **Internal Scale**: 0-200 (used for calculations)
-- **Display Scale**: 0-20 (shown to players)
+- **Display Scale**: 0-20 (shown to players, whole numbers only)
 
 Conversion: `displayValue = Math.round(internalValue / 10)`
+
+## Multi-User System
+
+### Authentication Flow
+
+1. User registers with username, email, and password
+2. Password is hashed with bcrypt (10 rounds)
+3. User logs in and receives session cookie
+4. Session cookie is HTTP-only and secure
+5. Session stores userId and activeSaveGameId
+
+### Save Game Management
+
+- Users can create multiple save games
+- Each save game is completely isolated from others
+- Switching between save games updates session context
+- All API calls automatically use the active save game
+- Deleting a save game cleans up all associated data
+
+### Data Isolation
+
+All database queries are automatically scoped by `saveGameId`:
+- `storage.getPlayer(saveGameId, id)` - Only returns player from that save
+- `storage.getAllPlayers(saveGameId)` - Only returns players from that save
+- All operations follow this pattern
+
+The server tracks which save game is active in the session and automatically passes the correct `saveGameId` to all storage methods.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ 
-- PostgreSQL database (or use Replit's built-in database)
+- PostgreSQL database (or Neon serverless PostgreSQL)
 
 ### Installation
 
@@ -311,6 +388,7 @@ Conversion: `displayValue = Math.round(internalValue / 10)`
 3. Set up environment variables:
    ```
    DATABASE_URL=your_postgresql_connection_string
+   SESSION_SECRET=your_random_secret_key
    ```
 
 4. Push database schema:
@@ -331,6 +409,8 @@ The application will be available at `http://localhost:5000`
 
 - `npm run dev` - Start development server (runs both client and server)
 - `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run check` - Run TypeScript type checking
 - `npm run db:push` - Push Drizzle schema to database
 - `npm run db:push -- --force` - Force push schema changes
 
@@ -348,10 +428,11 @@ The application will be available at `http://localhost:5000`
    - Update TypeScript interfaces in `shared/schema.ts`
 
 3. **Testing**
-   - Initialize a new game via the UI
+   - Register a new user account
+   - Create a new save game
    - Test time progression features
    - Simulate matches
-   - Verify data persistence
+   - Verify data persistence and isolation
 
 ### Code Style
 
@@ -359,12 +440,28 @@ The application will be available at `http://localhost:5000`
 - Functional components with hooks (React)
 - Class-based engines (Backend)
 - Async/await for asynchronous operations
+- All player attributes stored on 0-200 scale internally
+- All UI displays show 0-20 scale as whole numbers
 
 ## API Documentation
 
+### Authentication
+
+- `POST /api/register` - Register new user
+- `POST /api/login` - Login user
+- `POST /api/logout` - Logout user
+- `GET /api/user` - Get current user
+
+### Save Games
+
+- `GET /api/save-games` - Get all save games for current user
+- `POST /api/save-games` - Create new save game
+- `POST /api/save-games/:id/activate` - Set active save game
+- `DELETE /api/save-games/:id` - Delete save game
+
 ### Game State
 
-- `POST /api/game/initialize` - Initialize new game
+- `POST /api/game/initialize` - Initialize new game (creates initial data for active save)
 - `GET /api/game/state` - Get current game state
 - `PATCH /api/game/state` - Update game state
 - `POST /api/game/advance-day` - Advance one day
@@ -398,6 +495,7 @@ The application will be available at `http://localhost:5000`
 ### Inbox
 
 - `GET /api/inbox` - Get all inbox messages
+- `POST /api/inbox/:id/read` - Mark message as read
 - `PATCH /api/inbox/:id` - Update message
 - `DELETE /api/inbox/:id` - Delete message
 
@@ -407,6 +505,8 @@ The application will be available at `http://localhost:5000`
 - `PATCH /api/club` - Update club
 - `GET /api/finances/transactions` - Get financial transactions
 
+All API endpoints (except auth) require authentication and automatically use the active save game from the session.
+
 ## Contributing
 
 When contributing to this codebase:
@@ -414,8 +514,10 @@ When contributing to this codebase:
 1. Follow the existing code structure
 2. Update TypeScript types in `shared/schema.ts`
 3. Implement storage interface methods in `server/dbStorage.ts`
-4. Test all database migrations with `npm run db:push`
-5. Ensure type safety across client and server
+4. All storage methods must accept `saveGameId` as first parameter
+5. Test all database migrations with `npm run db:push`
+6. Ensure type safety across client and server
+7. Test data isolation between save games
 
 ## License
 
@@ -425,4 +527,4 @@ This project is for educational purposes.
 
 - Inspired by Football Manager series
 - Built with modern web technologies
-- Designed for the Replit platform
+- Multi-user architecture for scalability

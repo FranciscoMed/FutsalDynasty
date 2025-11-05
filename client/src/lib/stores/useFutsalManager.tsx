@@ -26,6 +26,10 @@ interface FutsalManagerState {
   
   unreadInboxCount: number;
   
+  // Match day popup state
+  pendingMatchId: number | null;
+  showMatchPopup: boolean;
+  
   initializeGame: () => Promise<void>;
   loadGameData: () => Promise<void>;
   refreshPlayers: () => Promise<void>;
@@ -33,6 +37,10 @@ interface FutsalManagerState {
   markMessageAsRead: (messageId: number) => Promise<void>;
   updatePlayerTeam: (updates: Partial<Team>) => Promise<void>;
   updatePlayer: (playerId: number, updates: Partial<Player>) => Promise<void>;
+  
+  // Match day popup actions
+  setPendingMatch: (matchId: number | null) => void;
+  setShowMatchPopup: (show: boolean) => void;
 }
 
 export const useFutsalManager = create<FutsalManagerState>()(
@@ -50,6 +58,10 @@ export const useFutsalManager = create<FutsalManagerState>()(
     club: null,
     
     unreadInboxCount: 0,
+    
+    // Match day popup state
+    pendingMatchId: null,
+    showMatchPopup: false,
     
     initializeGame: async () => {
       set({ loading: true });
@@ -173,6 +185,15 @@ export const useFutsalManager = create<FutsalManagerState>()(
       } catch (error) {
         console.error("Failed to update player:", error);
       }
+    },
+    
+    // Match day popup actions
+    setPendingMatch: (matchId: number | null) => {
+      set({ pendingMatchId: matchId });
+    },
+    
+    setShowMatchPopup: (show: boolean) => {
+      set({ showMatchPopup: show });
     },
   }))
 );
