@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,8 +9,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calendar, MapPin, Trophy, Play, Loader2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { TacticsReview } from "./TacticsReview";
+import { TacticsReviewV2 } from "./match-prep/TacticsReviewV2";
 import { OpponentAnalysis } from "./OpponentAnalysis";
-import type { Formation, TacticalPreset, Player } from "@shared/schema";
+import type { Formation as OldFormation, TacticalPreset, Player } from "@shared/schema";
+import type { Formation } from "@/lib/formations";
 
 interface MatchPreparationData {
   match: {
@@ -58,11 +60,23 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
   const [, setLocation] = useLocation();
   const [currentTab, setCurrentTab] = useState("tactics");
   
-  // Local state for tactics changes
-  const [formation, setFormation] = useState<Formation>("2-2");
-  const [tacticalPreset, setTacticalPreset] = useState<TacticalPreset>("Balanced");
-  const [startingLineup, setStartingLineup] = useState<number[]>([]);
+  // Local state for NEW tactics system
+  const [formation, setFormation] = useState<Formation>("3-1");
+  const [assignments, setAssignments] = useState<Record<string, number | null>>({});
+  const [substitutes, setSubstitutes] = useState<(number | null)[]>([null, null, null, null, null]);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Handle tactics change from TacticsReviewV2 - memoized to prevent re-renders
+  const handleTacticsChange = useCallback((data: {
+    formation: Formation;
+    assignments: Record<string, number | null>;
+    substitutes: (number | null)[];
+  }) => {
+    console.log('Tactics changed in parent:', data);
+    setFormation(data.formation);
+    setAssignments(data.assignments);
+    setSubstitutes(data.substitutes);
+  }, []);
 
   // Fetch match preparation data
   const { data, isLoading, error } = useQuery<MatchPreparationData>({
@@ -75,12 +89,40 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
     staleTime: Infinity,
   });
 
-  // Initialize local state when data loads
+  // Initialize with existing tactics from team data (only once when data loads)
   useEffect(() => {
-    if (data) {
-      setFormation(data.playerTeam.formation);
-      setTacticalPreset(data.playerTeam.tacticalPreset);
-      setStartingLineup(data.playerTeam.startingLineup);
+    if (data?.playerTeam) {
+      console.log('Match prep data loaded:', {
+        hasTactics: !!data.playerTeam.tactics,
+        tactics: data.playerTeam.tactics,
+        currentAssignments: assignments,
+        currentSubstitutes: substitutes
+      });
+      
+      // Check if we should load saved tactics (only if we haven't set anything yet)
+      const hasNoAssignments = Object.keys(assignments).length === 0;
+      const hasNoSubstitutes = substitutes.every(s => s === null);
+      const shouldLoadTactics = hasNoAssignments && hasNoSubstitutes;
+      
+      if (shouldLoadTactics && data.playerTeam.tactics) {
+        const savedTactics = data.playerTeam.tactics;
+        console.log('Loading saved tactics from database:', savedTactics);
+        
+        if (savedTactics.formation) {
+          setFormation(savedTactics.formation as Formation);
+        }
+        if (savedTactics.assignments && Object.keys(savedTactics.assignments).length > 0) {
+          setAssignments(savedTactics.assignments);
+        }
+        if (savedTactics.substitutes && savedTactics.substitutes.length > 0) {
+          setSubstitutes(savedTactics.substitutes);
+        }
+      } else {
+        console.log('Not loading tactics:', {
+          shouldLoadTactics,
+          hasTactics: !!data.playerTeam.tactics
+        });
+      }
     }
   }, [data]);
 
@@ -88,45 +130,54 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
   useEffect(() => {
     if (data) {
       const changed = 
-        formation !== data.playerTeam.formation ||
-        tacticalPreset !== data.playerTeam.tacticalPreset ||
-        JSON.stringify(startingLineup) !== JSON.stringify(data.playerTeam.startingLineup);
+        formation !== "3-1" || // Default formation
+        Object.keys(assignments).length > 0 ||
+        substitutes.some(s => s !== null);
       setHasChanges(changed);
     }
-  }, [formation, tacticalPreset, startingLineup, data]);
+  }, [formation, assignments, substitutes, data]);
 
-  // Confirm tactics mutation
+  // Confirm tactics and start match mutation
   const confirmTacticsMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`/api/matches/${matchId}/confirm-tactics`, {
+      // First, confirm tactics
+      const confirmResponse = await fetch(`/api/matches/${matchId}/confirm-tactics`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           formation,
-          tacticalPreset,
-          startingLineup,
+          assignments,
+          substitutes,
         }),
       });
-      if (!response.ok) throw new Error("Failed to confirm tactics");
-      return response.json();
+      if (!confirmResponse.ok) throw new Error("Failed to confirm tactics");
+      
+      // Then, immediately simulate the match
+      const simulateResponse = await fetch(`/api/matches/${matchId}/simulate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!simulateResponse.ok) throw new Error("Failed to simulate match");
+      
+      return simulateResponse.json();
     },
-    onSuccess: () => {
+    onSuccess: (matchResult) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["nextUnplayedMatch"] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["team"] });
-      // Navigate to matches page
-      setLocation("/matches");
+      queryClient.invalidateQueries({ queryKey: ["inbox"] });
+      
+      // Navigate directly to the match result page
+      setLocation(`/matches/${matchId}`);
       onClose();
     },
   });
 
   // Validation
-  const hasGoalkeeper = data?.playerTeam.squad
-    .filter(p => startingLineup.includes(p.id))
-    .some(p => p.position === "Goalkeeper");
-  const hasCorrectCount = startingLineup.length === 5;
-  const isValid = hasGoalkeeper && hasCorrectCount;
+  const filledPositions = Object.values(assignments).filter(id => id !== null).length;
+  const hasGoalkeeperAssigned = Object.entries(assignments).some(([slotId]) => slotId === "gk");
+  const isValid = filledPositions === 5 && hasGoalkeeperAssigned;
 
   const handleConfirmTactics = () => {
     if (!isValid) return;
@@ -173,7 +224,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
             <Trophy className="w-6 h-6 text-[#2D6A4F]" />
             Match Day Preparation
           </DialogTitle>
-          <DialogDescription className="space-y-2">
+          <div className="space-y-2">
             <div className="flex items-center gap-6 text-base font-semibold text-foreground mt-2">
               <span className={data.isHome ? "text-[#1B4332]" : ""}>
                 {data.match.homeTeamName}
@@ -200,7 +251,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
                 {data.isHome ? "Home Match" : "Away Match"}
               </Badge>
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         {/* Tabs Content - Scrollable */}
@@ -220,15 +271,12 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <TabsContent value="tactics" className="mt-0 space-y-4">
-                <TacticsReview
-                  currentFormation={formation}
-                  currentTacticalPreset={tacticalPreset}
-                  startingLineup={startingLineup}
-                  substitutes={data.playerTeam.substitutes}
+                <TacticsReviewV2
                   squad={data.playerTeam.squad}
-                  onFormationChange={setFormation}
-                  onTacticalPresetChange={setTacticalPreset}
-                  onLineupChange={setStartingLineup}
+                  initialFormation={formation}
+                  initialAssignments={assignments}
+                  initialSubstitutes={substitutes}
+                  onTacticsChange={handleTacticsChange}
                 />
               </TabsContent>
 
@@ -254,12 +302,12 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
                         <span className="font-semibold">{formation}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tactical Style:</span>
-                        <span className="font-semibold">{tacticalPreset}</span>
+                        <span className="text-muted-foreground">Starting XI:</span>
+                        <span className="font-semibold">{filledPositions}/5</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Starting XI:</span>
-                        <span className="font-semibold">{startingLineup.length}/5</span>
+                        <span className="text-muted-foreground">Substitutes:</span>
+                        <span className="font-semibold">{substitutes.filter(s => s !== null).length}/5</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Venue:</span>
@@ -308,7 +356,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
                   <Alert className="border-[#2D6A4F] bg-[#2D6A4F]/5">
                     <AlertCircle className="h-4 w-4 text-[#2D6A4F]" />
                     <AlertDescription className="text-[#1B4332]">
-                      You have unsaved tactical changes. Click "Confirm Tactics & Start Match" to save and proceed.
+                      You have unsaved tactical changes. Click "Confirm Tactics & Start Match" to save your tactics and immediately start the match simulation.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -346,7 +394,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
               {confirmTacticsMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Confirming...
+                  Starting Match...
                 </>
               ) : (
                 <>

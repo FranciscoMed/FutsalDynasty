@@ -69,6 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const team = await storage.getTeam(saveGameId, gameState.playerTeamId);
       res.json(team);
     } catch (error) {
+      console.error("Error fetching player team:", error);
       res.status(500).json({ error: "Failed to get player team" });
     }
   });
@@ -558,7 +559,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const matchId = parseInt(req.params.id);
-      const { formation, tacticalPreset, startingLineup } = req.body;
+      const { formation, assignments, substitutes }: { 
+        formation?: string; 
+        assignments?: Record<string, number | null>; 
+        substitutes?: (number | null)[] 
+      } = req.body;
 
       const gameState = await storage.getGameState(saveGameId);
       const match = await storage.getMatch(saveGameId, matchId);
@@ -575,18 +580,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
-      // Validate lineup has exactly 5 starters
-      if (startingLineup && startingLineup.length !== 5) {
-        res.status(400).json({ error: "Starting lineup must have exactly 5 players" });
-        return;
+      // Validate lineup has exactly 5 positions filled
+      if (assignments) {
+        const filledPositions = Object.values(assignments).filter(id => id !== null).length;
+        if (filledPositions !== 5) {
+          res.status(400).json({ error: "Starting lineup must have exactly 5 players" });
+          return;
+        }
+
+        // Validate goalkeeper is assigned
+        if (!assignments["gk"]) {
+          res.status(400).json({ error: "Starting lineup must include a goalkeeper" });
+          return;
+        }
       }
 
-      // Update team tactics if provided
-      if (formation || tacticalPreset || startingLineup) {
+      // Update team tactics with new system
+      if (formation || assignments || substitutes) {
         const updateData: any = {};
-        if (formation) updateData.formation = formation;
-        if (tacticalPreset) updateData.tacticalPreset = tacticalPreset;
-        if (startingLineup) updateData.startingLineup = startingLineup;
+        
+        // Save new tactics format
+        if (formation && assignments && substitutes) {
+          updateData.tactics = {
+            formation,
+            assignments,
+            substitutes,
+          };
+
+          // Also populate startingLineup for backward compatibility with match engine
+          const startingLineup = Object.values(assignments).filter((id: number | null): id is number => id !== null);
+          updateData.startingLineup = startingLineup;
+          
+          // Populate substitutes array for backward compatibility
+          const subs = substitutes.filter((id: number | null): id is number => id !== null);
+          updateData.substitutes = subs;
+        }
 
         await storage.updateTeam(saveGameId, gameState.playerTeamId, updateData);
       }
@@ -635,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createInboxMessage(saveGameId, {
         category: "match",
         subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
-        body: `Your match has been completed.\n\nFinal Score: ${match.homeScore} - ${match.awayScore}\n\nCheck the match details for full statistics.`,
+        body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} ${match.awayTeamName}\n\nCheck the match details for full statistics.`,
         from: "Match Officials",
         date: match.date,
         read: false,
