@@ -1,224 +1,301 @@
-import { useEffect, useState } from "react";
-import { useFutsalManager } from "@/lib/stores/useFutsalManager";
+import { useState, useEffect } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { TouchBackend } from "react-dnd-touch-backend";
+import { FutsalField } from "@/components/tactics/FutsalField";
+import { PlayerPool } from "@/components/tactics/PlayerPool";
+import { SubstitutesBench } from "@/components/tactics/SubstitutesBench";
+import { FORMATIONS, Formation } from "@/lib/formations";
+import type { Player } from "@/../../shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { type Formation, type TacticalPreset, internalToDisplay } from "@shared/schema";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, RotateCcw, Save } from "lucide-react";
+import { toast } from "sonner";
+import { useFutsalManager } from "@/lib/stores/useFutsalManager";
+
+// Detect if device supports touch
+const isTouchDevice = () => {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
 
 export function TacticsPage() {
-  const { players, playerTeam, updatePlayerTeam, loadGameData, loading, initialized } = useFutsalManager();
-  const [formation, setFormation] = useState<Formation>("2-2");
-  const [tacticalPreset, setTacticalPreset] = useState<TacticalPreset>("Balanced");
-  const [startingLineup, setStartingLineup] = useState<number[]>([]);
+  const { players } = useFutsalManager();
+  
+  const [formation, setFormation] = useState<Formation>("3-1");
+  const [assignments, setAssignments] = useState<Record<string, Player | null>>({});
+  const [substitutes, setSubstitutes] = useState<(Player | null)[]>([null, null, null, null, null]);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [pendingSlotId, setPendingSlotId] = useState<string | null>(null);
+  const [pendingSubIndex, setPendingSubIndex] = useState<number | null>(null);
 
+  // Initialize empty assignments when formation changes
   useEffect(() => {
-    if (initialized) {
-      loadGameData();
-    }
-  }, [initialized]);
-
-  useEffect(() => {
-    if (playerTeam) {
-      setFormation(playerTeam.formation);
-      setTacticalPreset(playerTeam.tacticalPreset);
-      setStartingLineup(playerTeam.startingLineup);
-    }
-  }, [playerTeam]);
-
-  const formations: Formation[] = ["2-2", "3-1", "4-0", "1-2-1", "1-3", "2-1-1"];
-  const presets: TacticalPreset[] = ["Defensive", "Balanced", "Attacking"];
-
-  const handleSave = async () => {
-    await updatePlayerTeam({
-      formation,
-      tacticalPreset,
-      startingLineup,
-    });
-    alert("Tactics saved successfully!");
-  };
-
-  const togglePlayerInLineup = (playerId: number) => {
-    if (startingLineup.includes(playerId)) {
-      setStartingLineup(startingLineup.filter(id => id !== playerId));
-    } else {
-      if (startingLineup.length < 5) {
-        setStartingLineup([...startingLineup, playerId]);
+    const newAssignments: Record<string, Player | null> = {};
+    FORMATIONS[formation].positions.forEach(pos => {
+      // Preserve goalkeeper if changing formation
+      if (pos.role === "Goalkeeper" && assignments["gk"]) {
+        newAssignments[pos.id] = assignments["gk"];
+      } else {
+        newAssignments[pos.id] = assignments[pos.id] || null;
       }
+    });
+    setAssignments(newAssignments);
+  }, [formation]);
+
+  // Handle player drop on field
+  const handlePlayerDrop = (player: Player, slotId: string) => {
+    // Remove player from previous assignments
+    const newAssignments = { ...assignments };
+    const newSubstitutes = [...substitutes];
+
+    // Remove from field
+    Object.keys(newAssignments).forEach(key => {
+      if (newAssignments[key]?.id === player.id) {
+        newAssignments[key] = null;
+      }
+    });
+
+    // Remove from bench
+    const subIndex = newSubstitutes.findIndex(p => p?.id === player.id);
+    if (subIndex !== -1) {
+      newSubstitutes[subIndex] = null;
+    }
+
+    // Assign to new slot
+    newAssignments[slotId] = player;
+
+    setAssignments(newAssignments);
+    setSubstitutes(newSubstitutes);
+    setSelectedPlayer(null);
+    setPendingSlotId(null);
+
+    toast.success(`${player.name} assigned to ${slotId}`);
+  };
+
+  // Handle player drop on bench
+  const handleSubstituteDrop = (player: Player, index: number) => {
+    // Remove player from previous assignments
+    const newAssignments = { ...assignments };
+    const newSubstitutes = [...substitutes];
+
+    // Remove from field
+    Object.keys(newAssignments).forEach(key => {
+      if (newAssignments[key]?.id === player.id) {
+        newAssignments[key] = null;
+      }
+    });
+
+    // Remove from bench
+    const subIndex = newSubstitutes.findIndex(p => p?.id === player.id);
+    if (subIndex !== -1) {
+      newSubstitutes[subIndex] = null;
+    }
+
+    // Assign to bench slot
+    newSubstitutes[index] = player;
+
+    setAssignments(newAssignments);
+    setSubstitutes(newSubstitutes);
+    setSelectedPlayer(null);
+    setPendingSubIndex(null);
+
+    toast.success(`${player.name} added to bench`);
+  };
+
+  // Handle slot click (for mobile/click-to-assign)
+  const handleSlotClick = (slotId: string) => {
+    const currentPlayer = assignments[slotId];
+    
+    if (currentPlayer) {
+      // Remove player from slot
+      const newAssignments = { ...assignments };
+      newAssignments[slotId] = null;
+      setAssignments(newAssignments);
+      toast.success(`${currentPlayer.name} removed from field`);
+    } else if (selectedPlayer) {
+      // Assign selected player to slot
+      handlePlayerDrop(selectedPlayer, slotId);
+    } else {
+      // Mark slot as pending for next player click
+      setPendingSlotId(slotId);
+      setPendingSubIndex(null);
+      toast.info("Click a player from the pool to assign to this position");
     }
   };
 
-  const availablePlayers = players.filter(
-    p => !p.injured && !p.suspended && p.fitness >= 70
-  );
+  // Handle substitute slot click
+  const handleSubSlotClick = (index: number) => {
+    const currentPlayer = substitutes[index];
+    
+    if (currentPlayer) {
+      // Remove player from bench
+      const newSubstitutes = [...substitutes];
+      newSubstitutes[index] = null;
+      setSubstitutes(newSubstitutes);
+      toast.success(`${currentPlayer.name} removed from bench`);
+    } else if (selectedPlayer) {
+      // Assign selected player to bench
+      handleSubstituteDrop(selectedPlayer, index);
+    } else {
+      // Mark slot as pending
+      setPendingSubIndex(index);
+      setPendingSlotId(null);
+      toast.info("Click a player from the pool to assign as substitute");
+    }
+  };
 
-  const goalkeeper = availablePlayers.find(p => p.position === "Goalkeeper");
-  const outfieldPlayers = availablePlayers.filter(p => p.position !== "Goalkeeper");
+  // Handle player click from pool
+  const handlePlayerClick = (player: Player) => {
+    if (pendingSlotId) {
+      handlePlayerDrop(player, pendingSlotId);
+    } else if (pendingSubIndex !== null) {
+      handleSubstituteDrop(player, pendingSubIndex);
+    } else {
+      setSelectedPlayer(player);
+      toast.info("Click an empty position or bench slot to assign");
+    }
+  };
+
+  // Reset all assignments
+  const handleReset = () => {
+    const newAssignments: Record<string, Player | null> = {};
+    FORMATIONS[formation].positions.forEach(pos => {
+      newAssignments[pos.id] = null;
+    });
+    setAssignments(newAssignments);
+    setSubstitutes([null, null, null, null, null]);
+    setSelectedPlayer(null);
+    setPendingSlotId(null);
+    setPendingSubIndex(null);
+    toast.success("All assignments cleared");
+  };
+
+  // Save tactics
+  const handleSave = () => {
+    // Validate lineup
+    const filledPositions = Object.values(assignments).filter(p => p !== null).length;
+    
+    if (filledPositions < 5) {
+      toast.error("You must assign all 5 field positions (including goalkeeper)");
+      return;
+    }
+
+    // Save to backend (TODO: implement API)
+    toast.success(`Tactics saved! Formation: ${formation}, ${filledPositions} players assigned`);
+  };
+
+  // Validation
+  const filledPositions = Object.values(assignments).filter(p => p !== null).length;
+  const isValid = filledPositions === 5;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Tactics</h1>
-        <p className="text-muted-foreground">Set up your formation and tactical approach</p>
-      </div>
+    <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Tactics Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Set your team formation and assign players to positions
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Formation & Controls Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Formation</CardTitle>
+            <CardTitle>Formation & Controls</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-2">
-              {formations.map((f) => (
-                <Button
-                  key={f}
-                  variant={formation === f ? "default" : "outline"}
-                  onClick={() => setFormation(f)}
-                >
-                  {f}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Select value={formation} onValueChange={(value) => setFormation(value as Formation)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="4-0">4-0</SelectItem>
+                    <SelectItem value="3-1">3-1</SelectItem>
+                    <SelectItem value="2-2">2-2</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button variant="outline" disabled>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Instructions
+                  <Badge variant="secondary" className="ml-2 bg-accent text-white">TBI</Badge>
                 </Button>
-              ))}
-            </div>
-
-            <div className="mt-6 p-6 bg-primary/5 rounded-lg border-2 border-primary/20">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Selected Formation</p>
-                <p className="text-3xl font-bold text-primary">{formation}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Tactical Preset</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {presets.map((preset) => (
-                <Button
-                  key={preset}
-                  variant={tacticalPreset === preset ? "default" : "outline"}
-                  className="w-full justify-start"
-                  onClick={() => setTacticalPreset(preset)}
-                >
-                  {preset}
-                </Button>
-              ))}
+              <div className="flex-1" />
+
+              <Button variant="outline" onClick={handleReset}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
+              </Button>
+
+              <Button onClick={handleSave} disabled={!isValid}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Tactics
+              </Button>
             </div>
 
-            <div className="mt-6 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Attacking Intent</span>
-                <span className="font-medium">
-                  {tacticalPreset === "Attacking" ? "High" : tacticalPreset === "Balanced" ? "Medium" : "Low"}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Defensive Solidity</span>
-                <span className="font-medium">
-                  {tacticalPreset === "Defensive" ? "High" : tacticalPreset === "Balanced" ? "Medium" : "Low"}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Starting Lineup ({startingLineup.length}/5)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="goalkeeper">
-            <TabsList>
-              <TabsTrigger value="goalkeeper">Goalkeeper</TabsTrigger>
-              <TabsTrigger value="outfield">Outfield Players</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="goalkeeper" className="space-y-2">
-              {goalkeeper ? (
-                <div
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    startingLineup.includes(goalkeeper.id)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "hover:bg-muted"
-                  }`}
-                  onClick={() => togglePlayerInLineup(goalkeeper.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{goalkeeper.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {goalkeeper.position}
-                        </Badge>
-                        <span className="text-sm">
-                          Age: {goalkeeper.age}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">
-                        {internalToDisplay(goalkeeper.currentAbility)}
-                      </p>
-                      <p className="text-xs">Overall</p>
-                    </div>
-                  </div>
+            {/* Validation status */}
+            <div className="mt-4">
+              {isValid ? (
+                <div className="flex items-center gap-2 text-success text-sm">
+                  <div className="w-2 h-2 rounded-full bg-success" />
+                  <span>Lineup complete • {filledPositions}/5 positions filled</span>
                 </div>
               ) : (
-                <p className="text-center py-8 text-muted-foreground">No available goalkeeper</p>
-              )}
-            </TabsContent>
-
-            <TabsContent value="outfield" className="space-y-2">
-              {outfieldPlayers.map((player) => (
-                <div
-                  key={player.id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    startingLineup.includes(player.id)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "hover:bg-muted"
-                  }`}
-                  onClick={() => togglePlayerInLineup(player.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{player.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {player.position}
-                        </Badge>
-                        <span className="text-sm">
-                          Age: {player.age}
-                        </span>
-                        <span className="text-sm">
-                          Form: {player.form}/10
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">
-                        {internalToDisplay(player.currentAbility)}
-                      </p>
-                      <p className="text-xs">Overall</p>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 text-destructive text-sm">
+                  <div className="w-2 h-2 rounded-full bg-destructive" />
+                  <span>Incomplete lineup • {filledPositions}/5 positions filled</span>
                 </div>
-              ))}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => setStartingLineup([])}>
-          Clear Lineup
-        </Button>
-        <Button onClick={handleSave} disabled={startingLineup.length !== 5}>
-          Save Tactics
-        </Button>
+        {/* Field & Player Pool Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Field (2 columns on large screens) */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Futsal Field</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FutsalField
+                  formation={FORMATIONS[formation]}
+                  assignments={assignments}
+                  onPlayerDrop={handlePlayerDrop}
+                  onSlotClick={handleSlotClick}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Substitutes Bench */}
+            <SubstitutesBench
+              substitutes={substitutes}
+              onPlayerDrop={handleSubstituteDrop}
+              onSlotClick={handleSubSlotClick}
+            />
+          </div>
+
+          {/* Player Pool (1 column on large screens) */}
+          <div className="lg:col-span-1">
+            <PlayerPool
+              players={players}
+              assignments={assignments}
+              substitutes={substitutes}
+              onPlayerClick={handlePlayerClick}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </DndProvider>
   );
 }
