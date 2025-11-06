@@ -117,6 +117,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tactics endpoints
+  app.get("/api/tactics", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const gameState = await storage.getGameState(saveGameId);
+      const team = await storage.getTeam(saveGameId, gameState.playerTeamId);
+      
+      if (!team) {
+        res.status(404).json({ error: "Team not found" });
+        return;
+      }
+
+      // Return tactics data or default structure
+      res.json(team.tactics || {
+        formation: "3-1",
+        assignments: {},
+        substitutes: [null, null, null, null, null]
+      });
+    } catch (error) {
+      console.error("Error getting tactics:", error);
+      res.status(500).json({ error: "Failed to get tactics" });
+    }
+  });
+
+  app.post("/api/tactics/save", async (req, res) => {
+    const saveGameId = requireSaveGame(req, res);
+    if (saveGameId === null) return;
+
+    try {
+      const gameState = await storage.getGameState(saveGameId);
+      const { formation, assignments, substitutes } = req.body;
+
+      // Validate tactics data
+      if (!formation || !assignments || !substitutes) {
+        res.status(400).json({ error: "Invalid tactics data" });
+        return;
+      }
+
+      // Update team with new tactics
+      const updated = await storage.updateTeam(saveGameId, gameState.playerTeamId, {
+        tactics: {
+          formation,
+          assignments,
+          substitutes
+        }
+      });
+
+      if (!updated) {
+        res.status(404).json({ error: "Team not found" });
+        return;
+      }
+
+      res.json({ 
+        success: true, 
+        tactics: updated.tactics 
+      });
+    } catch (error) {
+      console.error("Error saving tactics:", error);
+      res.status(500).json({ error: "Failed to save tactics" });
+    }
+  });
+
   app.get("/api/players", async (req, res) => {
     const saveGameId = requireSaveGame(req, res);
     if (saveGameId === null) return;

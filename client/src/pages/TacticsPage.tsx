@@ -29,6 +29,58 @@ export function TacticsPage() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [pendingSlotId, setPendingSlotId] = useState<string | null>(null);
   const [pendingSubIndex, setPendingSubIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load tactics from backend on mount
+  useEffect(() => {
+    const loadTactics = async () => {
+      try {
+        const response = await fetch("/api/tactics");
+        if (!response.ok) throw new Error("Failed to load tactics");
+        
+        const data = await response.json();
+        
+        if (data.formation) {
+          setFormation(data.formation as Formation);
+        }
+        
+        if (data.assignments) {
+          // Convert player IDs to Player objects
+          const loadedAssignments: Record<string, Player | null> = {};
+          Object.entries(data.assignments).forEach(([slotId, playerId]) => {
+            if (playerId) {
+              const player = players.find(p => p.id === playerId);
+              loadedAssignments[slotId] = player || null;
+            } else {
+              loadedAssignments[slotId] = null;
+            }
+          });
+          setAssignments(loadedAssignments);
+        }
+        
+        if (data.substitutes) {
+          // Convert player IDs to Player objects
+          const loadedSubs = data.substitutes.map((playerId: number | null) => {
+            if (playerId) {
+              return players.find(p => p.id === playerId) || null;
+            }
+            return null;
+          });
+          setSubstitutes(loadedSubs);
+        }
+      } catch (error) {
+        console.error("Failed to load tactics:", error);
+        toast.error("Failed to load saved tactics");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (players.length > 0) {
+      loadTactics();
+    }
+  }, [players]);
 
   // Initialize empty assignments when formation changes
   useEffect(() => {
@@ -173,7 +225,7 @@ export function TacticsPage() {
   };
 
   // Save tactics
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate lineup
     const filledPositions = Object.values(assignments).filter(p => p !== null).length;
     
@@ -182,13 +234,67 @@ export function TacticsPage() {
       return;
     }
 
-    // Save to backend (TODO: implement API)
-    toast.success(`Tactics saved! Formation: ${formation}, ${filledPositions} players assigned`);
+    setIsSaving(true);
+    
+    try {
+      // Convert Player objects to player IDs for backend
+      const assignmentsData: Record<string, number | null> = {};
+      Object.entries(assignments).forEach(([slotId, player]) => {
+        assignmentsData[slotId] = player ? player.id : null;
+      });
+
+      const substitutesData = substitutes.map(player => player ? player.id : null);
+
+      const response = await fetch("/api/tactics/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formation,
+          assignments: assignmentsData,
+          substitutes: substitutesData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save tactics");
+      }
+
+      const data = await response.json();
+      toast.success(`Tactics saved! Formation: ${formation}, ${filledPositions} players assigned`);
+    } catch (error) {
+      console.error("Failed to save tactics:", error);
+      toast.error("Failed to save tactics. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Validation
   const filledPositions = Object.values(assignments).filter(p => p !== null).length;
   const isValid = filledPositions === 5;
+
+  // Show loading state while data is being fetched
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Tactics Dashboard
+          </h1>
+          <p className="text-muted-foreground">Loading tactics...</p>
+        </div>
+        <Card>
+          <CardContent className="py-12">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
@@ -231,14 +337,14 @@ export function TacticsPage() {
 
               <div className="flex-1" />
 
-              <Button variant="outline" onClick={handleReset}>
+              <Button variant="outline" onClick={handleReset} disabled={isLoading}>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
 
-              <Button onClick={handleSave} disabled={!isValid}>
+              <Button onClick={handleSave} disabled={!isValid || isSaving || isLoading}>
                 <Save className="w-4 h-4 mr-2" />
-                Save Tactics
+                {isSaving ? "Saving..." : "Save Tactics"}
               </Button>
             </div>
 

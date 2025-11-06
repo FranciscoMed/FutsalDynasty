@@ -4,7 +4,17 @@ export type Position = "Goalkeeper" | "Defender" | "Winger" | "Pivot";
 
 export type Formation = "2-2" | "3-1" | "4-0" | "1-2-1" | "1-3" | "2-1-1";
 
+// New formation types for tactics overhaul
+export type TacticsFormation = "4-0" | "3-1" | "2-2";
+
 export type TacticalPreset = "Defensive" | "Balanced" | "Attacking";
+
+// Tactics data structure for new tactics system
+export interface TacticsData {
+  formation: TacticsFormation;
+  assignments: Record<string, number | null>; // slotId -> playerId
+  substitutes: (number | null)[]; // Array of 5 player IDs
+}
 
 export type TrainingIntensity = "low" | "medium" | "high";
 
@@ -131,6 +141,7 @@ export interface Team {
   startingLineup: number[];
   substitutes: number[];
   isPlayerTeam: boolean;
+  tactics?: TacticsData; // New tactics system data
 }
 
 export interface MatchEvent {
@@ -378,6 +389,7 @@ export const teams = pgTable("teams", {
   startingLineup: jsonb("starting_lineup").notNull().$type<number[]>(),
   substitutes: jsonb("substitutes").notNull().$type<number[]>(),
   isPlayerTeam: boolean("is_player_team").notNull().default(false),
+  tactics: jsonb("tactics").$type<TacticsData>(), // New tactics system data
 });
 
 export const players = pgTable("players", {
