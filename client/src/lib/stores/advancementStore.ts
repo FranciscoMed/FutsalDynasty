@@ -15,6 +15,7 @@ interface AdvancementStore {
   targetEvent: NextEvent | null;
   error: string | null;
   lastResult: { showSeasonSummary?: boolean } | null;
+  totalMatchesSimulated: number; // Total simulated matches during advancement
   
   // Calculated values
   progress: number; // 0-100
@@ -24,7 +25,7 @@ interface AdvancementStore {
   pauseAdvancement: () => void;
   resumeAdvancement: () => void;
   stopAdvancement: () => void;
-  updateProgress: (currentDate: string, currentDay: number) => void;
+  updateProgress: (currentDate: string, currentDay: number, matchesSimulated?: number) => void;
   addEvent: (event: GameEvent) => void;
   setError: (error: string | null) => void;
   completeAdvancement: (result?: { showSeasonSummary?: boolean }) => void;
@@ -49,6 +50,7 @@ export const useAdvancementStore = create<AdvancementStore>()(
     targetEvent: null,
     error: null,
     lastResult: null,
+    totalMatchesSimulated: 0,
     progress: 0,
 
     /**
@@ -99,14 +101,15 @@ export const useAdvancementStore = create<AdvancementStore>()(
     /**
      * Update progress during advancement
      */
-    updateProgress: (currentDate: string, currentDay: number) => {
-      const { totalDays } = get();
+    updateProgress: (currentDate: string, currentDay: number, matchesSimulated?: number) => {
+      const { totalDays, totalMatchesSimulated } = get();
       const progress = totalDays > 0 ? Math.min(100, (currentDay / totalDays) * 100) : 0;
       
       set({
         currentDate,
         currentDay,
         progress,
+        totalMatchesSimulated: totalMatchesSimulated + (matchesSimulated || 0),
       });
     },
 
@@ -155,6 +158,7 @@ export const useAdvancementStore = create<AdvancementStore>()(
         targetEvent: null,
         error: null,
         lastResult: null,
+        totalMatchesSimulated: 0,
         progress: 0,
       });
     },

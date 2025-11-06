@@ -1,10 +1,18 @@
 import type { IStorage } from "./storage";
-import type { GameState, Player, PlayerAttributes } from "@shared/schema";
+import type { GameState, Player, PlayerAttributes, SimulationSummary } from "@shared/schema";
+import { MatchSimulator } from "./matchSimulator";
+import { CompetitionEngine } from "./competitionEngine";
 
 export class GameEngine {
-  constructor(private storage: IStorage) {}
+  private matchSimulator: MatchSimulator;
+  private competitionEngine: CompetitionEngine;
 
-  async advanceOneDay(saveGameId: number): Promise<GameState & { matchesToday?: any[] }> {
+  constructor(private storage: IStorage) {
+    this.matchSimulator = new MatchSimulator(storage);
+    this.competitionEngine = new CompetitionEngine(storage);
+  }
+
+  async advanceOneDay(saveGameId: number): Promise<GameState & { matchesToday?: any[]; simulationSummary?: SimulationSummary }> {
     const gameState = await this.storage.getGameState(saveGameId);
     const currentDate = new Date(gameState.currentDate);
     
@@ -23,6 +31,22 @@ export class GameEngine {
       currentDate,
       currentMonth: newMonth,
     });
+
+    // Simulate all non-user matches for this date
+    const dateString = currentDate.toISOString();
+    const simulationSummary = await this.matchSimulator.simulateAllMatchesOnDate(
+      saveGameId,
+      dateString,
+      gameState.playerTeamId
+    );
+
+    // Update competition standings for simulated matches
+    if (simulationSummary.matchesSimulated > 0) {
+      await this.competitionEngine.updateStandingsForSimulatedMatches(
+        saveGameId,
+        simulationSummary.results
+      );
+    }
 
     // Check for matches on the new date
     const matchesToday = await this.getMatchesOnDate(saveGameId, currentDate);
@@ -44,6 +68,7 @@ export class GameEngine {
     return {
       ...updatedState,
       matchesToday: playerMatchesToday,
+      simulationSummary,
     };
   }
 

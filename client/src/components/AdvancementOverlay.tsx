@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Play, Pause, Square, Calendar, Trophy, DollarSign, Award } from "lucide-react";
+import { Play, Pause, Square, Calendar, Trophy, DollarSign, Award, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useAdvancementStore, selectProgress, selectEventsEncountered } from "@/lib/stores/advancementStore";
 import { advancementEngine } from "@/lib/advancementEngine";
@@ -38,6 +38,7 @@ export function AdvancementOverlay({ onComplete }: AdvancementOverlayProps) {
     targetEvent,
     error,
     lastResult,
+    totalMatchesSimulated,
   } = useAdvancementStore();
 
   const progress = useAdvancementStore(selectProgress);
@@ -210,6 +211,18 @@ export function AdvancementOverlay({ onComplete }: AdvancementOverlayProps) {
                     })}
                   </div>
                 </ScrollArea>
+              </div>
+            )}
+
+            {/* Simulation Summary */}
+            {totalMatchesSimulated > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <Check className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                    Simulated {totalMatchesSimulated} background {totalMatchesSimulated === 1 ? 'match' : 'matches'}
+                  </span>
+                </div>
               </div>
             )}
 

@@ -47,6 +47,7 @@ export class SeedEngine {
       season,
       currentMonth: 8,
       playerTeamId: playerTeam.id,
+      competitions: [comp1, comp2, comp3],
       nextMatchId: null,
       monthlyTrainingInProgress: true,
       lastTrainingReportMonth: 7,

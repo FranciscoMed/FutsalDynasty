@@ -45,6 +45,20 @@ export interface GameEvent {
   };
 }
 
+export interface SimulationResult {
+  matchId: number;
+  homeTeamId: number;
+  awayTeamId: number;
+  homeScore: number;
+  awayScore: number;
+  competitionId: number;
+}
+
+export interface SimulationSummary {
+  matchesSimulated: number;
+  results: SimulationResult[];
+}
+
 export interface PlayerAttributes {
   shooting: number;
   passing: number;

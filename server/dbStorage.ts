@@ -478,14 +478,14 @@ export class DbStorage implements IStorage {
     return orphanedIds;
   }
 
-  async initializeGame(): Promise<void> {
+  async initializeGame(saveGameId: number): Promise<void> {
     const existingState = await db.select().from(gameStates).limit(1);
     if (existingState.length > 0) {
       console.log("Game already initialized");
       return;
     }
 
-    const playerTeam = await this.createTeam({
+    const playerTeam = await this.createTeam(saveGameId, {
       name: "FC United",
       abbreviation: "FCU",
       reputation: 50,
@@ -575,7 +575,7 @@ export class DbStorage implements IStorage {
 
       const currentAbility = calculateOverallRating(attributes, position);
 
-      await this.createPlayer({
+      await this.createPlayer(saveGameId, {
         name: playerNames[i],
         age,
         position,
@@ -608,7 +608,7 @@ export class DbStorage implements IStorage {
       });
     }
 
-    await this.createInboxMessage({
+    await this.createInboxMessage(saveGameId, {
       category: "news",
       subject: "Welcome to FC United!",
       body: `Welcome to your new role as manager of FC United!\n\nThe board is excited to have you lead the team to success. Your objectives for this season are:\n\n- Finish in the top half of the league\n- Make a strong run in the cup competition\n\nYou have a talented young squad and a modest budget. Make the most of it!\n\nGood luck!`,

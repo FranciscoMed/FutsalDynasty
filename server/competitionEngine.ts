@@ -267,7 +267,6 @@ export class CompetitionEngine {
       
       for (let i = 0; i < shuffled.length; i += 2) {
         fixtures.push({
-          saveGameId,
           competitionId: 0,
           competitionType: "cup",
           homeTeamId: shuffled[i],
@@ -415,7 +414,6 @@ export class CompetitionEngine {
         matchDate.setDate(matchDate.getDate() + (round * 7));
 
         fixtures.push({
-          saveGameId,
           competitionId: 0,
           competitionType: "league",
           homeTeamId: teamIds[home],
@@ -532,5 +530,135 @@ export class CompetitionEngine {
     await this.storage.updateCompetition(saveGameId, competitionId, {
       standings: competition.standings,
     });
+  }
+
+  /**
+   * Update standings for multiple simulated matches in batch
+   * Used for background match simulation (silent, no inbox messages)
+   */
+  async updateStandingsForSimulatedMatches(
+    saveGameId: number,
+    results: import("@shared/schema").SimulationResult[]
+  ): Promise<void> {
+    if (results.length === 0) return;
+
+    // Group results by competition
+    const resultsByCompetition = results.reduce((acc, result) => {
+      if (!acc[result.competitionId]) {
+        acc[result.competitionId] = [];
+      }
+      acc[result.competitionId].push(result);
+      return acc;
+    }, {} as Record<number, import("@shared/schema").SimulationResult[]>);
+
+    // Update each competition
+    for (const [competitionIdStr, competitionResults] of Object.entries(resultsByCompetition)) {
+      const competitionId = parseInt(competitionIdStr, 10);
+      await this.updateLeagueStandingsForResults(saveGameId, competitionId, competitionResults);
+    }
+  }
+
+  /**
+   * Update league standings for a batch of results
+   */
+  private async updateLeagueStandingsForResults(
+    saveGameId: number,
+    competitionId: number,
+    results: import("@shared/schema").SimulationResult[]
+  ): Promise<void> {
+    const competition = await this.storage.getCompetition(saveGameId, competitionId);
+    if (!competition) {
+      console.error(`❌ Competition ${competitionId} not found`);
+      return;
+    }
+
+    console.log(`🔍 Competition ${competitionId} standings type:`, typeof competition.standings, 
+                'isArray:', Array.isArray(competition.standings));
+
+    // Handle case where standings might be stored as an object instead of array
+    let standingsArray: import("@shared/schema").LeagueStanding[];
+    
+    if (Array.isArray(competition.standings)) {
+      standingsArray = competition.standings;
+      console.log(`✓ Using array standings (${standingsArray.length} teams)`);
+    } else if (competition.standings && typeof competition.standings === 'object') {
+      standingsArray = Object.values(competition.standings) as import("@shared/schema").LeagueStanding[];
+      console.log(`✓ Converted object to array standings (${standingsArray.length} teams)`);
+    } else {
+      console.error(`❌ Invalid standings format for competition ${competitionId}:`, competition.standings);
+      return;
+    }
+
+    if (!standingsArray || standingsArray.length === 0) {
+      console.error(`No standings found for competition ${competitionId}`);
+      return;
+    }
+
+    // Process each result
+    for (const result of results) {
+      const homeTeam = standingsArray.find((s) => s.teamId === result.homeTeamId);
+      const awayTeam = standingsArray.find((s) => s.teamId === result.awayTeamId);
+
+      if (!homeTeam || !awayTeam) continue;
+
+      // Update match counts
+      homeTeam.played++;
+      awayTeam.played++;
+
+      // Update goals
+      homeTeam.goalsFor += result.homeScore;
+      homeTeam.goalsAgainst += result.awayScore;
+      awayTeam.goalsFor += result.awayScore;
+      awayTeam.goalsAgainst += result.homeScore;
+
+      // Update results and points
+      if (result.homeScore > result.awayScore) {
+        // Home win
+        homeTeam.won++;
+        homeTeam.points += 3;
+        awayTeam.lost++;
+        homeTeam.form.push("W");
+        awayTeam.form.push("L");
+      } else if (result.homeScore < result.awayScore) {
+        // Away win
+        awayTeam.won++;
+        awayTeam.points += 3;
+        homeTeam.lost++;
+        homeTeam.form.push("L");
+        awayTeam.form.push("W");
+      } else {
+        // Draw
+        homeTeam.drawn++;
+        awayTeam.drawn++;
+        homeTeam.points++;
+        awayTeam.points++;
+        homeTeam.form.push("D");
+        awayTeam.form.push("D");
+      }
+
+      // Keep form to last 5 matches
+      if (homeTeam.form.length > 5) homeTeam.form.shift();
+      if (awayTeam.form.length > 5) awayTeam.form.shift();
+
+      // Update goal difference
+      homeTeam.goalDifference = homeTeam.goalsFor - homeTeam.goalsAgainst;
+      awayTeam.goalDifference = awayTeam.goalsFor - awayTeam.goalsAgainst;
+    }
+
+    // Sort standings array
+    standingsArray.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+      return b.goalsFor - a.goalsFor;
+    });
+
+    // Save updated standings
+    await this.storage.updateCompetition(saveGameId, competitionId, {
+      standings: standingsArray,
+    });
+
+    console.log(
+      `✓ Updated standings for competition ${competitionId} with ${results.length} simulated matches`
+    );
   }
 }

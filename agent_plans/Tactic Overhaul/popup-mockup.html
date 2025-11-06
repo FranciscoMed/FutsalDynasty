@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match Preparation Popup - Tactics Tab Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: 248 249 250;
+      --foreground: 33 37 41;
+      --card: 255 255 255;
+      --card-foreground: 33 37 41;
+      --primary: 27 67 50;
+      --primary-foreground: 255 255 255;
+      --secondary: 45 106 79;
+      --accent: 64 145 108;
+      --muted: 241 245 249;
+      --border: 226 232 240;
+      --success: 40 167 69;
+    }
+
+    body {
+      background-color: rgb(var(--background));
+      color: rgb(var(--foreground));
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .gradient-goalkeeper {
+      background: linear-gradient(180deg, #15803d 0%, #15803d 50%, #BBF7D0 50%, #BBF7D0 100%);
+    }
+
+    .gradient-outfield {
+      background: linear-gradient(180deg, #22c55e 0%, #22c55e 50%, #ffffff 50%, #ffffff 100%);
+    }
+
+    .field-background {
+      background: linear-gradient(180deg, #15803d 0%, #16a34a 50%, #15803d 100%);
+      position: relative;
+    }
+
+    .field-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.5;
+    }
+
+    .popup-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: rgb(var(--card));
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .tabs {
+      border-bottom: 1px solid rgb(var(--border));
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      border-bottom-color: rgb(var(--primary));
+      color: rgb(var(--primary));
+      font-weight: 600;
+    }
+
+    .tab:hover:not(.active) {
+      background-color: rgb(var(--muted));
+    }
+
+    .compact-field {
+      max-width: 200px;
+      aspect-ratio: 2/3;
+      margin: 0 auto;
+    }
+
+    .position-slot {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .position-slot:hover {
+      border-color: rgb(var(--primary));
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .position-slot.filled {
+      border-color: rgb(var(--primary));
+      border-width: 2px;
+    }
+
+    .player-number {
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .substitute-slot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px dashed rgb(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .substitute-slot.filled {
+      border-style: solid;
+      border-color: rgb(var(--primary));
+      background: white;
+    }
+
+    .substitute-slot:hover {
+      border-color: rgb(var(--primary));
+      background-color: rgba(var(--primary), 0.05);
+    }
+
+    .quick-player-card {
+      padding: 0.5rem;
+      border: 1px solid rgb(var(--border));
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-player-card:hover {
+      border-color: rgb(var(--primary));
+      background-color: rgb(var(--muted));
+      transform: translateY(-2px);
+    }
+
+    .quick-player-card .player-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tbi-badge {
+      background-color: rgb(var(--accent));
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.125rem 0.375rem;
+      border-radius: 9999px;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <!-- Match Preparation Popup -->
+  <div class="popup-container">
+    <!-- Popup Header -->
+    <div class="p-6 border-b" style="border-color: rgb(var(--border))">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold">Match Preparation</h2>
+          <p class="text-sm" style="color: rgb(var(--muted-foreground))">
+            FC Barcelona vs Real Madrid • League Match
+          </p>
+        </div>
+        <button class="text-2xl hover:opacity-70">&times;</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs flex">
+      <div class="tab active">Tactics</div>
+      <div class="tab">Opponent</div>
+      <div class="tab">Overview</div>
+    </div>
+
+    <!-- Tactics Tab Content -->
+    <div class="p-6 space-y-6">
+      
+      <!-- Controls Row -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <!-- Formation Dropdown -->
+          <select class="px-3 py-1.5 border rounded-lg text-sm font-medium" style="border-color: rgb(var(--border))">
+            <option value="4-0">4-0</option>
+            <option value="3-1" selected>3-1</option>
+            <option value="2-2">2-2</option>
+          </select>
+
+          <!-- Instructions Button -->
+          <button class="px-3 py-1.5 border rounded-lg text-sm font-medium flex items-center gap-1 hover:bg-gray-50" style="border-color: rgb(var(--border))">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m8.66-13.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m19.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24"></path>
+            </svg>
+            Instructions
+            <span class="tbi-badge">TBI</span>
+          </button>
+        </div>
+
+        <!-- Quick Fill Button -->
+        <button class="px-4 py-1.5 rounded-lg text-sm font-medium text-white" style="background-color: rgb(var(--success))">
+          ⚡ Quick Fill
+        </button>
+      </div>
+
+      <!-- Compact Futsal Field -->
+      <div class="compact-field field-background rounded-3xl shadow-2xl border-4 border-white/35 mx-auto">
+        <div class="relative w-full h-full field-lines">
+          <!-- Field markings (simplified) -->
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+            <!-- Center line -->
+            <line x1="0" y1="75" x2="100" y2="75" stroke="white" stroke-width="1" opacity="0.6"/>
+            <!-- Center circle -->
+            <circle cx="50" cy="75" r="10" fill="none" stroke="white" stroke-width="1" opacity="0.6"/>
+          </svg>
+
+          <!-- Position Slots (3-1 Formation) -->
+          <!-- Pivot -->
+          <div class="position-slot filled" style="left: 50%; top: 25%" title="Pedro Silva - Pivot">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10">10</span>
+          </div>
+
+          <!-- Ala Left -->
+          <div class="position-slot filled" style="left: 20%; top: 55%" title="João Santos - Ala">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10">7</span>
+          </div>
+
+          <!-- Ala Right -->
+          <div class="position-slot filled" style="left: 80%; top: 55%" title="Miguel Costa - Ala">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10">11</span>
+          </div>
+
+          <!-- Fixo -->
+          <div class="position-slot filled" style="left: 50%; top: 67%" title="Carlos Rocha - Fixo">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10">4</span>
+          </div>
+
+          <!-- Goalkeeper -->
+          <div class="position-slot filled" style="left: 50%; top: 88%" title="André Alves - Goalkeeper">
+            <div class="gradient-goalkeeper absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10">1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Substitutes Bench -->
+      <div>
+        <h3 class="text-sm font-semibold mb-2">Substitutes Bench</h3>
+        <div class="flex items-center justify-center gap-3">
+          <!-- Filled slots -->
+          <div class="substitute-slot filled" title="Bruno Lima #8">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10" style="font-size: 12px">8</span>
+          </div>
+          <div class="substitute-slot filled" title="Tiago Mendes #14">
+            <div class="gradient-outfield absolute inset-0 rounded-full"></div>
+            <span class="player-number relative z-10" style="font-size: 12px">14</span>
+          </div>
+          <!-- Empty slots -->
+          <div class="substitute-slot">
+            <span style="color: rgb(var(--border)); font-size: 18px">+</span>
+          </div>
+          <div class="substitute-slot">
+            <span style="color: rgb(var(--border)); font-size: 18px">+</span>
+          </div>
+          <div class="substitute-slot">
+            <span style="color: rgb(var(--border)); font-size: 18px">+</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Player Selector (only shows if lineup incomplete) -->
+      <div class="hidden">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold">Quick Selection</h3>
+          <p class="text-xs" style="color: rgb(var(--muted-foreground))">Click to assign to next available position</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Quick player cards -->
+          <div class="quick-player-card">
+            <div class="flex items-center gap-2">
+              <div class="player-avatar gradient-outfield">15</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">Rafael Souza</p>
+                <p class="text-xs" style="color: rgb(var(--muted-foreground))">ALA • 16/20</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-player-card">
+            <div class="flex items-center gap-2">
+              <div class="player-avatar gradient-outfield">9</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">Lucas Dias</p>
+                <p class="text-xs" style="color: rgb(var(--muted-foreground))">PIVOT • 15/20</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-player-card">
+            <div class="flex items-center gap-2">
+              <div class="player-avatar gradient-outfield">6</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">Gabriel Nunes</p>
+                <p class="text-xs" style="color: rgb(var(--muted-foreground))">FIXO • 15/20</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-player-card">
+            <div class="flex items-center gap-2">
+              <div class="player-avatar gradient-goalkeeper">12</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">Henrique Silva</p>
+                <p class="text-xs" style="color: rgb(var(--muted-foreground))">GK • 14/20</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Status -->
+      <div class="flex items-center gap-2 p-3 rounded-lg" style="background-color: rgba(var(--success), 0.1); border: 1px solid rgba(var(--success), 0.3)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(var(--success))">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <p class="text-sm font-medium" style="color: rgb(var(--success))">
+          Lineup complete • 5 field players + GK assigned
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Popup Footer -->
+    <div class="p-6 border-t flex items-center justify-end gap-2" style="border-color: rgb(var(--border))">
+      <button class="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50" style="border-color: rgb(var(--border))">
+        Cancel
+      </button>
+      <button class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background-color: rgb(var(--primary))">
+        Confirm & Start Match
+      </button>
+    </div>
+  </div>
+
+  <!-- Instructions Section -->
+  <div class="max-w-4xl mx-auto mt-8 p-6 rounded-lg" style="background-color: rgb(var(--muted))">
+    <h2 class="text-xl font-bold mb-4">Match Preparation Popup - Tactics Tab Features</h2>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div>
+        <h3 class="font-semibold mb-2">Visual Elements:</h3>
+        <ul class="space-y-1" style="color: rgb(var(--muted-foreground))">
+          <li>✓ Compact futsal field (200px max width)</li>
+          <li>✓ Simplified player markers (jersey numbers only)</li>
+          <li>✓ Tooltips show full player names on hover</li>
+          <li>✓ 3-1 formation displayed (can switch to 4-0 or 2-2)</li>
+          <li>✓ Gradient goalkeeper (green/light-green)</li>
+          <li>✓ Gradient outfield players (green/white)</li>
+          <li>✓ Horizontal substitutes bench (5 slots)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Interactive Features:</h3>
+        <ul class="space-y-1" style="color: rgb(var(--muted-foreground))">
+          <li>✓ Formation dropdown (4-0, 3-1, 2-2)</li>
+          <li>✓ Instructions button (TBI - placeholder)</li>
+          <li>✓ Quick Fill button (auto-assign best XI)</li>
+          <li>✓ Click-to-assign interaction (no drag-and-drop in popup)</li>
+          <li>✓ Quick Player Selector (shows if lineup incomplete)</li>
+          <li>✓ Validation status indicator</li>
+          <li>✓ Cancel/Confirm buttons in footer</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-4 p-3 rounded" style="background-color: rgba(var(--primary), 0.1); border: 1px solid rgba(var(--primary), 0.2)">
+      <p class="text-sm font-medium">
+        <strong>Design Goal:</strong> Simplified, fast-to-use tactics interface for match day preparation. 
+        Quick Fill enables instant lineup assignment. Click-to-assign mode optimized for popup constraints.
+        Consistent with main tactics dashboard but streamlined for efficiency.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Simple interaction simulation
+    document.querySelectorAll('.position-slot, .substitute-slot').forEach(slot => {
+      slot.addEventListener('click', () => {
+        console.log('Clicked:', slot.getAttribute('title') || 'Empty slot');
+      });
+    });
+
+    document.querySelector('button:has(.tbi-badge)').addEventListener('click', () => {
+      alert('Tactical Instructions Dialog\n\n(To Be Implemented)\n\nWill include:\n- Mentality slider\n- Width control\n- Tempo control\n- Pressing intensity');
+    });
+
+    document.querySelector('button:has(⚡)').addEventListener('click', () => {
+      alert('Quick Fill activated!\n\nAutomatically assigns:\n- Best GK to goalkeeper\n- Top 5 outfield players by rating\n- Next 5 best to substitutes bench');
+    });
+  </script>
+
+</body>
+</html>

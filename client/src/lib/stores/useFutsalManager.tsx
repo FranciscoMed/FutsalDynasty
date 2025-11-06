@@ -1,199 +1,99 @@
-import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+/**
+ * DEPRECATED: useFutsalManager (Backward Compatibility Layer)
+ * 
+ * This hook provides backward compatibility during the migration to the new
+ * hybrid state management approach (TanStack Query + UI Store).
+ * 
+ * NEW CODE SHOULD USE:
+ * - useServerState hooks (useGameState, usePlayers, etc.) for server data
+ * - useUIStore for UI state
+ * - useGameActions for mutations
+ * 
+ * This wrapper will be removed once all components are migrated.
+ */
+
+import {
+  useGameState,
+  usePlayers,
+  usePlayerTeam,
+  useCompetitions,
+  useInbox,
+  useClub,
+  useUnreadCount,
+  useMarkMessageAsRead,
+  useUpdatePlayer,
+  useUpdatePlayerTeam,
+} from "../../hooks/useServerState";
+import { useUIStore } from "./useUIStore";
+import { useGameActions, useLoadGameData } from "../../hooks/useGameActions";
 import type {
   Player,
   Team,
-  Match,
   Competition,
   InboxMessage,
   GameState,
   Club,
-  FinancialTransaction,
 } from "@shared/schema";
 
-interface FutsalManagerState {
-  initialized: boolean;
-  loading: boolean;
+/**
+ * Backward Compatibility Wrapper
+ * This provides the same interface as the old useFutsalManager but uses the new hybrid approach
+ */
+export function useFutsalManager() {
+  // Server state from TanStack Query
+  const { data: gameState, isLoading: loadingGameState } = useGameState();
+  const { data: playerTeam, isLoading: loadingTeam } = usePlayerTeam();
+  const { data: players = [], isLoading: loadingPlayers } = usePlayers();
+  const { data: competitions = [], isLoading: loadingCompetitions } = useCompetitions();
+  const { data: inboxMessages = [], isLoading: loadingInbox } = useInbox();
+  const { data: club, isLoading: loadingClub } = useClub();
+  const unreadInboxCount = useUnreadCount();
   
-  gameState: GameState | null;
-  playerTeam: Team | null;
-  players: Player[];
-  allTeams: Team[];
-  competitions: Competition[];
-  inboxMessages: InboxMessage[];
-  financialTransactions: FinancialTransaction[];
-  club: Club | null;
+  // UI state from Zustand
+  const uiState = useUIStore();
   
-  unreadInboxCount: number;
+  // Actions
+  const gameActions = useGameActions();
+  const loadGameData = useLoadGameData();
+  const markMessageAsReadMutation = useMarkMessageAsRead();
+  const updatePlayerMutation = useUpdatePlayer();
+  const updatePlayerTeamMutation = useUpdatePlayerTeam();
   
-  // Match day popup state
-  pendingMatchId: number | null;
-  showMatchPopup: boolean;
+  // Compute loading state
+  const loading = loadingGameState || loadingTeam || loadingPlayers || 
+                  loadingCompetitions || loadingInbox || loadingClub;
   
-  initializeGame: () => Promise<void>;
-  loadGameData: () => Promise<void>;
-  refreshPlayers: () => Promise<void>;
-  refreshInbox: () => Promise<void>;
-  markMessageAsRead: (messageId: number) => Promise<void>;
-  updatePlayerTeam: (updates: Partial<Team>) => Promise<void>;
-  updatePlayer: (playerId: number, updates: Partial<Player>) => Promise<void>;
-  
-  // Match day popup actions
-  setPendingMatch: (matchId: number | null) => void;
-  setShowMatchPopup: (show: boolean) => void;
+  return {
+    // Server state (read-only)
+    gameState: gameState ?? null,
+    playerTeam: playerTeam ?? null,
+    players,
+    competitions,
+    inboxMessages,
+    club: club ?? null,
+    unreadInboxCount,
+    
+    // Loading states
+    loading,
+    initialized: uiState.initialized,
+    
+    // UI state
+    pendingMatchId: uiState.pendingMatchId,
+    showMatchPopup: uiState.showMatchPopup,
+    
+    // Actions
+    initializeGame: () => gameActions.initializeGame.mutateAsync(),
+    loadGameData,
+    refreshPlayers: loadGameData, // Simplified - invalidates all
+    refreshInbox: loadGameData, // Simplified - invalidates all
+    markMessageAsRead: (messageId: number) => markMessageAsReadMutation.mutateAsync(messageId),
+    updatePlayerTeam: (updates: Partial<Team>) => {
+      if (!playerTeam) return Promise.resolve();
+      return updatePlayerTeamMutation.mutateAsync({ teamId: playerTeam.id, updates });
+    },
+    updatePlayer: (playerId: number, updates: Partial<Player>) =>
+      updatePlayerMutation.mutateAsync({ playerId, updates }),
+    setPendingMatch: uiState.setPendingMatch,
+    setShowMatchPopup: uiState.setShowMatchPopup,
+  };
 }
-
-export const useFutsalManager = create<FutsalManagerState>()(
-  subscribeWithSelector((set, get) => ({
-    initialized: false,
-    loading: false,
-    
-    gameState: null,
-    playerTeam: null,
-    players: [],
-    allTeams: [],
-    competitions: [],
-    inboxMessages: [],
-    financialTransactions: [],
-    club: null,
-    
-    unreadInboxCount: 0,
-    
-    // Match day popup state
-    pendingMatchId: null,
-    showMatchPopup: false,
-    
-    initializeGame: async () => {
-      set({ loading: true });
-      try {
-        await fetch("/api/game/initialize", { method: "POST" });
-        await get().loadGameData();
-        set({ initialized: true });
-      } catch (error) {
-        console.error("Failed to initialize game:", error);
-      } finally {
-        set({ loading: false });
-      }
-    },
-    
-    loadGameData: async () => {
-      set({ loading: true });
-      try {
-        const [gameStateRes, teamRes, playersRes, inboxRes, clubRes] = await Promise.all([
-          fetch("/api/game/state"),
-          fetch("/api/team/player"),
-          fetch("/api/players"),
-          fetch("/api/inbox"),
-          fetch("/api/club"),
-        ]);
-        
-        if (!gameStateRes.ok || !teamRes.ok || !playersRes.ok || !inboxRes.ok || !clubRes.ok) {
-          console.error("Failed to load some game data - server returned errors");
-          set({ loading: false });
-          return;
-        }
-        
-        const gameState = await gameStateRes.json();
-        const playerTeam = await teamRes.json();
-        const players = await playersRes.json();
-        const inboxMessages = await inboxRes.json();
-        const club = await clubRes.json();
-        
-        if (gameState.error || playerTeam.error || players.error || inboxMessages.error || club.error) {
-          console.error("Received error payloads from server");
-          set({ loading: false });
-          return;
-        }
-        
-        const unreadCount = Array.isArray(inboxMessages) 
-          ? inboxMessages.filter((m: InboxMessage) => !m.read).length 
-          : 0;
-        
-        set({
-          gameState,
-          playerTeam,
-          players: Array.isArray(players) ? players : [],
-          inboxMessages: Array.isArray(inboxMessages) ? inboxMessages : [],
-          club,
-          unreadInboxCount: unreadCount,
-        });
-      } catch (error) {
-        console.error("Failed to load game data:", error);
-      } finally {
-        set({ loading: false });
-      }
-    },
-    
-    refreshPlayers: async () => {
-      try {
-        const response = await fetch("/api/players");
-        const players = await response.json();
-        set({ players });
-      } catch (error) {
-        console.error("Failed to refresh players:", error);
-      }
-    },
-    
-    refreshInbox: async () => {
-      try {
-        const response = await fetch("/api/inbox");
-        const inboxMessages = await response.json();
-        const unreadCount = inboxMessages.filter((m: InboxMessage) => !m.read).length;
-        set({ inboxMessages, unreadInboxCount: unreadCount });
-      } catch (error) {
-        console.error("Failed to refresh inbox:", error);
-      }
-    },
-    
-    markMessageAsRead: async (messageId: number) => {
-      try {
-        await fetch(`/api/inbox/${messageId}/read`, { method: "POST" });
-        await get().refreshInbox();
-      } catch (error) {
-        console.error("Failed to mark message as read:", error);
-      }
-    },
-    
-    updatePlayerTeam: async (updates: Partial<Team>) => {
-      const { playerTeam } = get();
-      if (!playerTeam) return;
-      
-      try {
-        const response = await fetch(`/api/team/${playerTeam.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updates),
-        });
-        const updated = await response.json();
-        set({ playerTeam: updated });
-      } catch (error) {
-        console.error("Failed to update team:", error);
-      }
-    },
-    
-    updatePlayer: async (playerId: number, updates: Partial<Player>) => {
-      try {
-        const response = await fetch(`/api/players/${playerId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updates),
-        });
-        const updated = await response.json();
-        
-        const players = get().players.map(p => p.id === playerId ? updated : p);
-        set({ players });
-      } catch (error) {
-        console.error("Failed to update player:", error);
-      }
-    },
-    
-    // Match day popup actions
-    setPendingMatch: (matchId: number | null) => {
-      set({ pendingMatchId: matchId });
-    },
-    
-    setShowMatchPopup: (show: boolean) => {
-      set({ showMatchPopup: show });
-    },
-  }))
-);

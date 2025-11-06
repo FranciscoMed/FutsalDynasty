@@ -1,7 +1,8 @@
 import { useAdvancementStore } from "./stores/advancementStore";
-import { useFutsalManager } from "./stores/useFutsalManager";
+import { queryClient } from "./queryClient";
+import { queryKeys } from "../hooks/useServerState";
 import { toast } from "sonner";
-import type { NextEvent, GameEvent, EventType } from "@shared/schema";
+import type { NextEvent, GameEvent, EventType, GameState } from "@shared/schema";
 
 interface AdvancementResult {
   success: boolean;
@@ -36,9 +37,14 @@ export class AdvancementEngine {
     const signal = this.abortController.signal;
 
     const store = useAdvancementStore.getState();
-    const futsalStore = useFutsalManager.getState();
     
-    const startDate = new Date(futsalStore.gameState!.currentDate);
+    // Get game state from query cache
+    const gameState = queryClient.getQueryData<GameState>(queryKeys.gameState);
+    if (!gameState) {
+      throw new Error("Game state not loaded");
+    }
+    
+    const startDate = new Date(gameState.currentDate);
     const targetDate = new Date(targetEvent.date);
     
     // Initialize advancement state
@@ -102,11 +108,15 @@ export class AdvancementEngine {
         const result = await response.json();
         currentDay++;
 
-        // Update progress
-        store.updateProgress(result.currentDate, currentDay);
+        // Update progress with simulated matches count
+        const matchesSimulated = result.simulationSummary?.matchesSimulated || 0;
+        store.updateProgress(result.currentDate, currentDay, matchesSimulated);
         
-        // Reload game data
-        await futsalStore.loadGameData();
+        // Invalidate relevant queries to refresh UI
+        await queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.competitions() });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.matches.all() });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.inbox });
 
         // Call progress callback
         if (onProgress) {
@@ -180,7 +190,7 @@ export class AdvancementEngine {
               priority: 5,
               processed: false,
               details: {
-                season: futsalStore.gameState?.season,
+                season: gameState?.season,
               },
             };
             
@@ -212,10 +222,13 @@ export class AdvancementEngine {
       // Completed successfully
       store.completeAdvancement();
       
+      // Get updated game state from cache
+      const updatedGameState = queryClient.getQueryData<GameState>(queryKeys.gameState);
+      
       return {
         success: true,
         stopped: false,
-        finalDate: futsalStore.gameState!.currentDate.toString(),
+        finalDate: updatedGameState?.currentDate.toString() || new Date().toISOString(),
       };
 
     } catch (error: any) {

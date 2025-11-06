@@ -74,7 +74,7 @@ export interface IStorage {
   cleanupSaveGameData(saveGameId: number): Promise<{ deletedRecords: number }>;
   findOrphanedSaveGameIds(): Promise<number[]>;
   
-  initializeGame(): Promise<void>;
+  initializeGame(saveGameId: number): Promise<void>;
 }
 
 // DEPRECATED: MemStorage is not maintained for multi-save-game support and should not be used.

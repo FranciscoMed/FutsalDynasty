@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Route, Switch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "./components/ui/sonner";
 import { DashboardLayout } from "./components/DashboardLayout";
@@ -19,7 +20,7 @@ import { useAuth } from "./lib/stores/useAuth";
 import { useFutsalManager } from "./lib/stores/useFutsalManager";
 import "@fontsource/inter";
 
-function App() {
+function AppContent() {
   const { isAuthenticated, isLoading, activeSaveGame, checkSession } = useAuth();
   const { loadGameData } = useFutsalManager();
 
@@ -43,23 +44,15 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AuthPage />
-      </QueryClientProvider>
-    );
+    return <AuthPage />;
   }
 
   if (!activeSaveGame) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <SaveGameSelectionPage />
-      </QueryClientProvider>
-    );
+    return <SaveGameSelectionPage />;
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <DashboardLayout>
         <Switch>
           <Route path="/" component={HomePage} />
@@ -77,7 +70,7 @@ function App() {
         </Switch>
       </DashboardLayout>
       <Toaster position="top-right" richColors />
-    </QueryClientProvider>
+    </>
   );
 }
 
@@ -90,6 +83,15 @@ function ComingSoonPage({ title }: { title: string }) {
         <p>This feature is under development</p>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
