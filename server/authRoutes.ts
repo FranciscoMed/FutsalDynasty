@@ -179,6 +179,7 @@ export function setupAuthRoutes(app: Express, storage: IStorage) {
       const seedEngine = new SeedEngine(storage);
       const seedResult = await seedEngine.seedNewGame({
         saveGameId: saveGame.id,
+        userId: req.session.userId,
         playerTeamName: teamName,
         playerTeamAbbr: teamAbbr,
         season,

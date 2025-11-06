@@ -3,6 +3,7 @@ import { CompetitionEngine } from "./competitionEngine";
 
 export interface SeedGameOptions {
   saveGameId: number;
+  userId: number;
   playerTeamName: string;
   playerTeamAbbr: string;
   season: number;
@@ -16,11 +17,11 @@ export class SeedEngine {
   }
 
   async seedNewGame(options: SeedGameOptions): Promise<{ playerTeamId: number; competitionIds: number[] }> {
-    const { saveGameId, playerTeamName, playerTeamAbbr, season } = options;
+    const { saveGameId, userId, playerTeamName, playerTeamAbbr, season } = options;
 
     console.log(`Seeding new game for saveGameId: ${saveGameId}`);
 
-    const playerTeam = await this.storage.createTeam(saveGameId, {
+    const playerTeam = await this.storage.createTeam(saveGameId, userId, {
       name: playerTeamName,
       abbreviation: playerTeamAbbr,
       reputation: 55,
@@ -34,15 +35,15 @@ export class SeedEngine {
       isPlayerTeam: true,
     });
 
-    await this.competitionEngine.generateAISquad(playerTeam.id, 55, saveGameId);
+    await this.competitionEngine.generateAISquad(playerTeam.id, 55, saveGameId, userId);
 
     console.log(`Creating competitions for saveGameId: ${saveGameId}`);
 
-    const comp1 = await this.competitionEngine.createLeagueCompetition(season, playerTeam.id, saveGameId);
-    const comp2 = await this.competitionEngine.createSecondDivisionLeague(season, saveGameId);
-    const comp3 = await this.competitionEngine.createCupCompetition(season, saveGameId);
+    const comp1 = await this.competitionEngine.createLeagueCompetition(season, playerTeam.id, saveGameId, userId);
+    const comp2 = await this.competitionEngine.createSecondDivisionLeague(season, saveGameId, userId);
+    const comp3 = await this.competitionEngine.createCupCompetition(season, saveGameId, userId);
 
-    const gameState = await this.storage.createGameState(saveGameId, {
+    const gameState = await this.storage.createGameState(saveGameId, userId, {
       currentDate: new Date(season, 7, 1),
       season,
       currentMonth: 8,
@@ -53,7 +54,7 @@ export class SeedEngine {
       lastTrainingReportMonth: 7,
     });
 
-    const club = await this.storage.createClub(saveGameId, {
+    const club = await this.storage.createClub(saveGameId, userId, {
       name: playerTeamName,
       stadium: `${playerTeamName} Stadium`,
       reputation: 55,

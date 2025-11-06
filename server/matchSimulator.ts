@@ -14,10 +14,11 @@ export class MatchSimulator {
    */
   async simulateMatchInBackground(
     saveGameId: number,
+    userId: number,
     matchId: number
   ): Promise<SimulationResult | null> {
     try {
-      const match = await this.storage.getMatch(saveGameId, matchId);
+      const match = await this.storage.getMatch(saveGameId, userId, matchId);
       if (!match) {
         console.error(`Match ${matchId} not found`);
         return null;
@@ -29,8 +30,8 @@ export class MatchSimulator {
       }
 
       // Get teams and players
-      const homePlayers = await this.storage.getPlayersByTeam(saveGameId, match.homeTeamId);
-      const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, match.awayTeamId);
+      const homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
+      const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
 
       if (homePlayers.length === 0 || awayPlayers.length === 0) {
         console.error(`Missing players for match ${matchId}`);
@@ -41,7 +42,7 @@ export class MatchSimulator {
       const result = simulateQuick(homePlayers, awayPlayers);
 
       // Update match in database
-      await this.storage.updateMatch(saveGameId, matchId, {
+      await this.storage.updateMatch(saveGameId, userId, matchId, {
         homeScore: result.homeScore,
         awayScore: result.awayScore,
         played: true,
@@ -94,12 +95,13 @@ export class MatchSimulator {
    */
   async simulateAllMatchesOnDate(
     saveGameId: number,
+    userId: number,
     date: string,
     playerTeamId: number
   ): Promise<SimulationSummary> {
     try {
       // Get all matches on this date
-      const allMatches = await this.storage.getAllMatches(saveGameId);
+      const allMatches = await this.storage.getAllMatches(saveGameId, userId);
       const matchDate = new Date(date).toISOString().split("T")[0];
 
       const matchesOnDate = allMatches.filter((match) => {
@@ -123,7 +125,7 @@ export class MatchSimulator {
 
       // Simulate all matches in parallel for speed
       const simulationPromises = matchesToSimulate.map((match) =>
-        this.simulateMatchInBackground(saveGameId, match.id)
+        this.simulateMatchInBackground(saveGameId, userId, match.id)
       );
 
       const results = await Promise.all(simulationPromises);

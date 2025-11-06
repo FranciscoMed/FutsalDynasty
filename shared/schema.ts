@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, boolean, timestamp, jsonb, text } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, integer, boolean, timestamp, jsonb, text, index } from "drizzle-orm/pg-core";
 
 export type Position = "Goalkeeper" | "Defender" | "Winger" | "Pivot";
 
@@ -377,7 +377,8 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
 
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   abbreviation: varchar("abbreviation", { length: 10 }).notNull(),
   reputation: integer("reputation").notNull(),
@@ -394,7 +395,8 @@ export const teams = pgTable("teams", {
 
 export const players = pgTable("players", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   age: integer("age").notNull(),
   position: varchar("position", { length: 20 }).notNull().$type<Position>(),
@@ -420,7 +422,8 @@ export const players = pgTable("players", {
 
 export const matches = pgTable("matches", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   competitionId: integer("competition_id").notNull(),
   competitionType: varchar("competition_type", { length: 20 }).notNull().$type<CompetitionType>(),
   homeTeamId: integer("home_team_id").notNull(),
@@ -438,7 +441,8 @@ export const matches = pgTable("matches", {
 
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   type: varchar("type", { length: 20 }).notNull().$type<CompetitionType>(),
   season: integer("season").notNull(),
@@ -450,7 +454,8 @@ export const competitions = pgTable("competitions", {
 
 export const transferOffers = pgTable("transfer_offers", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   playerId: integer("player_id").notNull(),
   fromTeamId: integer("from_team_id").notNull(),
   toTeamId: integer("to_team_id").notNull(),
@@ -462,7 +467,8 @@ export const transferOffers = pgTable("transfer_offers", {
 
 export const inboxMessages = pgTable("inbox_messages", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   category: varchar("category", { length: 20 }).notNull().$type<InboxCategory>(),
   subject: varchar("subject", { length: 500 }).notNull(),
   body: text("body").notNull(),
@@ -476,7 +482,8 @@ export const inboxMessages = pgTable("inbox_messages", {
 
 export const financialTransactions = pgTable("financial_transactions", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   date: timestamp("date").notNull(),
   type: varchar("type", { length: 10 }).notNull().$type<"income" | "expense">(),
   category: varchar("category", { length: 20 }).notNull().$type<"match_day" | "prize_money" | "transfer" | "wage" | "facility" | "sponsorship">(),
@@ -486,7 +493,8 @@ export const financialTransactions = pgTable("financial_transactions", {
 
 export const clubs = pgTable("clubs", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   stadium: varchar("stadium", { length: 255 }).notNull(),
   reputation: integer("reputation").notNull(),
@@ -501,6 +509,8 @@ export const clubs = pgTable("clubs", {
 
 export const gameStates = pgTable("game_states", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   currentDate: timestamp("current_date").notNull(),
   season: integer("season").notNull(),
   currentMonth: integer("current_month").notNull(),
@@ -508,7 +518,6 @@ export const gameStates = pgTable("game_states", {
   nextMatchId: integer("next_match_id"),
   monthlyTrainingInProgress: boolean("monthly_training_in_progress").notNull().default(true),
   lastTrainingReportMonth: integer("last_training_report_month").notNull(),
-  saveGameId: integer("save_game_id"),
 });
 
 export const users = pgTable("users", {
@@ -532,7 +541,8 @@ export const saveGames = pgTable("save_games", {
 
 export const trainingReports = pgTable("training_reports", {
   id: serial("id").primaryKey(),
-  saveGameId: integer("save_game_id"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  saveGameId: integer("save_game_id").notNull().references(() => saveGames.id, { onDelete: "cascade" }),
   month: integer("month").notNull(),
   year: integer("year").notNull(),
   playerImprovements: jsonb("player_improvements").notNull().$type<{
@@ -547,3 +557,71 @@ export const trainingReports = pgTable("training_reports", {
   }[]>(),
   date: timestamp("date").notNull().defaultNow(),
 });
+
+// Audit Logs for security tracking
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+  saveGameId: integer("save_game_id"),
+  action: text("action").notNull(),
+  details: jsonb("details"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Composite indexes for performance (userId + savegameId)
+// Temporarily commented out to debug JSON parse error
+/*
+export const teamsIndexes = {
+  userSavegame: index("idx_teams_user_savegame").on(teams.userId, teams.saveGameId),
+};
+
+export const playersIndexes = {
+  userSavegame: index("idx_players_user_savegame").on(players.userId, players.saveGameId),
+};
+
+export const matchesIndexes = {
+  userSavegame: index("idx_matches_user_savegame").on(matches.userId, matches.saveGameId),
+};
+
+export const competitionsIndexes = {
+  userSavegame: index("idx_competitions_user_savegame").on(competitions.userId, competitions.saveGameId),
+};
+
+export const transferOffersIndexes = {
+  userSavegame: index("idx_transfer_offers_user_savegame").on(transferOffers.userId, transferOffers.saveGameId),
+};
+
+export const inboxMessagesIndexes = {
+  userSavegame: index("idx_inbox_messages_user_savegame").on(inboxMessages.userId, inboxMessages.saveGameId),
+};
+
+export const financialTransactionsIndexes = {
+  userSavegame: index("idx_financial_transactions_user_savegame").on(financialTransactions.userId, financialTransactions.saveGameId),
+};
+
+export const clubsIndexes = {
+  userSavegame: index("idx_clubs_user_savegame").on(clubs.userId, clubs.saveGameId),
+};
+
+export const gameStatesIndexes = {
+  userSavegame: index("idx_game_states_user_savegame").on(gameStates.userId, gameStates.saveGameId),
+};
+
+export const trainingReportsIndexes = {
+  userSavegame: index("idx_training_reports_user_savegame").on(trainingReports.userId, trainingReports.saveGameId),
+};
+
+export const saveGamesIndexes = {
+  user: index("idx_save_games_user").on(saveGames.userId),
+};
+
+export const auditLogsIndexes = {
+  user: index("idx_audit_logs_user").on(auditLogs.userId),
+};
+*/
+
+// Type exports for audit logs
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type NewAuditLog = typeof auditLogs.$inferInsert;

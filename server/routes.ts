@@ -5,7 +5,10 @@ import { GameEngine } from "./gameEngine";
 import { CompetitionEngine } from "./competitionEngine";
 import { MatchEngine } from "./matchEngine";
 import { setupAuthRoutes } from "./authRoutes";
+import { validateActiveSave } from "./middleware/validateSaveAccess";
 
+// DEPRECATED: Use validateActiveSave middleware instead
+// This function is kept for backward compatibility during migration
 function requireSaveGame(req: any, res: any): number | null {
   if (!req.session?.userId) {
     res.status(401).json({ error: "Not authenticated" });
@@ -31,12 +34,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/game/state", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/game/state", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       if (!gameState) {
         res.status(404).json({ error: "Game state not found" });
         return;
@@ -48,25 +50,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/game/state", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.patch("/api/game/state", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const updated = await storage.updateGameState(saveGameId, req.body);
+      const updated = await storage.updateGameState(validatedSaveId, validatedUserId, req.body);
       res.json(updated);
     } catch (error) {
       res.status(500).json({ error: "Failed to update game state" });
     }
   });
 
-  app.get("/api/team/player", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/team/player", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const team = await storage.getTeam(saveGameId, gameState.playerTeamId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const team = await storage.getTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
       res.json(team);
     } catch (error) {
       console.error("Error fetching player team:", error);
@@ -74,12 +74,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/team/:id", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/team/:id", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const team = await storage.getTeam(saveGameId, parseInt(req.params.id));
+      const team = await storage.getTeam(validatedSaveId, validatedUserId, parseInt(req.params.id));
       if (!team) {
         res.status(404).json({ error: "Team not found" });
         return;
@@ -90,24 +89,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/teams/all", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/teams/all", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const teams = await storage.getAllTeams(saveGameId);
+      const teams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       res.json(teams);
     } catch (error) {
       res.status(500).json({ error: "Failed to get teams" });
     }
   });
 
-  app.patch("/api/team/:id", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.patch("/api/team/:id", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const updated = await storage.updateTeam(saveGameId, parseInt(req.params.id), req.body);
+      const updated = await storage.updateTeam(validatedSaveId, validatedUserId, parseInt(req.params.id), req.body);
       if (!updated) {
         res.status(404).json({ error: "Team not found" });
         return;
@@ -119,13 +116,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Tactics endpoints
-  app.get("/api/tactics", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/tactics", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const team = await storage.getTeam(saveGameId, gameState.playerTeamId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const team = await storage.getTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
       
       if (!team) {
         res.status(404).json({ error: "Team not found" });
@@ -144,12 +140,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tactics/save", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/tactics/save", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       const { formation, assignments, substitutes } = req.body;
 
       // Validate tactics data
@@ -159,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update team with new tactics
-      const updated = await storage.updateTeam(saveGameId, gameState.playerTeamId, {
+      const updated = await storage.updateTeam(validatedSaveId, validatedUserId, gameState.playerTeamId, {
         tactics: {
           formation,
           assignments,
@@ -182,25 +177,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/players", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/players", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const players = await storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const players = await storage.getPlayersByTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
       res.json(players);
     } catch (error) {
       res.status(500).json({ error: "Failed to get players" });
     }
   });
 
-  app.get("/api/players/:id", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/players/:id", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const player = await storage.getPlayer(saveGameId, parseInt(req.params.id));
+      const player = await storage.getPlayer(validatedSaveId, validatedUserId, parseInt(req.params.id));
       if (!player) {
         res.status(404).json({ error: "Player not found" });
         return;
@@ -211,12 +204,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/players/:id", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.patch("/api/players/:id", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const updated = await storage.updatePlayer(saveGameId, parseInt(req.params.id), req.body);
+      const updated = await storage.updatePlayer(validatedSaveId, validatedUserId, parseInt(req.params.id), req.body);
       if (!updated) {
         res.status(404).json({ error: "Player not found" });
         return;
@@ -227,24 +219,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/inbox", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/inbox", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const messages = await storage.getAllInboxMessages(saveGameId);
+      const messages = await storage.getAllInboxMessages(validatedSaveId, validatedUserId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ error: "Failed to get inbox messages" });
     }
   });
 
-  app.post("/api/inbox/:id/read", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/inbox/:id/read", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const updated = await storage.updateInboxMessage(saveGameId, parseInt(req.params.id), { read: true });
+      const updated = await storage.updateInboxMessage(validatedSaveId, validatedUserId, parseInt(req.params.id), { read: true });
       if (!updated) {
         res.status(404).json({ error: "Message not found" });
         return;
@@ -255,12 +245,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/inbox/:id", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.delete("/api/inbox/:id", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const success = await storage.deleteInboxMessage(saveGameId, parseInt(req.params.id));
+      const success = await storage.deleteInboxMessage(validatedSaveId, validatedUserId, parseInt(req.params.id));
       if (!success) {
         res.status(404).json({ error: "Message not found" });
         return;
@@ -271,12 +260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/club", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/club", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const club = await storage.getClub(saveGameId);
+      const club = await storage.getClub(validatedSaveId, validatedUserId);
       if (!club) {
         res.status(404).json({ error: "Club not found. Please initialize the game first." });
         return;
@@ -288,25 +276,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/club", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.patch("/api/club", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const updated = await storage.updateClub(saveGameId, req.body);
+      const updated = await storage.updateClub(validatedSaveId, validatedUserId, req.body);
       res.json(updated);
     } catch (error) {
       res.status(500).json({ error: "Failed to update club" });
     }
   });
 
-  app.get("/api/competitions", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/competitions", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const competitions = await storage.getAllCompetitions(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const competitions = await storage.getAllCompetitions(validatedSaveId, validatedUserId);
       
       // Filter to only show competitions the player's team is in
       const playerCompetitions = competitions.filter(comp => 
@@ -314,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       // Batch fetch all teams once to avoid N+1 query problem
-      const allTeams = await storage.getAllTeams(saveGameId);
+      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
       
       // Enrich competitions with team names in standings and fixtures
@@ -338,13 +324,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/matches", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/matches", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const allMatches = await storage.getAllMatches(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const allMatches = await storage.getAllMatches(validatedSaveId, validatedUserId);
       
       // Filter to only show matches involving the player's team
       const playerMatches = allMatches.filter(match => 
@@ -359,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .slice(0, limit);
       
       // Batch fetch all teams once to avoid N+1 query problem
-      const allTeams = await storage.getAllTeams(saveGameId);
+      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
       
       // Enrich matches with team names
@@ -375,16 +360,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/matches/upcoming", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/matches/upcoming", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(saveGameId);
-      const competitions = await storage.getAllCompetitions(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const competitions = await storage.getAllCompetitions(validatedSaveId, validatedUserId);
       
       // Batch fetch all teams once to avoid N+1 query problem
-      const allTeams = await storage.getAllTeams(saveGameId);
+      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
       
       const upcomingFixtures: any[] = [];
@@ -422,12 +406,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get next unplayed match requiring user action
-  app.get("/api/matches/next-unplayed", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/matches/next-unplayed", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const nextMatch = await gameEngine.getNextUnplayedMatchForPlayer(saveGameId);
+      const nextMatch = await gameEngine.getNextUnplayedMatchForPlayer(validatedSaveId, validatedUserId);
       
       if (!nextMatch) {
         res.json(null);
@@ -435,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Enrich with team names
-      const allTeams = await storage.getAllTeams(saveGameId);
+      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
 
       const enrichedMatch = {
@@ -452,36 +435,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get match preparation data
-  app.get("/api/matches/:id/preparation", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/matches/:id/preparation", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const matchId = parseInt(req.params.id);
-      const gameState = await storage.getGameState(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       
       // Get match details
-      const match = await storage.getMatch(saveGameId, matchId);
+      const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
       if (!match) {
         res.status(404).json({ error: "Match not found" });
         return;
       }
 
       // Get teams
-      const homeTeam = await storage.getTeam(saveGameId, match.homeTeamId);
-      const awayTeam = await storage.getTeam(saveGameId, match.awayTeamId);
-      const playerTeam = await storage.getTeam(saveGameId, gameState.playerTeamId);
+      const homeTeam = await storage.getTeam(validatedSaveId, validatedUserId, match.homeTeamId);
+      const awayTeam = await storage.getTeam(validatedSaveId, validatedUserId, match.awayTeamId);
+      const playerTeam = await storage.getTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
 
       // Determine which is the opponent
       const isHome = match.homeTeamId === gameState.playerTeamId;
       const opponentTeam = isHome ? awayTeam : homeTeam;
 
       // Get player team squad
-      const playerSquad = await storage.getPlayersByTeam(saveGameId, gameState.playerTeamId);
+      const playerSquad = await storage.getPlayersByTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
 
       // Get opponent squad for analysis
       const opponentSquad = await storage.getPlayersByTeam(
-        saveGameId,
+        validatedSaveId,
+        validatedUserId,
         opponentTeam!.id
       );
 
@@ -492,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ) / opponentSquad.length;
 
       // Get recent matches for form
-      const allMatches = await storage.getAllMatches(saveGameId);
+      const allMatches = await storage.getAllMatches(validatedSaveId, validatedUserId);
       const opponentRecentMatches = allMatches
         .filter(m => 
           m.played && 
@@ -524,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
 
       // Get competition info
-      const competition = await storage.getCompetition(saveGameId, match.competitionId);
+      const competition = await storage.getCompetition(validatedSaveId, validatedUserId, match.competitionId);
 
       res.json({
         match: {
@@ -553,9 +536,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Confirm tactics before match simulation
-  app.post("/api/matches/:id/confirm-tactics", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/matches/:id/confirm-tactics", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const matchId = parseInt(req.params.id);
@@ -565,8 +547,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         substitutes?: (number | null)[] 
       } = req.body;
 
-      const gameState = await storage.getGameState(saveGameId);
-      const match = await storage.getMatch(saveGameId, matchId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
 
       if (!match) {
         res.status(404).json({ error: "Match not found" });
@@ -616,11 +598,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updateData.substitutes = subs;
         }
 
-        await storage.updateTeam(saveGameId, gameState.playerTeamId, updateData);
+        await storage.updateTeam(validatedSaveId, validatedUserId, gameState.playerTeamId, updateData);
       }
 
       // Mark match as confirmed (ready to simulate)
-      await storage.updateMatch(saveGameId, matchId, {
+      await storage.updateMatch(validatedSaveId, validatedUserId, matchId, {
         preparationStatus: "confirmed",
       });
 
@@ -635,12 +617,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/finances", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/finances", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const transactions = await storage.getAllFinancialTransactions(saveGameId);
+      const transactions = await storage.getAllFinancialTransactions(validatedSaveId, validatedUserId);
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ error: "Failed to get financial transactions" });
@@ -650,17 +631,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const gameEngine = new GameEngine(storage);
   const matchEngine = new MatchEngine(storage);
 
-  app.post("/api/matches/:id/simulate", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/matches/:id/simulate", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const matchId = parseInt(req.params.id);
-      const match = await matchEngine.simulateMatch(saveGameId, matchId);
+      const match = await matchEngine.simulateMatch(validatedSaveId, validatedUserId, matchId);
       
-      await competitionEngine.updateStandings(match.competitionId, match, saveGameId);
+      await competitionEngine.updateStandings(match.competitionId, match, validatedSaveId, validatedUserId);
       
-      await storage.createInboxMessage(saveGameId, {
+      await storage.createInboxMessage(validatedSaveId, validatedUserId, {
         category: "match",
         subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
         body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} \n\nCheck the match details for full statistics.`,
@@ -679,12 +659,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/game/advance-day", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/game/advance-day", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await gameEngine.advanceOneDay(saveGameId);
+      const gameState = await gameEngine.advanceOneDay(validatedSaveId, validatedUserId);
       res.json(gameState);
     } catch (error) {
       console.error("Error advancing day:", error);
@@ -692,13 +671,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/game/advance-days", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/game/advance-days", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const { days } = req.body;
-      const gameState = await gameEngine.advanceDays(saveGameId, days);
+      const gameState = await gameEngine.advanceDays(validatedSaveId, validatedUserId, days);
       res.json(gameState);
     } catch (error) {
       console.error("Error advancing days:", error);
@@ -706,13 +684,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/game/advance-to-date", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/game/advance-to-date", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const { date } = req.body;
-      const gameState = await gameEngine.advanceToDate(saveGameId, new Date(date));
+      const gameState = await gameEngine.advanceToDate(validatedSaveId, validatedUserId, new Date(date));
       res.json(gameState);
     } catch (error) {
       console.error("Error advancing to date:", error);
@@ -721,12 +698,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get next actionable event
-  app.get("/api/game/next-event", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/game/next-event", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      const nextEvent = await gameEngine.getNextEvent(validatedSaveId, validatedUserId);
       if (!nextEvent) {
         res.status(404).json({ error: "No upcoming events" });
         return;
@@ -739,9 +715,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get events in date range
-  app.get("/api/game/events-in-range", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.get("/api/game/events-in-range", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const { startDate, endDate } = req.query;
@@ -752,7 +727,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const events = await gameEngine.getEventsInRange(
-        saveGameId,
+        validatedSaveId,
+        validatedUserId,
         startDate as string,
         endDate as string
       );
@@ -764,19 +740,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Advance to next event (batch mode)
-  app.post("/api/game/advance-to-event", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/game/advance-to-event", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      const nextEvent = await gameEngine.getNextEvent(validatedSaveId, validatedUserId);
       
       if (!nextEvent) {
         res.status(404).json({ error: "No upcoming events" });
         return;
       }
 
-      const gameState = await storage.getGameState(saveGameId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       const currentDate = new Date(gameState.currentDate);
       const targetDate = new Date(nextEvent.date);
       
@@ -786,11 +761,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Advance days
       let daysAdvanced = 0;
       for (let i = 0; i < daysToAdvance; i++) {
-        await gameEngine.advanceOneDay(saveGameId);
+        await gameEngine.advanceOneDay(validatedSaveId, validatedUserId);
         daysAdvanced++;
       }
 
-      const updatedGameState = await storage.getGameState(saveGameId);
+      const updatedGameState = await storage.getGameState(validatedSaveId, validatedUserId);
       
       res.json({
         daysAdvanced,
@@ -805,9 +780,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Advance one day at a time (for stoppable advancement with animation)
-  app.post("/api/game/advance-until", async (req, res) => {
-    const saveGameId = requireSaveGame(req, res);
-    if (saveGameId === null) return;
+  app.post("/api/game/advance-until", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
       const { targetDate, currentDay } = req.body;
@@ -818,8 +792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Advance one day
-      const result = await gameEngine.advanceOneDay(saveGameId);
-      const gameState = await storage.getGameState(saveGameId);
+      const result = await gameEngine.advanceOneDay(validatedSaveId, validatedUserId);
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       
       const target = new Date(targetDate);
       const current = new Date(gameState.currentDate);
@@ -828,7 +802,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const complete = current >= target;
       
       // Check for next event on this day
-      const nextEvent = await gameEngine.getNextEvent(saveGameId);
+      const nextEvent = await gameEngine.getNextEvent(validatedSaveId, validatedUserId);
       const hasEventToday = nextEvent && 
         new Date(nextEvent.date).toDateString() === current.toDateString() &&
         nextEvent.type === "match";

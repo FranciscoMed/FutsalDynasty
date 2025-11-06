@@ -39,8 +39,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f1debd] to-[#f1debd] p-4">
+      <Card className="w-full max-w-md shadow-2xl border-[#f1debd]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">
             Futsal Manager
@@ -109,7 +109,7 @@ export default function AuthPage() {
                   setIsLogin(!isLogin);
                   setError("");
                 }}
-                className="text-[#40916C] hover:underline"
+                className="text-[#d18643] hover:text-[#703214] hover:underline transition-colors"
               >
                 {isLogin
                   ? "Don't have an account? Sign up"
