@@ -663,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createInboxMessage(saveGameId, {
         category: "match",
         subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
-        body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} ${match.awayTeamName}\n\nCheck the match details for full statistics.`,
+        body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} \n\nCheck the match details for full statistics.`,
         from: "Match Officials",
         date: match.date,
         read: false,

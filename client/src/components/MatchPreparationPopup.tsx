@@ -30,6 +30,11 @@ interface MatchPreparationData {
     startingLineup: number[];
     substitutes: number[];
     squad: Player[];
+    tactics?: {
+      formation: Formation;
+      assignments: Record<string, number | null>;
+      substitutes: (number | null)[];
+    };
   };
   opponent: {
     team: {
