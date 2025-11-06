@@ -71,10 +71,10 @@ export function CompactFutsalField({ formation, assignments, onSlotClick }: Comp
                       // Player marker with position and rating
                       <div className="relative flex flex-col items-center gap-0.5">
                         <div
-                          className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold text-sm shadow-lg
+                          className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-black font-bold text-sm shadow-lg
                             ${isGK 
-                              ? "bg-gradient-to-b from-green-700 to-green-200 border-green-200" 
-                              : "bg-gradient-to-b from-green-500 to-white border-white"
+                              ? "bg-red-700 border-black" 
+                              : "bg-white border-black"
                             }`}
                         >
                           {getJerseyNumber(player)}

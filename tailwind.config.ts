@@ -63,6 +63,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom theme colors
+        brand: {
+          cream: "#f6eee3",
+          terracotta: "#d18643",
+          brown: "#703214",
+          gold: "#eaae65",
+        },
       },
       keyframes: {
         "accordion-down": {

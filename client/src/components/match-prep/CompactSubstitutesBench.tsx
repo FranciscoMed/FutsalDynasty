@@ -44,7 +44,7 @@ export function CompactSubstitutesBench({ substitutes, onSlotClick }: CompactSub
                     onClick={() => onSlotClick(index)}
                     className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm transition-all
                       ${player 
-                        ? "bg-gradient-to-b from-green-500 to-white border-2 border-white hover:scale-110" 
+                        ? "bg-green-600 border-2 border-black hover:scale-110" 
                         : "border-2 border-dashed border-muted-foreground/40 bg-muted/30 hover:bg-muted/50 hover:border-[#2D6A4F]"
                       }`}
                   >

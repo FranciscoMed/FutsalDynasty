@@ -152,7 +152,7 @@ export default function SaveGameSelectionPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 border-4 border-[#40916C] border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-[#d18643] border-t-transparent rounded-full animate-spin"></div>
               <p className="text-center text-lg font-medium">{creationProgress}</p>
             </div>
             <div className="text-sm text-muted-foreground text-center space-y-1">
@@ -167,12 +167,12 @@ export default function SaveGameSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#f6efe3] to-[#f6efe3] p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Futsal Manager</h1>
-            <p className="text-white/80">Welcome, {user?.username}!</p>
+            <h1 className="text-4xl font-bold text-[#703214] mb-2">Futsal Manager</h1>
+            <p className="text-[#703214]/80">Welcome, {user?.username}!</p>
           </div>
           <Button variant="outline" onClick={logout}>
             Logout

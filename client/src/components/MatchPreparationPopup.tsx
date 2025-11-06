@@ -194,7 +194,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
       <Dialog open={true} modal={true}>
         <DialogContent className="max-w-4xl h-[90vh] flex items-center justify-center">
           <div className="text-center space-y-4">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto text-[#2D6A4F]" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto text-[#d18643]" />
             <p className="text-muted-foreground">Loading match preparation...</p>
           </div>
         </DialogContent>
