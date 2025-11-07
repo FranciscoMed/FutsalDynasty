@@ -887,6 +887,40 @@ All API endpoints (except auth) require authentication and automatically use the
 
 ## 📈 Recent Improvements (November 2024)
 
+### Database Securization ⭐ *NEW*
+- **User isolation with `userId` filtering**: All database queries automatically filter by `userId` to ensure users can only access their own data
+- **Session-based authentication**: HTTP-only secure cookies prevent XSS attacks
+- **bcrypt password hashing**: All passwords hashed with 10 rounds for security
+- **Multi-tenant architecture**: Complete data isolation between users' save games
+- **Protected endpoints**: All API routes require authentication and validate user ownership
+- **Automatic save game scoping**: Every operation is scoped to the active save game
+- **SQL injection prevention**: Drizzle ORM parameterized queries protect against SQL injection
+- **XSS protection**: React's built-in XSS protection, secure session management
+
+### Theme & Visual Overhaul ⭐ *NEW*
+- **Application logo integration**: Professional brown/terracotta Futsal Manager logo replaces text headers
+- **Logo implementation across app**: Consistent branding in sidebar, auth page, and save selector (128x128px)
+- **Global settings menu**: Corner dropdown with Settings2 icon (Preferences, Dark Mode, Load Save, Logout)
+- **Improved color scheme**: Optimized color palette with green-700 for victories, red-600 for losses, gray-400 for draws
+- **Form badge optimization**: Replaced Badge components with direct div elements for better performance
+- **Centered layouts**: Logo and welcome messages centered for professional appearance
+- **Reduced gradients**: Cleaner white/black/red color scheme with less green gradients
+- **Enhanced typography**: Text stroke effects for better readability on field players
+
+### Tactics Page Complete Overhaul ⭐ *NEW*
+- **Unified field and bench layout**: Field and substitute bench combined in single card with vertical layout
+- **Compact player pool**: Redesigned available players section with 2-column grid (520px max-height, scrollable)
+- **Drag-and-drop preservation**: Full drag-and-drop functionality maintained with react-dnd (HTML5Backend + TouchBackend)
+- **Visual consistency**: Matches compact match-prep popup style (white/red jerseys, no gradients)
+- **Player labels**: Names always visible on field positions with text-shadow stroke for readability
+- **Substitute labels**: Vertical bench shows player names, positions, and ratings
+- **Quick Select Best XI**: Lightning button auto-selects best 5 field players + 5 subs by ability rating
+- **Fixed field dimensions**: 300x450px futsal court with inline gradient background for proper visibility
+- **Position markers**: PlayerMarker component with GK=red-700, others=white with black borders
+- **Draggable cards**: Available players displayed as draggable cards with position badges and ratings
+- **Smart positioning**: Position abbreviations (GK/DEF/WIN/PIV) and star ratings displayed on field slots
+- **Formation validation**: Filled positions counter ensures valid lineups before match day
+
 ### Background Match Simulation
 - Implemented lightweight Poisson-based match engine for AI vs AI matches
 - Automatic simulation during time advancement (no manual intervention needed)
@@ -921,6 +955,7 @@ All API endpoints (except auth) require authentication and automatically use the
 - GPU-accelerated animations
 - Parallel match simulation processing
 - Efficient cache management
+- Direct div elements instead of wrapper components for form badges
 
 ### Documentation
 - Updated README with complete features list
@@ -928,6 +963,7 @@ All API endpoints (except auth) require authentication and automatically use the
 - Documented all API endpoints
 - Added code examples and usage patterns
 - Migration guide for new state management
+- Created comprehensive GAME_VISION.md with 12-week roadmap
 
 ## Contributing
 
