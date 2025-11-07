@@ -1,0 +1,262 @@
+[
+    {
+        "statistics": [
+            {
+                "name": "goals",
+                "value": "0"
+            },
+            {
+                "name": "attempts",
+                "value": "22"
+            },
+            {
+                "name": "attempts_on_target",
+                "value": "8"
+            },
+            {
+                "name": "goals_conceded",
+                "value": "4"
+            },
+            {
+                "name": "goals_scored",
+                "value": "0"
+            },
+            {
+                "name": "offsides",
+                "value": "0"
+            },
+            {
+                "name": "fouls_committed",
+                "value": "8"
+            },
+            {
+                "name": "fouls_suffered",
+                "value": "9"
+            },
+            {
+                "name": "yellow_cards",
+                "value": "2"
+            },
+            {
+                "name": "red_cards",
+                "value": "0"
+            },
+            {
+                "name": "corners",
+                "value": "5"
+            },
+            {
+                "name": "attempts_off_target",
+                "value": "9"
+            },
+            {
+                "attributes": {
+                    "Den": "22",
+                    "Num": "8"
+                },
+                "name": "attempts_accuracy",
+                "value": "36"
+            },
+            {
+                "name": "free_kicks_on_goal",
+                "value": "0"
+            },
+            {
+                "name": "blocked",
+                "value": "3"
+            },
+            {
+                "name": "assists",
+                "value": "0"
+            },
+            {
+                "name": "attempts_blocked",
+                "value": "5"
+            },
+            {
+                "name": "attempts_saved",
+                "value": "0"
+            },
+            {
+                "name": "own_goal_conceded",
+                "value": "0"
+            },
+            {
+                "name": "clearance_completed",
+                "value": "0"
+            },
+            {
+                "name": "own_goals_for",
+                "value": "0"
+            },
+            {
+                "attributes": {
+                    "Percentage": "100",
+                    "TotalMinutesAndSeconds": "19'50\"",
+                    "TotalSeconds": "1190"
+                },
+                "name": "played_time",
+                "unit": "MINUTE",
+                "value": "20"
+            },
+            {
+                "name": "attempts_on_woodwork",
+                "value": "1"
+            },
+            {
+                "name": "attempts_on_bar",
+                "value": "0"
+            },
+            {
+                "name": "attempts_on_post",
+                "value": "1"
+            },
+            {
+                "name": "matches_appearance",
+                "value": "1"
+            },
+            {
+                "attributes": {
+                    "TotalSeconds": "532"
+                },
+                "name": "played_time_without_conceding",
+                "value": "9"
+            },
+            {
+                "name": "attempts_conceded",
+                "value": "31"
+            }
+        ],
+        "teamId": "2605071"
+    },
+    {
+        "statistics": [
+            {
+                "name": "goals",
+                "value": "4"
+            },
+            {
+                "name": "attempts",
+                "value": "31"
+            },
+            {
+                "name": "attempts_on_target",
+                "value": "16"
+            },
+            {
+                "name": "goals_conceded",
+                "value": "0"
+            },
+            {
+                "name": "goals_scored",
+                "value": "4"
+            },
+            {
+                "name": "offsides",
+                "value": "0"
+            },
+            {
+                "name": "fouls_committed",
+                "value": "9"
+            },
+            {
+                "name": "fouls_suffered",
+                "value": "8"
+            },
+            {
+                "name": "yellow_cards",
+                "value": "0"
+            },
+            {
+                "name": "red_cards",
+                "value": "0"
+            },
+            {
+                "name": "corners",
+                "value": "6"
+            },
+            {
+                "name": "attempts_off_target",
+                "value": "12"
+            },
+            {
+                "attributes": {
+                    "Den": "31",
+                    "Num": "16"
+                },
+                "name": "attempts_accuracy",
+                "value": "52"
+            },
+            {
+                "name": "free_kicks_on_goal",
+                "value": "0"
+            },
+            {
+                "name": "blocked",
+                "value": "8"
+            },
+            {
+                "name": "assists",
+                "value": "3"
+            },
+            {
+                "name": "attempts_blocked",
+                "value": "3"
+            },
+            {
+                "name": "attempts_saved",
+                "value": "0"
+            },
+            {
+                "name": "own_goal_conceded",
+                "value": "0"
+            },
+            {
+                "name": "clearance_completed",
+                "value": "0"
+            },
+            {
+                "name": "own_goals_for",
+                "value": "0"
+            },
+            {
+                "attributes": {
+                    "Percentage": "100",
+                    "TotalMinutesAndSeconds": "19'50\"",
+                    "TotalSeconds": "1190"
+                },
+                "name": "played_time",
+                "unit": "MINUTE",
+                "value": "20"
+            },
+            {
+                "name": "attempts_on_woodwork",
+                "value": "1"
+            },
+            {
+                "name": "attempts_on_bar",
+                "value": "0"
+            },
+            {
+                "name": "attempts_on_post",
+                "value": "1"
+            },
+            {
+                "name": "matches_appearance",
+                "value": "1"
+            },
+            {
+                "attributes": {
+                    "TotalSeconds": "2353"
+                },
+                "name": "played_time_without_conceding",
+                "value": "40"
+            },
+            {
+                "name": "attempts_conceded",
+                "value": "22"
+            }
+        ],
+        "teamId": "78223"
+    }
+]

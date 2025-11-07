@@ -1,0 +1,2069 @@
+[
+    {
+        "awayTeam": {
+            "associationId": "200110",
+            "associationLogoUrl": "https://img.uefa.com/imgml/uefacom/elements/logos/ma/POR.svg",
+            "bigLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/700x700/78223.png",
+            "confederationType": "UEFA",
+            "countryCode": "POR",
+            "id": "78223",
+            "idProvider": "FAME",
+            "internationalName": "Sporting CP",
+            "isPlaceHolder": false,
+            "logoUrl": "https://img.uefa.com/imgml/TP/teams/logos/70x70/78223.png",
+            "mediumLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/78223.png",
+            "organizationId": "250149",
+            "teamCode": "SPO",
+            "teamTypeDetail": "DOMESTIC_MEN_FUTSAL_TEAM_A",
+            "translations": {
+                "countryName": {
+                    "EN": "Portugal",
+                    "FR": "Portugal",
+                    "DE": "Portugal",
+                    "ES": "Portugal",
+                    "PT": "Portugal",
+                    "IT": "Portogallo",
+                    "RU": "Португалия",
+                    "ZH": "葡萄牙",
+                    "TR": "Portugal",
+                    "HU": "Portugal",
+                    "CS": "Portugal",
+                    "NL": "Portugal"
+                },
+                "displayName": {
+                    "EN": "Sporting CP",
+                    "FR": "Sporting CP",
+                    "DE": "Sporting CP",
+                    "ES": "Sporting CP",
+                    "PT": "Sporting CP",
+                    "IT": "Sporting CP",
+                    "RU": "Спортинг",
+                    "ZH": "里斯本竞技",
+                    "TR": "Sporting CP",
+                    "HU": "Sporting CP",
+                    "CS": "Sporting CP",
+                    "NL": "Sporting CP"
+                },
+                "displayOfficialName": {
+                    "EN": "Sporting Clube de Portugal",
+                    "FR": "Sporting Clube de Portugal",
+                    "DE": "Sporting Clube de Portugal",
+                    "ES": "Sporting Clube de Portugal",
+                    "PT": "Sporting Clube de Portugal",
+                    "IT": "Sporting Clube de Portugal",
+                    "RU": "Спортинг",
+                    "ZH": "里斯本竞技",
+                    "TR": "Sporting Clube de Portugal",
+                    "HU": "Sporting Clube de Portugal",
+                    "CS": "Sporting Clube de Portugal",
+                    "NL": "Sporting Clube de Portugal"
+                },
+                "displayTeamCode": {
+                    "EN": "SPO",
+                    "FR": "SPO",
+                    "DE": "SPO",
+                    "ES": "SPO",
+                    "PT": "SPO",
+                    "IT": "SPO",
+                    "RU": "SPO",
+                    "ZH": "SPO",
+                    "TR": "SPO",
+                    "HU": "SPO",
+                    "CS": "SPO",
+                    "NL": "SPO"
+                }
+            },
+            "typeIsNational": false,
+            "typeTeam": "DOMESTIC"
+        },
+        "competition": {
+            "age": "ADULT",
+            "code": "UFCL",
+            "id": "27",
+            "images": {
+                "FULL_LOGO": "https://img.uefa.com/imgml/uefacom/elements/logos/competitions/color/full/27.svg"
+            },
+            "metaData": {
+                "name": "UEFA Futsal Champions League"
+            },
+            "region": "CONTINENTAL",
+            "sex": "MALE",
+            "sportsType": "FUTSAL",
+            "teamCategory": "CLUB",
+            "translations": {
+                "name": {
+                    "EN": "UEFA Futsal Champions League",
+                    "FR": "UEFA Futsal Champions League",
+                    "DE": "UEFA Futsal Champions League",
+                    "ES": "UEFA Champions League de Fútbol Sala",
+                    "PT": "UEFA Futsal Champions League",
+                    "IT": "UEFA Futsal Champions League",
+                    "RU": "Лига чемпионов по футзалу",
+                    "ZH": "UEFA五人制足球联赛杯",
+                    "TR": "UEFA Futsal Champions League",
+                    "HU": "Futsal Champions League",
+                    "CS": "UEFA Futsal Champions League",
+                    "NL": "Futsal Champions League"
+                },
+                "prequalifyingName": {
+                    "EN": "UEFA Futsal Champions League",
+                    "FR": "UEFA Futsal Champions League",
+                    "DE": "UEFA Futsal Champions League",
+                    "ES": "UEFA Champions League de Fútbol Sala",
+                    "PT": "UEFA Futsal Champions League",
+                    "IT": "UEFA Futsal Champions League",
+                    "RU": "Лига чемпионов по футзалу",
+                    "ZH": "UEFA五人制足球联赛杯",
+                    "TR": "UEFA Futsal Champions League",
+                    "HU": "Futsal Champions League",
+                    "CS": "UEFA Futsal Champions League",
+                    "NL": "Futsal Champions League"
+                },
+                "qualifyingName": {
+                    "EN": "UEFA Futsal Champions League",
+                    "FR": "UEFA Futsal Champions League",
+                    "DE": "UEFA Futsal Champions League",
+                    "ES": "UEFA Champions League de Fútbol Sala",
+                    "PT": "UEFA Futsal Champions League",
+                    "IT": "UEFA Futsal Champions League",
+                    "RU": "Лига чемпионов по футзалу",
+                    "ZH": "UEFA五人制足球联赛杯",
+                    "TR": "UEFA Futsal Champions League",
+                    "HU": "Futsal Champions League",
+                    "CS": "UEFA Futsal Champions League",
+                    "NL": "Futsal Champions League"
+                },
+                "tournamentName": {
+                    "EN": "UEFA Futsal Champions League",
+                    "FR": "UEFA Futsal Champions League",
+                    "DE": "UEFA Futsal Champions League",
+                    "ES": "UEFA Champions League de Fútbol Sala",
+                    "PT": "UEFA Futsal Champions League",
+                    "IT": "UEFA Futsal Champions League",
+                    "RU": "Лига чемпионов по футзалу",
+                    "ZH": "UEFA五人制足球联赛杯",
+                    "TR": "UEFA Futsal Champions League",
+                    "HU": "Futsal Champions League",
+                    "CS": "UEFA Futsal Champions League",
+                    "NL": "Futsal Champions League"
+                }
+            },
+            "type": "CUP"
+        },
+        "condition": {
+            "temperature": 0,
+            "windSpeed": 0
+        },
+        "fullTimeAt": "2022-10-29T19:47:38.582Z",
+        "group": {
+            "competitionId": "27",
+            "id": "2010591",
+            "metaData": {
+                "groupName": "Group 2",
+                "groupShortName": "Grp2"
+            },
+            "order": 2,
+            "phase": "QUALIFYING",
+            "roundId": "2001713",
+            "seasonYear": "2023",
+            "teams": [
+                "78223",
+                "2612344",
+                "2605071",
+                "2603172"
+            ],
+            "teamsQualifiedNumber": 1,
+            "translations": {
+                "name": {
+                    "EN": "Group 2",
+                    "FR": "Groupe 2",
+                    "DE": "Gruppe 2",
+                    "ES": "Grupo 2",
+                    "PT": "Grupo 2",
+                    "IT": "Gruppo 2",
+                    "RU": "Группа 2",
+                    "ZH": "2组",
+                    "TR": "Group 2",
+                    "HU": "Group 2",
+                    "CS": "Group 2",
+                    "NL": "Group 2"
+                },
+                "shortName": {
+                    "EN": "2",
+                    "FR": "2",
+                    "DE": "2",
+                    "ES": "2",
+                    "PT": "2",
+                    "IT": "2",
+                    "RU": "2",
+                    "ZH": "2",
+                    "TR": "2",
+                    "HU": "2",
+                    "CS": "2",
+                    "NL": "2"
+                }
+            },
+            "type": "STANDARD"
+        },
+        "homeTeam": {
+            "associationId": "256370",
+            "associationLogoUrl": "https://img.uefa.com/imgml/uefacom/elements/logos/ma/CRO.svg",
+            "bigLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/700x700/2605071.png",
+            "confederationType": "UEFA",
+            "countryCode": "CRO",
+            "id": "2605071",
+            "idProvider": "FAME",
+            "internationalName": "Novo Vrijeme",
+            "isPlaceHolder": false,
+            "logoUrl": "https://img.uefa.com/imgml/TP/teams/logos/70x70/2605071.png",
+            "mediumLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/2605071.png",
+            "organizationId": "250003580",
+            "teamCode": "",
+            "teamTypeDetail": "DOMESTIC_MEN_FUTSAL_TEAM_A",
+            "translations": {
+                "countryName": {
+                    "EN": "Croatia",
+                    "FR": "Croatie",
+                    "DE": "Kroatien",
+                    "ES": "Croacia",
+                    "PT": "Croácia",
+                    "IT": "Croazia",
+                    "RU": "Хорватия",
+                    "ZH": "克罗地亚",
+                    "TR": "Croatia",
+                    "HU": "Croatia",
+                    "CS": "Croatia",
+                    "NL": "Croatia"
+                },
+                "displayName": {
+                    "EN": "Novo Vrijeme",
+                    "FR": "Novo Vrijeme",
+                    "DE": "Novo Vrijeme",
+                    "ES": "Novo Vrijeme",
+                    "PT": "Novo Vrijeme",
+                    "IT": "Novo Vrijeme",
+                    "RU": "Ново Вриеме",
+                    "ZH": "Novo Vrijeme",
+                    "TR": "Novo Vrijeme",
+                    "HU": "Novo Vrijeme",
+                    "CS": "Novo Vrijeme",
+                    "NL": "Novo Vrijeme"
+                },
+                "displayOfficialName": {
+                    "EN": "Novo Vrijeme",
+                    "FR": "Novo Vrijeme",
+                    "DE": "Novo Vrijeme",
+                    "ES": "Novo Vrijeme",
+                    "PT": "Novo Vrijeme",
+                    "IT": "Novo Vrijeme",
+                    "RU": "Ново Вриеме",
+                    "ZH": "Novo Vrijeme",
+                    "TR": "Novo Vrijeme",
+                    "HU": "Novo Vrijeme",
+                    "CS": "Novo Vrijeme",
+                    "NL": "Novo Vrijeme"
+                },
+                "displayTeamCode": {
+                    "ZH": "NOV"
+                }
+            },
+            "typeIsNational": false,
+            "typeTeam": "DOMESTIC"
+        },
+        "id": "2035347",
+        "kickOffTime": {
+            "date": "2022-10-29",
+            "dateTime": "2022-10-29T18:30:00Z",
+            "utcOffsetInHours": 2
+        },
+        "lineupStatus": "TACTICAL_AVAILABLE",
+        "matchAttendance": 1050,
+        "matchday": {
+            "competitionId": "27",
+            "dateFrom": "2022-10-27T22:00:00+0000",
+            "dateTo": "2022-10-30T22:59:59+0000",
+            "format": "FUTSAL_PENALTIES_WITHOUT_EXTRA_TIME",
+            "id": "35181",
+            "longName": "Matchday 3",
+            "name": "MD3",
+            "roundId": "2001713",
+            "seasonYear": "2023",
+            "sequenceNumber": "3",
+            "translations": {
+                "longName": {
+                    "EN": "Matchday 3",
+                    "FR": "Journée 3",
+                    "DE": "Spieltag 3",
+                    "ES": "Jornada 3",
+                    "PT": "Jornada 3",
+                    "IT": "Giornata 3",
+                    "RU": "Тур 3",
+                    "ZH": "比赛日 3",
+                    "TR": "Matchday 3",
+                    "HU": "Matchday 3",
+                    "CS": "Matchday 3",
+                    "NL": "Matchday 3"
+                },
+                "name": {
+                    "EN": "MD 3",
+                    "FR": "J 3",
+                    "DE": "ST 3",
+                    "ES": "JOR 3",
+                    "PT": "J 3",
+                    "IT": "G 3",
+                    "RU": "Тур 3",
+                    "ZH": "比赛日 3",
+                    "TR": "MD 3",
+                    "HU": "MD 3",
+                    "CS": "MD 3",
+                    "NL": "MD 3"
+                }
+            },
+            "type": "MATCHDAY"
+        },
+        "playerEvents": {
+            "scorers": [
+                {
+                    "goalType": "SCORED",
+                    "id": "6012f779faa7458ba1f1daf504dd77d8",
+                    "phase": "FIRST_HALF",
+                    "player": {
+                        "age": "26",
+                        "birthDate": "1999-02-28",
+                        "clubId": "78223",
+                        "clubJerseyNumber": "13",
+                        "clubShirtName": "SOKOLOV",
+                        "countryCode": "RUS",
+                        "detailedFieldPosition": "UNKNOWN",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250107457",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250107457.jpg",
+                        "internationalName": "Anton Sokolov",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "17",
+                        "nationalShirtName": "Sokolov",
+                        "nationalTeamId": "757451",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Russia",
+                                "FR": "Russie",
+                                "DE": "Russland",
+                                "ES": "Rusia",
+                                "PT": "Rússia",
+                                "IT": "Russia",
+                                "RU": "Россия",
+                                "ZH": "俄罗斯",
+                                "TR": "Russia",
+                                "HU": "Russia",
+                                "CS": "Russia",
+                                "NL": "Russia"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "EN": "Anton",
+                                "FR": "Anton",
+                                "DE": "Anton",
+                                "ES": "Anton",
+                                "PT": "Anton",
+                                "IT": "Anton",
+                                "RU": "Антон",
+                                "ZH": "Anton",
+                                "TR": "Anton",
+                                "HU": "Anton",
+                                "CS": "Anton",
+                                "NL": "Anton"
+                            },
+                            "lastName": {
+                                "EN": "Sokolov",
+                                "FR": "Sokolov",
+                                "DE": "Sokolov",
+                                "ES": "Sokolov",
+                                "PT": "Sokolov",
+                                "IT": "Sokolov",
+                                "RU": "Соколов",
+                                "ZH": "Sokolov",
+                                "TR": "Sokolov",
+                                "HU": "Sokolov",
+                                "CS": "Sokolov",
+                                "NL": "Sokolov"
+                            },
+                            "name": {
+                                "EN": "Anton Sokolov",
+                                "FR": "Anton Sokolov",
+                                "DE": "Anton Sokolov",
+                                "ES": "Anton Sokolov",
+                                "PT": "Anton Sokolov",
+                                "IT": "Anton Sokolov",
+                                "RU": "Антон Соколов",
+                                "ZH": "Anton Sokolov",
+                                "TR": "Anton Sokolov",
+                                "HU": "Anton Sokolov",
+                                "CS": "Anton Sokolov",
+                                "NL": "Anton Sokolov"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Sokolov",
+                                "FR": "Sokolov",
+                                "DE": "Sokolov",
+                                "ES": "Sokolov",
+                                "PT": "Sokolov",
+                                "IT": "Sokolov",
+                                "RU": "Соколов",
+                                "ZH": "Sokolov",
+                                "TR": "Sokolov",
+                                "HU": "Sokolov",
+                                "CS": "Sokolov",
+                                "NL": "Sokolov"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 5,
+                        "second": 30
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "b8b5460ddc064afa96b8dc843c4931c6",
+                    "phase": "FIRST_HALF",
+                    "player": {
+                        "age": "25",
+                        "birthDate": "2000-04-19",
+                        "clubId": "78223",
+                        "clubJerseyNumber": "4",
+                        "clubShirtName": "TOMÁS PAÇÓ",
+                        "countryCode": "POR",
+                        "detailedFieldPosition": "UNKNOWN",
+                        "fieldPosition": "DEFENDER",
+                        "gender": "MALE",
+                        "id": "250125848",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250125848.jpg",
+                        "internationalName": "Tomás Paçó",
+                        "nationalFieldPosition": "DEFENDER",
+                        "nationalJerseyNumber": "3",
+                        "nationalShirtName": "TOMÁS PAÇO",
+                        "nationalTeamId": "700110",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Portugal",
+                                "FR": "Portugal",
+                                "DE": "Portugal",
+                                "ES": "Portugal",
+                                "PT": "Portugal",
+                                "IT": "Portogallo",
+                                "RU": "Португалия",
+                                "ZH": "葡萄牙",
+                                "TR": "Portugal",
+                                "HU": "Portugal",
+                                "CS": "Portugal",
+                                "NL": "Portugal"
+                            },
+                            "fieldPosition": {
+                                "EN": "Defender",
+                                "FR": "Défenseur",
+                                "DE": "Verteidiger",
+                                "ES": "Defensa",
+                                "PT": "Defesa",
+                                "IT": "Difensore",
+                                "RU": "Защитник",
+                                "ZH": "后卫",
+                                "TR": "Defender",
+                                "HU": "Defender",
+                                "CS": "Defender",
+                                "NL": "Defender"
+                            },
+                            "firstName": {
+                                "ZH": "Tomás Eduardo"
+                            },
+                            "lastName": {
+                                "EN": "Tomás Paçó",
+                                "FR": "Tomás Paçó",
+                                "DE": "Tomás Paçó",
+                                "ES": "Tomás Paçó",
+                                "PT": "Tomás Paçó",
+                                "IT": "Tomás Paçó",
+                                "RU": "Томаш Пасо",
+                                "ZH": "Carriço Paço",
+                                "TR": "Tomás Paço",
+                                "HU": "Tomás Paço",
+                                "CS": "Tomás Paço",
+                                "NL": "Tomás Paço"
+                            },
+                            "name": {
+                                "EN": "Tomás Paçó",
+                                "FR": "Tomás Paçó",
+                                "DE": "Tomás Paçó",
+                                "ES": "Tomás Paçó",
+                                "PT": "Tomás Paçó",
+                                "IT": "Tomás Paçó",
+                                "RU": "Томаш Пасо",
+                                "ZH": "Tomás Eduardo Carriço Paço",
+                                "TR": "Tomás Paço",
+                                "HU": "Tomás Paço",
+                                "CS": "Tomás Paço",
+                                "NL": "Tomás Paço"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Defender",
+                                "FR": "Défenseur",
+                                "DE": "Verteidiger",
+                                "ES": "Defensa",
+                                "PT": "Defesa",
+                                "IT": "Difensore",
+                                "RU": "Защитник",
+                                "ZH": "后卫",
+                                "TR": "Defender",
+                                "HU": "Defender",
+                                "CS": "Defender",
+                                "NL": "Defender"
+                            },
+                            "shortName": {
+                                "EN": "Tomás Paçó",
+                                "FR": "Tomás Paçó",
+                                "DE": "Tomás Paçó",
+                                "ES": "Tomás Paçó",
+                                "PT": "Tomás Paçó",
+                                "IT": "Tomás Paçó",
+                                "RU": "Томаш Пасо",
+                                "ZH": "Carriço Paço",
+                                "TR": "Tomás Paço",
+                                "HU": "Tomás Paço",
+                                "CS": "Tomás Paço",
+                                "NL": "Tomás Paço"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 6,
+                        "second": 15
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "de9b545af1bb4e428692246f4b562bfb",
+                    "phase": "FIRST_HALF",
+                    "player": {
+                        "age": "24",
+                        "birthDate": "2001-09-01",
+                        "clubId": "78223",
+                        "clubJerseyNumber": "6",
+                        "clubShirtName": "ZICKY",
+                        "countryCode": "POR",
+                        "detailedFieldPosition": "UNKNOWN",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250116477",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250116477.jpg",
+                        "internationalName": "Zicky",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "6",
+                        "nationalShirtName": "ZICKY",
+                        "nationalTeamId": "700110",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Portugal",
+                                "FR": "Portugal",
+                                "DE": "Portugal",
+                                "ES": "Portugal",
+                                "PT": "Portugal",
+                                "IT": "Portogallo",
+                                "RU": "Португалия",
+                                "ZH": "葡萄牙",
+                                "TR": "Portugal",
+                                "HU": "Portugal",
+                                "CS": "Portugal",
+                                "NL": "Portugal"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "ZH": "Izaquel"
+                            },
+                            "lastName": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Té",
+                                "TR": "Zicky",
+                                "HU": "Zicky",
+                                "CS": "Zicky",
+                                "NL": "Zicky"
+                            },
+                            "name": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Izaquel Té",
+                                "TR": "Zicky Té",
+                                "HU": "Zicky Té",
+                                "CS": "Zicky Té",
+                                "NL": "Zicky Té"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Té",
+                                "TR": "Zicky",
+                                "HU": "Zicky",
+                                "CS": "Zicky",
+                                "NL": "Zicky"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 9,
+                        "second": 38
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "f4bbe8666db44936a30a9ebdb039146e",
+                    "phase": "FIRST_HALF",
+                    "player": {
+                        "age": "25",
+                        "birthDate": "2000-05-05",
+                        "clubId": "2604085",
+                        "clubJerseyNumber": "17",
+                        "clubShirtName": "Neves",
+                        "countryCode": "POR",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250116483",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250116483.jpg",
+                        "internationalName": "Hugo Neves",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "5",
+                        "nationalShirtName": "NEVES",
+                        "nationalTeamId": "700110",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Portugal",
+                                "FR": "Portugal",
+                                "DE": "Portugal",
+                                "ES": "Portugal",
+                                "PT": "Portugal",
+                                "IT": "Portogallo",
+                                "RU": "Португалия",
+                                "ZH": "葡萄牙",
+                                "TR": "Portugal",
+                                "HU": "Portugal",
+                                "CS": "Portugal",
+                                "NL": "Portugal"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "ZH": "Hugo"
+                            },
+                            "lastName": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            },
+                            "name": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Hugo Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 16,
+                        "second": 23
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "cc8eb1e5891e4fae8257f87661723b45",
+                    "phase": "FIRST_HALF",
+                    "player": {
+                        "age": "24",
+                        "birthDate": "2001-09-01",
+                        "clubId": "78223",
+                        "clubJerseyNumber": "6",
+                        "clubShirtName": "ZICKY",
+                        "countryCode": "POR",
+                        "detailedFieldPosition": "UNKNOWN",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250116477",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250116477.jpg",
+                        "internationalName": "Zicky",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "6",
+                        "nationalShirtName": "ZICKY",
+                        "nationalTeamId": "700110",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Portugal",
+                                "FR": "Portugal",
+                                "DE": "Portugal",
+                                "ES": "Portugal",
+                                "PT": "Portugal",
+                                "IT": "Portogallo",
+                                "RU": "Португалия",
+                                "ZH": "葡萄牙",
+                                "TR": "Portugal",
+                                "HU": "Portugal",
+                                "CS": "Portugal",
+                                "NL": "Portugal"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "ZH": "Izaquel"
+                            },
+                            "lastName": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Té",
+                                "TR": "Zicky",
+                                "HU": "Zicky",
+                                "CS": "Zicky",
+                                "NL": "Zicky"
+                            },
+                            "name": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Izaquel Té",
+                                "TR": "Zicky Té",
+                                "HU": "Zicky Té",
+                                "CS": "Zicky Té",
+                                "NL": "Zicky Té"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Zicky",
+                                "FR": "Zicky",
+                                "DE": "Zicky",
+                                "ES": "Zicky",
+                                "PT": "Zicky",
+                                "IT": "Zicky",
+                                "RU": "Зики",
+                                "ZH": "Té",
+                                "TR": "Zicky",
+                                "HU": "Zicky",
+                                "CS": "Zicky",
+                                "NL": "Zicky"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 18,
+                        "second": 27
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "bb4f10b601ab45e496d1c7f095837e5f",
+                    "phase": "SECOND_HALF",
+                    "player": {
+                        "age": "30",
+                        "birthDate": "1995-02-18",
+                        "clubId": "78223",
+                        "clubJerseyNumber": "44",
+                        "clubShirtName": "Esteban",
+                        "countryCode": "ESP",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250080432",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250080432.jpg",
+                        "internationalName": "Esteban Cejudo",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "11",
+                        "nationalShirtName": "CEJUDO GUERRERO",
+                        "nationalTeamId": "700122",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Spain",
+                                "FR": "Espagne",
+                                "DE": "Spanien",
+                                "ES": "España",
+                                "PT": "Espanha",
+                                "IT": "Spagna",
+                                "RU": "Испания",
+                                "ZH": "西班牙",
+                                "TR": "Spain",
+                                "HU": "Spain",
+                                "CS": "Spain",
+                                "NL": "Spain"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "ZH": "Esteban"
+                            },
+                            "lastName": {
+                                "EN": "Esteban",
+                                "FR": "Esteban",
+                                "DE": "Esteban",
+                                "ES": "Esteban",
+                                "PT": "Esteban",
+                                "IT": "Esteban",
+                                "RU": "Эстебан Сехудо",
+                                "ZH": "Cejudo Guerrero",
+                                "TR": "Esteban",
+                                "HU": "Esteban",
+                                "CS": "Esteban",
+                                "NL": "Esteban"
+                            },
+                            "name": {
+                                "EN": "Esteban Cejudo",
+                                "FR": "Esteban Cejudo",
+                                "DE": "Esteban Cejudo",
+                                "ES": "Esteban Cejudo",
+                                "PT": "Esteban Cejudo",
+                                "IT": "Esteban Cejudo",
+                                "RU": "Эстебан Сехудо",
+                                "ZH": "Esteban Cejudo Guerrero",
+                                "TR": "Esteban Cejudo",
+                                "HU": "Esteban Cejudo",
+                                "CS": "Esteban Cejudo",
+                                "NL": "Esteban Cejudo"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Esteban",
+                                "FR": "Esteban",
+                                "DE": "Esteban",
+                                "ES": "Esteban",
+                                "PT": "Esteban",
+                                "IT": "Esteban",
+                                "RU": "Эстебан Сехудо",
+                                "ZH": "Cejudo Guerrero",
+                                "TR": "Esteban",
+                                "HU": "Esteban",
+                                "CS": "Esteban",
+                                "NL": "Esteban"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 34,
+                        "second": 5
+                    }
+                },
+                {
+                    "goalType": "SCORED",
+                    "id": "80cd37d676814139b09603024896b1be",
+                    "phase": "SECOND_HALF",
+                    "player": {
+                        "age": "25",
+                        "birthDate": "2000-05-05",
+                        "clubId": "2604085",
+                        "clubJerseyNumber": "17",
+                        "clubShirtName": "Neves",
+                        "countryCode": "POR",
+                        "fieldPosition": "FORWARD",
+                        "gender": "MALE",
+                        "id": "250116483",
+                        "imageUrl": "https://img.uefa.com/imgml/TP/players/27/2023/324x324/250116483.jpg",
+                        "internationalName": "Hugo Neves",
+                        "nationalFieldPosition": "FORWARD",
+                        "nationalJerseyNumber": "5",
+                        "nationalShirtName": "NEVES",
+                        "nationalTeamId": "700110",
+                        "translations": {
+                            "countryName": {
+                                "EN": "Portugal",
+                                "FR": "Portugal",
+                                "DE": "Portugal",
+                                "ES": "Portugal",
+                                "PT": "Portugal",
+                                "IT": "Portogallo",
+                                "RU": "Португалия",
+                                "ZH": "葡萄牙",
+                                "TR": "Portugal",
+                                "HU": "Portugal",
+                                "CS": "Portugal",
+                                "NL": "Portugal"
+                            },
+                            "fieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "firstName": {
+                                "ZH": "Hugo"
+                            },
+                            "lastName": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            },
+                            "name": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Hugo Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            },
+                            "nationalFieldPosition": {
+                                "EN": "Forward",
+                                "FR": "Attaquant",
+                                "DE": "Stürmer",
+                                "ES": "Delantero",
+                                "PT": "Avançado",
+                                "IT": "Attaccante",
+                                "RU": "Нападающий",
+                                "ZH": "前锋",
+                                "TR": "Forward",
+                                "HU": "Forward",
+                                "CS": "Forward",
+                                "NL": "Forward"
+                            },
+                            "shortName": {
+                                "EN": "Hugo Neves",
+                                "FR": "Hugo Neves",
+                                "DE": "Hugo Neves",
+                                "ES": "Hugo Neves",
+                                "PT": "Hugo Neves",
+                                "IT": "Hugo Neves",
+                                "RU": "Угу Невеш",
+                                "ZH": "Silva",
+                                "TR": "Neves",
+                                "HU": "Neves",
+                                "CS": "Neves",
+                                "NL": "Neves"
+                            }
+                        }
+                    },
+                    "teamId": "78223",
+                    "teamIdProvider": "FAME",
+                    "time": {
+                        "minute": 35,
+                        "second": 35
+                    }
+                }
+            ]
+        },
+        "referees": [
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/271144.jpg"
+                },
+                "person": {
+                    "countryCode": "ESP",
+                    "gender": "MALE",
+                    "id": "271144",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Spain",
+                            "FR": "Espagne",
+                            "DE": "Spanien",
+                            "ES": "España",
+                            "PT": "Espanha",
+                            "IT": "Spagna",
+                            "RU": "Испания",
+                            "ZH": "西班牙",
+                            "TR": "Spain",
+                            "HU": "Spain",
+                            "CS": "Spain",
+                            "NL": "Spain"
+                        },
+                        "firstName": {
+                            "EN": "Pedro",
+                            "FR": "Pedro",
+                            "DE": "Pedro",
+                            "ES": "Pedro",
+                            "PT": "Pedro",
+                            "IT": "Pedro",
+                            "RU": "Педро",
+                            "ZH": "Pedro Ángel",
+                            "TR": "Pedro Ángel",
+                            "HU": "Pedro Ángel",
+                            "CS": "Pedro Ángel",
+                            "NL": "Pedro Ángel"
+                        },
+                        "lastName": {
+                            "EN": "Galán",
+                            "FR": "Galán",
+                            "DE": "Galán",
+                            "ES": "Galán",
+                            "PT": "Galán",
+                            "IT": "Galán",
+                            "RU": "Галан Ньето",
+                            "ZH": "Galán Nieto",
+                            "TR": "Galán Nieto",
+                            "HU": "Galán Nieto",
+                            "CS": "Galán Nieto",
+                            "NL": "Galán Nieto"
+                        },
+                        "name": {
+                            "EN": "Pedro Galán Nieto",
+                            "FR": "Pedro Galán Nieto",
+                            "DE": "Pedro Galán Nieto",
+                            "ES": "Pedro Galán Nieto",
+                            "PT": "Pedro Galán Nieto",
+                            "IT": "Pedro Galán Nieto",
+                            "RU": "Педро Галан Ньето",
+                            "ZH": "Pedro Ángel Galán Nieto",
+                            "TR": "Pedro Ángel Galán Nieto",
+                            "HU": "Pedro Ángel Galán Nieto",
+                            "CS": "Pedro Ángel Galán Nieto",
+                            "NL": "Pedro Ángel Galán Nieto"
+                        },
+                        "shortName": {
+                            "EN": "Galán Nieto",
+                            "FR": "Galán Nieto",
+                            "DE": "Galán Nieto",
+                            "ES": "Galán Nieto",
+                            "PT": "Galán Nieto",
+                            "IT": "Galán Nieto",
+                            "RU": "Галан Ньето",
+                            "ZH": "Galán Nieto",
+                            "TR": "Galán Nieto",
+                            "HU": "Galán Nieto",
+                            "CS": "Galán Nieto",
+                            "NL": "Galán Nieto"
+                        }
+                    }
+                },
+                "role": "REFEREE_OBSERVER",
+                "translations": {
+                    "roleName": {
+                        "EN": "Referee observer",
+                        "FR": "Observateur d'arbitres",
+                        "DE": "Referee observer",
+                        "ES": "Observador arbitral",
+                        "PT": "Observador de árbitro",
+                        "IT": "Referee observer",
+                        "RU": "Судейский наблюдатель",
+                        "ZH": "Referee observer",
+                        "TR": "Referee observer",
+                        "HU": "Referee observer",
+                        "CS": "Referee observer",
+                        "NL": "Referee observer"
+                    }
+                }
+            },
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/250153222.jpg"
+                },
+                "person": {
+                    "countryCode": "CRO",
+                    "gender": "MALE",
+                    "id": "250153222",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Croatia",
+                            "FR": "Croatie",
+                            "DE": "Kroatien",
+                            "ES": "Croacia",
+                            "PT": "Croácia",
+                            "IT": "Croazia",
+                            "RU": "Хорватия",
+                            "ZH": "克罗地亚",
+                            "TR": "Croatia",
+                            "HU": "Croatia",
+                            "CS": "Croatia",
+                            "NL": "Croatia"
+                        },
+                        "firstName": {
+                            "EN": "Dino",
+                            "FR": "Dino",
+                            "DE": "Dino",
+                            "ES": "Dino",
+                            "PT": "Dino",
+                            "IT": "Dino",
+                            "RU": "Дино",
+                            "ZH": "Dino",
+                            "TR": "Dino",
+                            "HU": "Dino",
+                            "CS": "Dino",
+                            "NL": "Dino"
+                        },
+                        "lastName": {
+                            "EN": "Kramar",
+                            "FR": "Kramar",
+                            "DE": "Kramar",
+                            "ES": "Kramar",
+                            "PT": "Kramar",
+                            "IT": "Kramar",
+                            "RU": "Крамар",
+                            "ZH": "Kramar",
+                            "TR": "Kramar",
+                            "HU": "Kramar",
+                            "CS": "Kramar",
+                            "NL": "Kramar"
+                        },
+                        "name": {
+                            "EN": "Dino Kramar",
+                            "FR": "Dino Kramar",
+                            "DE": "Dino Kramar",
+                            "ES": "Dino Kramar",
+                            "PT": "Dino Kramar",
+                            "IT": "Dino Kramar",
+                            "RU": "Дино Крамар",
+                            "ZH": "Dino Kramar",
+                            "TR": "Dino Kramar",
+                            "HU": "Dino Kramar",
+                            "CS": "Dino Kramar",
+                            "NL": "Dino Kramar"
+                        },
+                        "shortName": {
+                            "EN": "Kramar",
+                            "FR": "Kramar",
+                            "DE": "Kramar",
+                            "ES": "Kramar",
+                            "PT": "Kramar",
+                            "IT": "Kramar",
+                            "RU": "Крамар",
+                            "ZH": "Kramar",
+                            "TR": "Kramar",
+                            "HU": "Kramar",
+                            "CS": "Kramar",
+                            "NL": "Kramar"
+                        }
+                    }
+                },
+                "role": "TIMEKEEPER",
+                "translations": {
+                    "roleName": {
+                        "EN": "Timekeeper",
+                        "FR": "Chronométreur",
+                        "DE": "Zeitnehmer",
+                        "ES": "Cronómetro",
+                        "PT": "Cronometrista",
+                        "IT": "Cronometro",
+                        "RU": "Хронометрист",
+                        "ZH": "Cronometrista",
+                        "TR": "Timekeeper",
+                        "HU": "Timekeeper",
+                        "CS": "Timekeeper",
+                        "NL": "Timekeeper"
+                    }
+                }
+            },
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/250117022.jpg"
+                },
+                "person": {
+                    "countryCode": "UKR",
+                    "gender": "MALE",
+                    "id": "250117022",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Ukraine",
+                            "FR": "Ukraine",
+                            "DE": "Ukraine",
+                            "ES": "Ucrania",
+                            "PT": "Ucrânia",
+                            "IT": "Ucraina",
+                            "RU": "Украина",
+                            "ZH": "乌克兰",
+                            "TR": "Ukraine",
+                            "HU": "Ukraine",
+                            "CS": "Ukraine",
+                            "NL": "Ukraine"
+                        },
+                        "firstName": {
+                            "EN": "Denys",
+                            "FR": "Denys",
+                            "DE": "Denys",
+                            "ES": "Denys",
+                            "PT": "Denys",
+                            "IT": "Denys",
+                            "RU": "Denys",
+                            "ZH": "Denys",
+                            "TR": "Denys",
+                            "HU": "Denys",
+                            "CS": "Denys",
+                            "NL": "Denys"
+                        },
+                        "lastName": {
+                            "EN": "Kutsyi",
+                            "FR": "Kutsyi",
+                            "DE": "Kutsyi",
+                            "ES": "Kutsyi",
+                            "PT": "Kutsyi",
+                            "IT": "Kutsyi",
+                            "RU": "Kutsyi",
+                            "ZH": "Kutsyi",
+                            "TR": "Kutsyi",
+                            "HU": "Kutsyi",
+                            "CS": "Kutsyi",
+                            "NL": "Kutsyi"
+                        },
+                        "name": {
+                            "EN": "Denys Kutsyi",
+                            "FR": "Denys Kutsyi",
+                            "DE": "Denys Kutsyi",
+                            "ES": "Denys Kutsyi",
+                            "PT": "Denys Kutsyi",
+                            "IT": "Denys Kutsyi",
+                            "RU": "Денис Куцый",
+                            "ZH": "Denys Kutsyi",
+                            "TR": "Denys Kutsyi",
+                            "HU": "Denys Kutsyi",
+                            "CS": "Denys Kutsyi",
+                            "NL": "Denys Kutsyi"
+                        },
+                        "shortName": {
+                            "EN": "Kutsyi",
+                            "FR": "Kutsyi",
+                            "DE": "Kutsyi",
+                            "ES": "Kutsyi",
+                            "PT": "Kutsyi",
+                            "IT": "Kutsyi",
+                            "RU": "Куцый",
+                            "ZH": "Kutsyi",
+                            "TR": "Kutsyi",
+                            "HU": "Kutsyi",
+                            "CS": "Kutsyi",
+                            "NL": "Kutsyi"
+                        }
+                    }
+                },
+                "role": "REFEREE_ONE",
+                "translations": {
+                    "roleName": {
+                        "EN": "Referee",
+                        "FR": "Arbitre",
+                        "DE": "Schiedsrichter",
+                        "ES": "Árbitro",
+                        "PT": "Árbitro",
+                        "IT": "Arbitro",
+                        "RU": "Первый рефери",
+                        "ZH": "Primeiro árbitro",
+                        "TR": "Referee",
+                        "HU": "First Referee",
+                        "CS": "Referee",
+                        "NL": "First Referee"
+                    }
+                }
+            },
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/250015679.jpg"
+                },
+                "person": {
+                    "countryCode": "CZE",
+                    "gender": "MALE",
+                    "id": "250015679",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Czechia",
+                            "FR": "Tchéquie",
+                            "DE": "Tschechien",
+                            "ES": "Chequia",
+                            "PT": "Chéquia",
+                            "IT": "Cechia",
+                            "RU": "Чехия",
+                            "ZH": "捷克语",
+                            "TR": "Czechia",
+                            "HU": "Czech Republic",
+                            "CS": "Czechia",
+                            "NL": "Czech Republic"
+                        },
+                        "firstName": {
+                            "EN": "Ondrej",
+                            "FR": "Ondrej",
+                            "DE": "Ondrej",
+                            "ES": "Ondrej",
+                            "PT": "Ondrej",
+                            "IT": "Ondrej",
+                            "RU": "Ondrej",
+                            "ZH": "Ondrej",
+                            "TR": "Ondrej",
+                            "HU": "Ondrej",
+                            "CS": "Ondrej",
+                            "NL": "Ondrej"
+                        },
+                        "lastName": {
+                            "EN": "Cerny",
+                            "FR": "Cerny",
+                            "DE": "Cerny",
+                            "ES": "Cerny",
+                            "PT": "Cerny",
+                            "IT": "Cerny",
+                            "RU": "Cerny",
+                            "ZH": "Cerny",
+                            "TR": "Cerny",
+                            "HU": "Cerny",
+                            "CS": "Cerny",
+                            "NL": "Cerny"
+                        },
+                        "name": {
+                            "EN": "Ondřej Černý",
+                            "FR": "Ondřej Černý",
+                            "DE": "Ondřej Černý",
+                            "ES": "Ondřej Černý",
+                            "PT": "Ondřej Černý",
+                            "IT": "Ondřej Černý",
+                            "RU": "Онджей Черны",
+                            "ZH": "Ondrej Cerny",
+                            "TR": "Ondřej Černý",
+                            "HU": "Ondřej Černý",
+                            "CS": "Ondřej Černý",
+                            "NL": "Ondřej Černý"
+                        },
+                        "shortName": {
+                            "EN": "Černý",
+                            "FR": "Černý",
+                            "DE": "Černý",
+                            "ES": "Černý",
+                            "PT": "Černý",
+                            "IT": "Černý",
+                            "RU": "Черны",
+                            "ZH": "Cerny",
+                            "TR": "Černý",
+                            "HU": "Černý",
+                            "CS": "Černý",
+                            "NL": "Černý"
+                        }
+                    }
+                },
+                "role": "REFEREE_THREE",
+                "translations": {
+                    "roleName": {
+                        "EN": "Third Referee",
+                        "FR": "Troisième arbitre",
+                        "DE": "Dritter Schiedsrichter",
+                        "ES": "Tercer árbitro",
+                        "PT": "Terceiro árbitro",
+                        "IT": "Terzo arbitro",
+                        "RU": "Третий рефери",
+                        "ZH": "Terceiro árbitro",
+                        "TR": "Third Referee",
+                        "HU": "Third Referee",
+                        "CS": "Third Referee",
+                        "NL": "Third Referee"
+                    }
+                }
+            },
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/250117009.jpg"
+                },
+                "person": {
+                    "countryCode": "ITA",
+                    "gender": "MALE",
+                    "id": "250117009",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Italy",
+                            "FR": "Italie",
+                            "DE": "Italien",
+                            "ES": "Italia",
+                            "PT": "Itália",
+                            "IT": "Italia",
+                            "RU": "Италия",
+                            "ZH": "意大利",
+                            "TR": "Italy",
+                            "HU": "Italy",
+                            "CS": "Italy",
+                            "NL": "Italy"
+                        },
+                        "firstName": {
+                            "EN": "Dario",
+                            "FR": "Dario",
+                            "DE": "Dario",
+                            "ES": "Dario",
+                            "PT": "Dario",
+                            "IT": "Dario",
+                            "RU": "Дарио",
+                            "ZH": "Dario",
+                            "TR": "Dario",
+                            "HU": "Dario",
+                            "CS": "Dario",
+                            "NL": "Dario"
+                        },
+                        "lastName": {
+                            "EN": "Pezzuto",
+                            "FR": "Pezzuto",
+                            "DE": "Pezzuto",
+                            "ES": "Pezzuto",
+                            "PT": "Pezzuto",
+                            "IT": "Pezzuto",
+                            "RU": "Пеццуто",
+                            "ZH": "Pezzuto",
+                            "TR": "Pezzuto",
+                            "HU": "Pezzuto",
+                            "CS": "Pezzuto",
+                            "NL": "Pezzuto"
+                        },
+                        "name": {
+                            "EN": "Dario Pezzuto",
+                            "FR": "Dario Pezzuto",
+                            "DE": "Dario Pezzuto",
+                            "ES": "Dario Pezzuto",
+                            "PT": "Dario Pezzuto",
+                            "IT": "Dario Pezzuto",
+                            "RU": "Дарио Пеццуто",
+                            "ZH": "Dario Pezzuto",
+                            "TR": "Dario Pezzuto",
+                            "HU": "Dario Pezzuto",
+                            "CS": "Dario Pezzuto",
+                            "NL": "Dario Pezzuto"
+                        },
+                        "shortName": {
+                            "EN": "Pezzuto",
+                            "FR": "Pezzuto",
+                            "DE": "Pezzuto",
+                            "ES": "Pezzuto",
+                            "PT": "Pezzuto",
+                            "IT": "Pezzuto",
+                            "RU": "Пеццуто",
+                            "ZH": "Pezzuto",
+                            "TR": "Pezzuto",
+                            "HU": "Pezzuto",
+                            "CS": "Pezzuto",
+                            "NL": "Pezzuto"
+                        }
+                    }
+                },
+                "role": "REFEREE_TWO",
+                "translations": {
+                    "roleName": {
+                        "EN": "Second Referee",
+                        "FR": "Deuxième arbitre",
+                        "DE": "Zweiter Schiedsrichter",
+                        "ES": "Segundo árbitro",
+                        "PT": "Segundo árbitro",
+                        "IT": "Secondo arbitro",
+                        "RU": "Второй рефери",
+                        "ZH": "Segundo árbitro",
+                        "TR": "Second Referee",
+                        "HU": "Second Referee",
+                        "CS": "Second Referee",
+                        "NL": "Second Referee"
+                    }
+                }
+            },
+            {
+                "images": {
+                    "SMALL_SQUARE": "https://img.uefa.com/imgml/referees/75x75/250057672.jpg"
+                },
+                "person": {
+                    "countryCode": "NED",
+                    "gender": "MALE",
+                    "id": "250057672",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Netherlands",
+                            "FR": "Pays-Bas",
+                            "DE": "Niederlande",
+                            "ES": "Holanda",
+                            "PT": "Holanda",
+                            "IT": "Olanda",
+                            "RU": "Нидерланды",
+                            "ZH": "荷兰",
+                            "TR": "Netherlands",
+                            "HU": "Netherlands",
+                            "CS": "Netherlands",
+                            "NL": "Netherlands"
+                        },
+                        "firstName": {
+                            "EN": "Hans",
+                            "FR": "Hans",
+                            "DE": "Hans",
+                            "ES": "Hans",
+                            "PT": "Hans",
+                            "IT": "Hans",
+                            "RU": "Hans",
+                            "ZH": "Hans",
+                            "TR": "Hans",
+                            "HU": "Hans",
+                            "CS": "Hans",
+                            "NL": "Hans"
+                        },
+                        "lastName": {
+                            "EN": "Schelling",
+                            "FR": "Schelling",
+                            "DE": "Schelling",
+                            "ES": "Schelling",
+                            "PT": "Schelling",
+                            "IT": "Schelling",
+                            "RU": "Schelling",
+                            "ZH": "Schelling",
+                            "TR": "Schelling",
+                            "HU": "Schelling",
+                            "CS": "Schelling",
+                            "NL": "Schelling"
+                        },
+                        "name": {
+                            "EN": "Hans Schelling",
+                            "FR": "Hans Schelling",
+                            "DE": "Hans Schelling",
+                            "ES": "Hans Schelling",
+                            "PT": "Hans Schelling",
+                            "IT": "Hans Schelling",
+                            "RU": "Ханс Шеллинг",
+                            "ZH": "Hans Schelling",
+                            "TR": "Hans Schelling",
+                            "HU": "Hans Schelling",
+                            "CS": "Hans Schelling",
+                            "NL": "Hans Schelling"
+                        },
+                        "shortName": {
+                            "EN": "Schelling",
+                            "FR": "Schelling",
+                            "DE": "Schelling",
+                            "ES": "Schelling",
+                            "PT": "Schelling",
+                            "IT": "Schelling",
+                            "RU": "Шеллинг",
+                            "ZH": "Schelling",
+                            "TR": "Schelling",
+                            "HU": "Schelling",
+                            "CS": "Schelling",
+                            "NL": "Schelling"
+                        }
+                    }
+                },
+                "role": "UEFA_DELEGATE",
+                "translations": {
+                    "roleName": {
+                        "EN": "UEFA Delegate",
+                        "FR": "Délégué ou déléguée UEFA",
+                        "DE": "UEFA-Delegierter",
+                        "ES": "Delegado UEFA",
+                        "PT": "Delegado da UEFA",
+                        "IT": "Delegata UEFA",
+                        "RU": "Делегат УЕФА",
+                        "ZH": "UEFA delegate",
+                        "TR": "UEFA Delegate",
+                        "HU": "UEFA delegate",
+                        "CS": "UEFA Delegate",
+                        "NL": "UEFA delegate"
+                    }
+                }
+            }
+        ],
+        "round": {
+            "active": false,
+            "benchGKCount": 9,
+            "benchPlayersCount": 9,
+            "benchStaffCount": 6,
+            "coefficientWinnerBonus": 0.0,
+            "competitionId": "27",
+            "dateFrom": "2022-10-24T22:00:00+0000",
+            "dateTo": "2022-10-30T22:59:59+0000",
+            "fieldPlayersCount": 5,
+            "groupCount": 8,
+            "id": "2001713",
+            "metaData": {
+                "name": "Main round",
+                "type": "INTERMEDIATE"
+            },
+            "mode": "GROUP",
+            "modeDetail": "GROUP",
+            "orderInCompetition": 2,
+            "phase": "QUALIFYING",
+            "seasonYear": "2023",
+            "secondaryType": "QUALIFYING",
+            "stadiumNameType": "OFFICIAL_NAME",
+            "status": "FINISHED",
+            "substitutionCount": 99,
+            "teamCount": 32,
+            "teams": [
+                "2601728",
+                "2601545",
+                "2607629",
+                "2612344",
+                "2601744",
+                "2605824",
+                "2612441",
+                "2612440",
+                "2609747",
+                "2601483",
+                "78223",
+                "2605189",
+                "2612426",
+                "2607283",
+                "87652",
+                "2607381",
+                "2604032",
+                "90395",
+                "2612432",
+                "2606946",
+                "2612431",
+                "2601559",
+                "87629",
+                "83886",
+                "2601531",
+                "2609019",
+                "2611764",
+                "2607074",
+                "2609750",
+                "2605071",
+                "2603172",
+                "2602140"
+            ],
+            "translations": {
+                "abbreviation": {
+                    "EN": "Main Round",
+                    "FR": "Tour principal",
+                    "DE": "Hauptrunde",
+                    "ES": "Ronda principal",
+                    "PT": "Ronda principal",
+                    "IT": "Turno principale",
+                    "RU": "Основной раунд",
+                    "ZH": "Main Round",
+                    "TR": "Main Round",
+                    "HU": "Main Round",
+                    "CS": "Main Round",
+                    "NL": "Main Round"
+                },
+                "name": {
+                    "EN": "Main Round",
+                    "FR": "Tour principal",
+                    "DE": "Hauptrunde",
+                    "ES": "Ronda principal",
+                    "PT": "Ronda principal",
+                    "IT": "Turno principale",
+                    "RU": "Основной раунд",
+                    "ZH": "Main Round",
+                    "TR": "Main Round",
+                    "HU": "Main Round",
+                    "CS": "Main Round",
+                    "NL": "Main Round"
+                },
+                "shortName": {
+                    "EN": "Main Round",
+                    "FR": "Tour principal",
+                    "DE": "Hauptrunde",
+                    "ES": "Ronda principal",
+                    "PT": "Ronda principal",
+                    "IT": "Turno principale",
+                    "RU": "Основной раунд",
+                    "ZH": "Main Round",
+                    "TR": "Main Round",
+                    "HU": "Main Round",
+                    "CS": "Main Round",
+                    "NL": "Main Round"
+                }
+            }
+        },
+        "score": {
+            "regular": {
+                "away": 7,
+                "home": 0
+            },
+            "total": {
+                "away": 7,
+                "home": 0
+            }
+        },
+        "seasonYear": "2023",
+        "sessionNumber": 0,
+        "stadium": {
+            "address": "Franjevacki Put 2",
+            "capacity": 3000,
+            "city": {
+                "countryCode": "CRO",
+                "id": "2169",
+                "translations": {
+                    "name": {
+                        "EN": "Makarska",
+                        "FR": "Makarska",
+                        "DE": "Makarska",
+                        "ES": "Makarska",
+                        "PT": "Makarska",
+                        "IT": "Makarska",
+                        "RU": "Макарска",
+                        "ZH": "Makarska",
+                        "TR": "Makarska",
+                        "HU": "Makarska",
+                        "CS": "Makarska",
+                        "NL": "Makarska"
+                    }
+                }
+            },
+            "countryCode": "CRO",
+            "geolocation": {
+                "latitude": 43.2904222,
+                "longitude": 17.0222
+            },
+            "id": "67699",
+            "images": {
+                "MEDIUM_WIDE": "https://img.uefa.com/imgml/stadium/matchinfo/w1/67699.jpg",
+                "LARGE_ULTRA_WIDE": "https://img.uefa.com/imgml/stadium/matchinfo/uw/67699.jpg"
+            },
+            "pitch": {
+                "length": 105,
+                "width": 65
+            },
+            "translations": {
+                "mediaName": {
+                    "EN": "Town Sports Center",
+                    "FR": "Town Sports Center",
+                    "DE": "Town Sports Center",
+                    "ES": "Town Sports Center",
+                    "PT": "Town Sports Center",
+                    "IT": "Town Sports Center",
+                    "RU": "Городской спортивный центр",
+                    "ZH": "Town Sports Center",
+                    "TR": "Town Sports Center",
+                    "HU": "Town Sports Center",
+                    "CS": "Town Sports Center",
+                    "NL": "Town Sports Center"
+                },
+                "name": {
+                    "EN": "Town Sports Center",
+                    "FR": "Town Sports Center",
+                    "DE": "Town Sports Center",
+                    "ES": "Town Sports Center",
+                    "PT": "Town Sports Center",
+                    "IT": "Town Sports Center",
+                    "RU": "Городской спортивный центр",
+                    "ZH": "Town Sports Center",
+                    "TR": "Town Sports Center",
+                    "HU": "Town Sports Center",
+                    "CS": "Town Sports Center",
+                    "NL": "Town Sports Center"
+                },
+                "officialName": {
+                    "EN": "Town Sports Center",
+                    "FR": "Town Sports Center",
+                    "DE": "Town Sports Center",
+                    "ES": "Town Sports Center",
+                    "PT": "Town Sports Center",
+                    "IT": "Town Sports Center",
+                    "RU": "Городской спортивный центр",
+                    "ZH": "Town Sports Center",
+                    "TR": "Town Sports Center",
+                    "HU": "Town Sports Center",
+                    "CS": "Town Sports Center",
+                    "NL": "Town Sports Center"
+                },
+                "specialEventsName": {
+                    "EN": "Town Sports Center",
+                    "FR": "Town Sports Center",
+                    "DE": "Town Sports Center",
+                    "ES": "Town Sports Center",
+                    "PT": "Town Sports Center",
+                    "IT": "Town Sports Center",
+                    "RU": "Городской спортивный центр",
+                    "ZH": "Town Sports Center",
+                    "TR": "Town Sports Center",
+                    "HU": "Town Sports Center",
+                    "CS": "Town Sports Center",
+                    "NL": "Town Sports Center"
+                },
+                "sponsorName": {
+                    "EN": "Town Sports Center",
+                    "FR": "Town Sports Center",
+                    "DE": "Town Sports Center",
+                    "ES": "Town Sports Center",
+                    "PT": "Town Sports Center",
+                    "IT": "Town Sports Center",
+                    "RU": "Городской спортивный центр",
+                    "ZH": "Town Sports Center",
+                    "TR": "Town Sports Center",
+                    "HU": "Town Sports Center",
+                    "CS": "Town Sports Center",
+                    "NL": "Town Sports Center"
+                }
+            }
+        },
+        "status": "FINISHED",
+        "type": "GROUP_STAGE",
+        "winner": {
+            "match": {
+                "reason": "WIN_REGULAR",
+                "team": {
+                    "associationId": "200110",
+                    "associationLogoUrl": "https://img.uefa.com/imgml/uefacom/elements/logos/ma/POR.svg",
+                    "bigLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/700x700/78223.png",
+                    "confederationType": "UEFA",
+                    "countryCode": "POR",
+                    "id": "78223",
+                    "idProvider": "FAME",
+                    "internationalName": "Sporting CP",
+                    "isPlaceHolder": false,
+                    "logoUrl": "https://img.uefa.com/imgml/TP/teams/logos/70x70/78223.png",
+                    "mediumLogoUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/78223.png",
+                    "organizationId": "250149",
+                    "teamCode": "SPO",
+                    "teamTypeDetail": "DOMESTIC_MEN_FUTSAL_TEAM_A",
+                    "translations": {
+                        "countryName": {
+                            "EN": "Portugal",
+                            "FR": "Portugal",
+                            "DE": "Portugal",
+                            "ES": "Portugal",
+                            "PT": "Portugal",
+                            "IT": "Portogallo",
+                            "RU": "Португалия",
+                            "ZH": "葡萄牙",
+                            "TR": "Portugal",
+                            "HU": "Portugal",
+                            "CS": "Portugal",
+                            "NL": "Portugal"
+                        },
+                        "displayName": {
+                            "EN": "Sporting CP",
+                            "FR": "Sporting CP",
+                            "DE": "Sporting CP",
+                            "ES": "Sporting CP",
+                            "PT": "Sporting CP",
+                            "IT": "Sporting CP",
+                            "RU": "Спортинг",
+                            "ZH": "里斯本竞技",
+                            "TR": "Sporting CP",
+                            "HU": "Sporting CP",
+                            "CS": "Sporting CP",
+                            "NL": "Sporting CP"
+                        },
+                        "displayOfficialName": {
+                            "EN": "Sporting Clube de Portugal",
+                            "FR": "Sporting Clube de Portugal",
+                            "DE": "Sporting Clube de Portugal",
+                            "ES": "Sporting Clube de Portugal",
+                            "PT": "Sporting Clube de Portugal",
+                            "IT": "Sporting Clube de Portugal",
+                            "RU": "Спортинг",
+                            "ZH": "里斯本竞技",
+                            "TR": "Sporting Clube de Portugal",
+                            "HU": "Sporting Clube de Portugal",
+                            "CS": "Sporting Clube de Portugal",
+                            "NL": "Sporting Clube de Portugal"
+                        },
+                        "displayTeamCode": {
+                            "EN": "SPO",
+                            "FR": "SPO",
+                            "DE": "SPO",
+                            "ES": "SPO",
+                            "PT": "SPO",
+                            "IT": "SPO",
+                            "RU": "SPO",
+                            "ZH": "SPO",
+                            "TR": "SPO",
+                            "HU": "SPO",
+                            "CS": "SPO",
+                            "NL": "SPO"
+                        }
+                    },
+                    "typeIsNational": false,
+                    "typeTeam": "DOMESTIC"
+                }
+            }
+        }
+    }
+]

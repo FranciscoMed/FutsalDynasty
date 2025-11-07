@@ -1,0 +1,990 @@
+{
+  "count" : 10,
+  "result" : [ {
+    "id" : "029d-1f19cf1ffe75-e402b2f90544-10ff",
+    "version" : "029d-1f19cf1ffe75-e402b2f90544-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:04:56.231Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "09585a46-b75e-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195729001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:04:56.231Z",
+      "updateTime" : "2025-11-01T20:04:56.231Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762027049001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "1deb26cf-5bd7-4018-93ac-a517d093eeff",
+          "eventDateTimeUTC" : "20250111195729",
+          "eventMinute" : "28",
+          "eventSecond" : "38",
+          "eventDisplayMinute" : "28'38''",
+          "eventTranslation" : "Vitor Hugo (Novo Vrijeme) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250122310",
+          "namePlayer" : "Vitor Hugo",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250122310.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "1deb26cf-5bd7-4018-93ac-a517d093eeff",
+          "eventType" : "SHOT_WIDE",
+          "eventDateTimeUTC" : "20250111195729",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "28",
+          "eventSecond" : "38",
+          "eventDisplayMinute" : "28'38''",
+          "eventTranslation" : "Vitor Hugo (Novo Vrijeme) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250122310",
+          "namePlayer" : "Vitor Hugo",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250122310.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:04:56.000Z",
+      "modified" : "2025-11-01T20:04:56.000Z",
+      "eventTime" : "2025-11-01T19:57:29.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 313,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cf1ffe75-e402b2f90544-10ff/index.html",
+    "lastModified" : 1762027496231,
+    "dataType" : "node",
+    "etag" : "029d-1f19cf1ffe75-e402b2f90544-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cee69d4b-d52bf5eea255-10ff",
+    "version" : "029d-1f19cee69d4b-d52bf5eea255-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:04:18.614Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "f2da7fa6-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195709001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:04:18.614Z",
+      "updateTime" : "2025-11-01T20:04:18.614Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762027029001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "4a78b55c-86f3-4ddc-849a-3acbf453b263",
+          "eventDateTimeUTC" : "20250111195709",
+          "eventMinute" : "28",
+          "eventSecond" : "18",
+          "eventDisplayMinute" : "28'18''",
+          "eventTranslation" : "Vitor Hugo (Novo Vrijeme) acerta no ferro!",
+          "eventTranslationFormatted" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> acerta no ferro!</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250122310",
+          "namePlayer" : "Vitor Hugo",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250122310.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "4a78b55c-86f3-4ddc-849a-3acbf453b263",
+          "eventType" : "SHOT_WIDE",
+          "eventSubType" : "POST",
+          "eventDateTimeUTC" : "20250111195709",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "28",
+          "eventSecond" : "18",
+          "eventDisplayMinute" : "28'18''",
+          "eventTranslation" : "Vitor Hugo (Novo Vrijeme) acerta no ferro!",
+          "eventTranslationFormatted" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> acerta no ferro!</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250122310",
+          "namePlayer" : "Vitor Hugo",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250122310.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:04:18.000Z",
+      "modified" : "2025-11-01T20:04:18.000Z",
+      "eventTime" : "2025-11-01T19:57:09.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 316,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Vitor Hugo</b><b> (</b><b>Novo Vrijeme</b><b>)</b> acerta no ferro!</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cee69d4b-d52bf5eea255-10ff/index.html",
+    "lastModified" : 1762027458614,
+    "dataType" : "node",
+    "etag" : "029d-1f19cee69d4b-d52bf5eea255-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cdec088c-98dcad39f3ca-10ff",
+    "version" : "029d-1f19cdec088c-98dcad39f3ca-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:01:34.394Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "90eadd5e-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195522001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:01:34.394Z",
+      "updateTime" : "2025-11-01T20:01:34.394Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026922001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "d95dd31f-a5b4-45d8-9833-fbc08fed74ad",
+          "eventDateTimeUTC" : "20250111195522",
+          "eventMinute" : "26",
+          "eventSecond" : "31",
+          "eventDisplayMinute" : "26'31''",
+          "eventTranslation" : "Bašković (Novo Vrijeme) defende.",
+          "eventTranslationFormatted" : "<p><b>Bašković</b><b> (</b><b>Novo Vrijeme</b><b>)</b> defende.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250107588",
+          "namePlayer" : "Filip Bašković",
+          "fieldPositionPlayer" : "Guarda-redes",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250107588.jpg",
+          "idTeam" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "d95dd31f-a5b4-45d8-9833-fbc08fed74ad",
+          "eventType" : "SAVE",
+          "eventSubType" : "GOALKEEPER",
+          "eventDateTimeUTC" : "20250111195522",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "26",
+          "eventSecond" : "31",
+          "eventDisplayMinute" : "26'31''",
+          "eventTranslation" : "Bašković (Novo Vrijeme) defende.",
+          "eventTranslationFormatted" : "<p><b>Bašković</b><b> (</b><b>Novo Vrijeme</b><b>)</b> defende.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250107588",
+          "namePlayer" : "Filip Bašković",
+          "fieldPositionPlayer" : "Guarda-redes",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250107588.jpg",
+          "idTeam" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:01:33.000Z",
+      "modified" : "2025-11-01T20:01:34.000Z",
+      "eventTime" : "2025-11-01T19:55:22.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 308,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Bašković</b><b> (</b><b>Novo Vrijeme</b><b>)</b> defende.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cdec088c-98dcad39f3ca-10ff/index.html",
+    "lastModified" : 1762027294394,
+    "dataType" : "node",
+    "etag" : "029d-1f19cdec088c-98dcad39f3ca-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cdea7631-2554a7b2464a-10ff",
+    "version" : "029d-1f19cdea7631-2554a7b2464a-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:01:33.365Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "904ac530-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195521000.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:01:33.365Z",
+      "updateTime" : "2025-11-01T20:01:33.365Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026921000",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "516771fa-d614-43fa-97df-fcab303831f9",
+          "eventDateTimeUTC" : "20250111195521",
+          "eventMinute" : "26",
+          "eventSecond" : "30",
+          "eventDisplayMinute" : "26'30''",
+          "eventTranslation" : "Pauleta (Sporting CP) remata à baliza.",
+          "eventTranslationFormatted" : "<p><b>Pauleta</b><b> (</b><b>Sporting CP</b><b>)</b> remata à baliza.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250137124",
+          "idPlayerTo" : "250107588",
+          "namePlayer" : "Pauleta",
+          "namePlayerTo" : "Filip Bašković",
+          "fieldPositionPlayer" : "Avançado",
+          "fieldPositionPlayerTo" : "Guarda-redes",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250137124.jpg",
+          "imageUrlPlayerTo" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250107588.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "516771fa-d614-43fa-97df-fcab303831f9",
+          "eventType" : "SHOT_ON_GOAL",
+          "eventDateTimeUTC" : "20250111195521",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "26",
+          "eventSecond" : "30",
+          "eventDisplayMinute" : "26'30''",
+          "eventTranslation" : "Pauleta (Sporting CP) remata à baliza.",
+          "eventTranslationFormatted" : "<p><b>Pauleta</b><b> (</b><b>Sporting CP</b><b>)</b> remata à baliza.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250137124",
+          "idPlayerTo" : "250107588",
+          "namePlayer" : "Pauleta",
+          "namePlayerTo" : "Filip Bašković",
+          "fieldPositionPlayer" : "Avançado",
+          "fieldPositionPlayerTo" : "Guarda-redes",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250137124.jpg",
+          "imageUrlPlayerTo" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250107588.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:01:32.000Z",
+      "modified" : "2025-11-01T20:01:32.000Z",
+      "eventTime" : "2025-11-01T19:55:21.000Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 313,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Pauleta</b><b> (</b><b>Sporting CP</b><b>)</b> remata à baliza.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cdea7631-2554a7b2464a-10ff/index.html",
+    "lastModified" : 1762027293365,
+    "dataType" : "node",
+    "etag" : "029d-1f19cdea7631-2554a7b2464a-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cdc382c0-100baa2e1252-10ff",
+    "version" : "029d-1f19cdc382c0-100baa2e1252-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:01:07.847Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "811a4040-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195507000.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:01:07.847Z",
+      "updateTime" : "2025-11-01T20:01:07.847Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026907000",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "7f59d63f-8163-4f1c-a273-36241245a3c7",
+          "eventDateTimeUTC" : "20250111195507",
+          "eventMinute" : "26",
+          "eventSecond" : "16",
+          "eventDisplayMinute" : "26'16''",
+          "eventTranslation" : "Vinicius Rocha (Sporting CP) faz falta sobre Korolyshyn (Novo Vrijeme).",
+          "eventTranslationFormatted" : "<p><b>Vinicius Rocha</b><b> (</b><b>Sporting CP</b><b>)</b> faz falta sobre <b>Korolyshyn</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250125851",
+          "idPlayerTo" : "250041080",
+          "namePlayer" : "Vinicius Rocha",
+          "namePlayerTo" : "Taras Korolyshyn",
+          "fieldPositionPlayer" : "Avançado",
+          "fieldPositionPlayerTo" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250125851.jpg",
+          "imageUrlPlayerTo" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250041080.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "7f59d63f-8163-4f1c-a273-36241245a3c7",
+          "eventType" : "FOUL",
+          "eventDateTimeUTC" : "20250111195507",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "26",
+          "eventSecond" : "16",
+          "eventDisplayMinute" : "26'16''",
+          "eventTranslation" : "Vinicius Rocha (Sporting CP) faz falta sobre Korolyshyn (Novo Vrijeme).",
+          "eventTranslationFormatted" : "<p><b>Vinicius Rocha</b><b> (</b><b>Sporting CP</b><b>)</b> faz falta sobre <b>Korolyshyn</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250125851",
+          "idPlayerTo" : "250041080",
+          "namePlayer" : "Vinicius Rocha",
+          "namePlayerTo" : "Taras Korolyshyn",
+          "fieldPositionPlayer" : "Avançado",
+          "fieldPositionPlayerTo" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250125851.jpg",
+          "imageUrlPlayerTo" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250041080.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:01:07.000Z",
+      "modified" : "2025-11-01T20:01:07.000Z",
+      "eventTime" : "2025-11-01T19:55:07.000Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 373,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Vinicius Rocha</b><b> (</b><b>Sporting CP</b><b>)</b> faz falta sobre <b>Korolyshyn</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cdc382c0-100baa2e1252-10ff/index.html",
+    "lastModified" : 1762027267847,
+    "dataType" : "node",
+    "etag" : "029d-1f19cdc382c0-100baa2e1252-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cdafd16c-9b5fd679aef7-10ff",
+    "version" : "029d-1f19cdafd16c-9b5fd679aef7-10ff-342093876147",
+    "timestamp" : "2025-11-01T20:00:54.931Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "7947c054-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195501001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T20:00:54.931Z",
+      "updateTime" : "2025-11-01T20:00:54.931Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026901001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "9d49f011-e21e-47a4-bc57-94c210e4d100",
+          "eventDateTimeUTC" : "20250111195501",
+          "eventMinute" : "26",
+          "eventSecond" : "10",
+          "eventDisplayMinute" : "26'10''",
+          "eventTranslation" : "Merlim (Sporting CP) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250043473",
+          "namePlayer" : "Alex Merlim",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250043473.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "9d49f011-e21e-47a4-bc57-94c210e4d100",
+          "eventType" : "SHOT_WIDE",
+          "eventDateTimeUTC" : "20250111195501",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "26",
+          "eventSecond" : "10",
+          "eventDisplayMinute" : "26'10''",
+          "eventTranslation" : "Merlim (Sporting CP) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250043473",
+          "namePlayer" : "Alex Merlim",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250043473.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T20:00:54.000Z",
+      "modified" : "2025-11-01T20:00:54.000Z",
+      "eventTime" : "2025-11-01T19:55:01.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 308,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cdafd16c-9b5fd679aef7-10ff/index.html",
+    "lastModified" : 1762027254931,
+    "dataType" : "node",
+    "etag" : "029d-1f19cdafd16c-9b5fd679aef7-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cd2ff734-17382243c62b-10ff",
+    "version" : "029d-1f19cd2ff734-17382243c62b-10ff-342093876147",
+    "timestamp" : "2025-11-01T19:59:31.151Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "479c6438-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195418001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T19:59:31.151Z",
+      "updateTime" : "2025-11-01T19:59:31.151Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026858001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "31ff8f03-1c56-48ab-bf03-ac9e74586da1",
+          "eventDateTimeUTC" : "20250111195418",
+          "eventMinute" : "25",
+          "eventSecond" : "27",
+          "eventDisplayMinute" : "25'27''",
+          "eventTranslation" : "Merlim (Sporting CP) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250043473",
+          "namePlayer" : "Alex Merlim",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250043473.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "31ff8f03-1c56-48ab-bf03-ac9e74586da1",
+          "eventType" : "SHOT_WIDE",
+          "eventDateTimeUTC" : "20250111195418",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "25",
+          "eventSecond" : "27",
+          "eventDisplayMinute" : "25'27''",
+          "eventTranslation" : "Merlim (Sporting CP) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250043473",
+          "namePlayer" : "Alex Merlim",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250043473.jpg",
+          "idTeam" : "78223",
+          "idTeamTo" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T19:59:30.000Z",
+      "modified" : "2025-11-01T19:59:31.000Z",
+      "eventTime" : "2025-11-01T19:54:18.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 308,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Merlim</b><b> (</b><b>Sporting CP</b><b>)</b> falha o alvo.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cd2ff734-17382243c62b-10ff/index.html",
+    "lastModified" : 1762027171151,
+    "dataType" : "node",
+    "etag" : "029d-1f19cd2ff734-17382243c62b-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19ccfce670-2cafce6f204e-10ff",
+    "version" : "029d-1f19ccfce670-2cafce6f204e-10ff-342093876147",
+    "timestamp" : "2025-11-01T19:58:57.674Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "3392f15a-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195350001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T19:58:57.674Z",
+      "updateTime" : "2025-11-01T19:58:57.674Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026830001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "0ccea55e-93af-46b4-a2f8-f106342dd08f",
+          "eventDateTimeUTC" : "20250111195350",
+          "eventMinute" : "24",
+          "eventSecond" : "59",
+          "eventDisplayMinute" : "24'59''",
+          "eventTranslation" : "Jonhn Lennon (Novo Vrijeme) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Jonhn Lennon</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250125383",
+          "namePlayer" : "Jonhn Lennon",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250125383.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "0ccea55e-93af-46b4-a2f8-f106342dd08f",
+          "eventType" : "SHOT_WIDE",
+          "eventDateTimeUTC" : "20250111195350",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "24",
+          "eventSecond" : "59",
+          "eventDisplayMinute" : "24'59''",
+          "eventTranslation" : "Jonhn Lennon (Novo Vrijeme) falha o alvo.",
+          "eventTranslationFormatted" : "<p><b>Jonhn Lennon</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250125383",
+          "namePlayer" : "Jonhn Lennon",
+          "fieldPositionPlayer" : "Avançado",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250125383.jpg",
+          "idTeam" : "2605071",
+          "idTeamTo" : "78223"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T19:58:57.000Z",
+      "modified" : "2025-11-01T19:58:57.000Z",
+      "eventTime" : "2025-11-01T19:53:50.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 315,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Jonhn Lennon</b><b> (</b><b>Novo Vrijeme</b><b>)</b> falha o alvo.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19ccfce670-2cafce6f204e-10ff/index.html",
+    "lastModified" : 1762027137674,
+    "dataType" : "node",
+    "etag" : "029d-1f19ccfce670-2cafce6f204e-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19ccf0bbd9-9c828e597378-10ff",
+    "version" : "029d-1f19ccf0bbd9-9c828e597378-10ff-342093876147",
+    "timestamp" : "2025-11-01T19:58:49.714Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "2ebd7bd2-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195348001.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T19:58:49.714Z",
+      "updateTime" : "2025-11-01T19:58:49.714Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026828001",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "ea398e3c-0680-47eb-bee9-9ca1ba3bb5f5",
+          "eventDateTimeUTC" : "20250111195348",
+          "eventMinute" : "24",
+          "eventSecond" : "57",
+          "eventDisplayMinute" : "24'57''",
+          "eventTranslation" : "Canto apontado por Jelavić (Novo Vrijeme).",
+          "eventTranslationFormatted" : "<p>Canto apontado por <b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250058101",
+          "namePlayer" : "Toni Jelavić",
+          "fieldPositionPlayer" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250058101.jpg",
+          "idTeam" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "ea398e3c-0680-47eb-bee9-9ca1ba3bb5f5",
+          "eventType" : "CORNER",
+          "eventDateTimeUTC" : "20250111195348",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "24",
+          "eventSecond" : "57",
+          "eventDisplayMinute" : "24'57''",
+          "eventTranslation" : "Canto apontado por Jelavić (Novo Vrijeme).",
+          "eventTranslationFormatted" : "<p>Canto apontado por <b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250058101",
+          "namePlayer" : "Toni Jelavić",
+          "fieldPositionPlayer" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250058101.jpg",
+          "idTeam" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T19:58:49.000Z",
+      "modified" : "2025-11-01T19:58:49.000Z",
+      "eventTime" : "2025-11-01T19:53:48.001Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 317,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p>Canto apontado por <b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b>.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19ccf0bbd9-9c828e597378-10ff/index.html",
+    "lastModified" : 1762027129714,
+    "dataType" : "node",
+    "etag" : "029d-1f19ccf0bbd9-9c828e597378-10ff-342093876147"
+  }, {
+    "id" : "029d-1f19cce58ca4-f12d3f826080-10ff",
+    "version" : "029d-1f19cce58ca4-f12d3f826080-10ff-342093876147",
+    "timestamp" : "2025-11-01T19:58:42.374Z",
+    "parentId" : "029d-1ecc85c36d78-d2f92150a06d-1012",
+    "foreignId" : "2a748d22-b75d-11f0-8898-a2df1d9b1de7",
+    "title" : "20251101195346003.emlivepost",
+    "description" : "",
+    "summary" : "",
+    "sys" : {
+      "kind" : "content",
+      "baseType" : "liveblogpost",
+      "type" : "text",
+      "creationTime" : "2025-11-01T19:58:42.374Z",
+      "updateTime" : "2025-11-01T19:58:42.374Z"
+    },
+    "pubInfo" : {
+      "siteName" : "api-uefa-com",
+      "status" : "LIVE",
+      "publicationTime" : "2025-11-03T10:04:36.147Z",
+      "sectionPath" : "/editorial/",
+      "visible" : true
+    },
+    "attributes" : {
+      "tags" : [ ],
+      "cpcversion" : "4",
+      "masterStoryUuid" : "60c68810-992d-11f0-9c60-ed57a50db650",
+      "liveblogPostData" : {
+        "lbPostType" : "MATCH_EVENT",
+        "lbPostPublisher" : "Liveblog Connector",
+        "lbPostTimestamp" : "1762026826003",
+        "isSticky" : false,
+        "forceNeutral" : false,
+        "lbPostEvent" : {
+          "eventId" : "7b0bf0e6-c11e-4b3f-b640-10c598913da1",
+          "eventDateTimeUTC" : "20250111195346",
+          "eventMinute" : "24",
+          "eventSecond" : "55",
+          "eventDisplayMinute" : "24'55''",
+          "eventTranslation" : "Jelavić (Novo Vrijeme) vê o seu remate ser interceptado.",
+          "eventTranslationFormatted" : "<p><b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b> vê o seu remate ser interceptado.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250058101",
+          "namePlayer" : "Toni Jelavić",
+          "fieldPositionPlayer" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250058101.jpg",
+          "idTeam" : "2605071"
+        },
+        "lbPostFSPEvent" : {
+          "eventId" : "7b0bf0e6-c11e-4b3f-b640-10c598913da1",
+          "eventType" : "SHOT_BLOCKED",
+          "eventDateTimeUTC" : "20250111195346",
+          "eventPhase" : "SECOND_HALF",
+          "eventMinute" : "24",
+          "eventSecond" : "55",
+          "eventDisplayMinute" : "24'55''",
+          "eventTranslation" : "Jelavić (Novo Vrijeme) vê o seu remate ser interceptado.",
+          "eventTranslationFormatted" : "<p><b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b> vê o seu remate ser interceptado.</p>",
+          "idMatch" : "2045691",
+          "idPlayer" : "250058101",
+          "namePlayer" : "Toni Jelavić",
+          "fieldPositionPlayer" : "Defesa",
+          "imageUrlPlayer" : "https://img.uefa.com/imgml/TP/players/27/2026/324x324/250058101.jpg",
+          "idTeam" : "2605071"
+        }
+      },
+      "liveblogpost" : {
+        "status" : "APPROVED",
+        "type" : "text"
+      },
+      "creator" : "eom:integrations.liveblog",
+      "last_modifier" : "eom:integrations.liveblog",
+      "created" : "2025-11-01T19:58:42.000Z",
+      "modified" : "2025-11-01T19:58:42.000Z",
+      "eventTime" : "2025-11-01T19:53:46.003Z",
+      "workFolder" : "/UEFA/Editorial",
+      "content.json" : {
+        "fileName" : "content.json",
+        "partName" : "content.json",
+        "mimeType" : "application/json",
+        "size" : 332,
+        "data" : {
+          "article" : {
+            "_elements" : [ {
+              "_html" : "<p><b>Jelavić</b><b> (</b><b>Novo Vrijeme</b><b>)</b> vê o seu remate ser interceptado.</p>",
+              "_type" : "PARAGRAPH"
+            } ]
+          }
+        }
+      }
+    },
+    "url" : "/editorial/029d-1f19cce58ca4-f12d3f826080-10ff/index.html",
+    "lastModified" : 1762027122374,
+    "dataType" : "node",
+    "etag" : "029d-1f19cce58ca4-f12d3f826080-10ff-342093876147"
+  } ],
+  "version" : "029d-1ecc85c36d78-d2f92150a06d-1012-342093876147",
+  "reset" : false,
+  "totalPosts" : 114,
+  "staticized" : false
+}
