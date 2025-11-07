@@ -11,7 +11,11 @@
     "db:push": "drizzle-kit push",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "uefa:fetch": "tsx scripts/uefa/fetch-fixtures.ts",
+    "uefa:analyze": "tsx scripts/uefa/analyze-fixtures.ts",
+    "uefa:scrape-stats": "tsx scripts/uefa/scrape-statistics.ts",
+    "uefa:analyze-all": "tsx scripts/uefa/analyze-all-data.ts"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.5",

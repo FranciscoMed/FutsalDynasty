@@ -55,6 +55,12 @@ This plan outlines the implementation of a comprehensive data scraping and analy
 ### 3. Live Events API
 **Endpoint:** `https://editorial.uefa.com//api/liveblogs/{blogId}/posts?aggregator=lightliveblogjson&from={postId}&includeReactions=true&limit={limit}`
 
+**Note:** The `blogId` is NOT directly available from the match info API. You may need to:
+1. Extract from match page HTML/JavaScript
+2. Use a pattern-based approach to construct blog IDs
+3. Focus on statistics API + match info API for initial analysis
+4. Events API is supplementary for detailed event timing (optional)
+
 **Data Available:**
 - Event-by-event timeline with precise timestamps
 - Event types (goals, shots on goal, shots wide, shots blocked, saves, fouls, corners, cards)
@@ -182,19 +188,71 @@ interface MatchInfo {
 ## Phase 2: Data Collection Process
 
 ### 2.1 Match ID Collection
-**Priority:** Get a diverse set of match IDs
-- Multiple competitions (Champions League, qualifiers)
-- Different rounds and phases
-- Various team matchups
-- Different score lines (close games, blowouts)
 
-**Method:**
-1. Start with known match IDs from sample data (2045691, 2035347)
-2. Discover related matches through competition/round data
-3. Target: 100-200 matches for statistically significant analysis
+**Primary API Endpoint for Fixtures:**
+```
+https://match.uefa.com/v5/matches?competitionId={competitionId}&fromDate={YYYY-MM-DD}&limit={limit}&offset={offset}&order={ASC|DESC}&phase={phase}&seasonYear={year}&toDate={YYYY-MM-DD}&utcOffset={offset}
+```
+
+**Query Parameters:**
+- `competitionId`: 27 (UEFA Futsal Champions League)
+- `fromDate`: Start date (e.g., "2025-08-01")
+- `toDate`: End date (e.g., "2025-08-31")
+- `limit`: Number of matches per request (max 50)
+- `offset`: Pagination offset
+- `phase`: "ALL", "QUALIFYING", "TOURNAMENT", etc.
+- `seasonYear`: 2023, 2024, 2025, 2026, etc.
+- `order`: "ASC" or "DESC"
+
+**Collection Strategy:**
+1. Fetch fixtures by season and phase using the fixtures API
+2. Extract match IDs from finished matches (status: "FINISHED")
+3. Filter matches with complete data (lineupStatus: "AVAILABLE" or "TACTICAL_AVAILABLE")
+4. Target multiple seasons for diversity:
+   - Season 2023 (historical data)
+   - Season 2024 (historical data)
+   - Season 2025 (recent data)
+   - Season 2026 (current data)
+5. Target: 100-200 matches for statistically significant analysis
+
+**Priority Selection Criteria:**
+- Multiple competitions rounds (Preliminary, Main, Elite)
+- Different phases (QUALIFYING, TOURNAMENT)
+- Various team matchups and skill levels
+- Different score lines (close games, blowouts)
+- Complete player events and statistics available
 
 ### 2.2 Data Fetching Strategy
+
+**Starting Point:** You already have `Fixtures.json` with comprehensive match data!
+
 ```typescript
+// Option 1: Use existing Fixtures.json
+async function loadExistingFixtures(): Promise<MatchInfo[]> {
+  const fixtures = JSON.parse(fs.readFileSync('Fixtures.json', 'utf-8'));
+  return fixtures.filter(match => match.status === 'FINISHED');
+}
+
+// Option 2: Fetch additional matches from API
+async function fetchFixtures(params: {
+  seasonYear: number;
+  phase?: string;
+  fromDate?: string;
+  toDate?: string;
+}): Promise<MatchInfo[]> {
+  const url = new URL('https://match.uefa.com/v5/matches');
+  url.searchParams.set('competitionId', '27');
+  url.searchParams.set('seasonYear', params.seasonYear.toString());
+  url.searchParams.set('limit', '50');
+  url.searchParams.set('order', 'ASC');
+  url.searchParams.set('phase', params.phase || 'ALL');
+  if (params.fromDate) url.searchParams.set('fromDate', params.fromDate);
+  if (params.toDate) url.searchParams.set('toDate', params.toDate);
+  
+  const response = await fetch(url.toString());
+  return await response.json();
+}
+
 async function scrapeMatch(matchId: string): Promise<MatchData> {
   // 1. Fetch match info
   const matchInfo = await fetchMatchInfo(matchId);

@@ -1,0 +1,869 @@
+{
+  "metadata": {
+    "generatedAt": "2025-11-07T17:04:54.708Z",
+    "totalMatches": 152,
+    "dataSource": "UEFA Futsal Champions League 2023/24 & 2024/25"
+  },
+  "segmentedStatistics": [
+    {
+      "segment": "All Matches",
+      "matchCount": 152,
+      "avgGoals": {
+        "mean": 6.3355263157894735,
+        "median": 6,
+        "stdDev": 2.96679891054707,
+        "min": 0,
+        "max": 16,
+        "confidenceInterval95": [
+          5.8638735470208925,
+          6.807179084558054
+        ]
+      },
+      "avgShots": {
+        "mean": 28.32236842105263,
+        "median": 28,
+        "stdDev": 11.501202439244185,
+        "min": 0,
+        "max": 77,
+        "confidenceInterval95": [
+          27.02947559003601,
+          29.61526125206925
+        ]
+      },
+      "avgShotsOnTarget": {
+        "mean": 13.24671052631579,
+        "median": 13,
+        "stdDev": 5.5885505342709125,
+        "min": 0,
+        "max": 33,
+        "confidenceInterval95": [
+          12.618480829490473,
+          13.874940223141106
+        ]
+      },
+      "avgFouls": {
+        "mean": 6.444078947368421,
+        "median": 7,
+        "stdDev": 2.252958100873967,
+        "min": 0,
+        "max": 12,
+        "confidenceInterval95": [
+          6.190815569683523,
+          6.697342325053319
+        ]
+      },
+      "avgYellowCards": {
+        "mean": 1.756578947368421,
+        "median": 2,
+        "stdDev": 1.416522384157746,
+        "min": 0,
+        "max": 7,
+        "confidenceInterval95": [
+          1.5973424114386638,
+          1.9158154832981782
+        ]
+      },
+      "avgCorners": {
+        "mean": 7.592105263157895,
+        "median": 7,
+        "stdDev": 4.296349832550475,
+        "min": 0,
+        "max": 20,
+        "confidenceInterval95": [
+          7.109136640756271,
+          8.075073885559519
+        ]
+      },
+      "shotAccuracy": {
+        "mean": 47.88676701065729,
+        "median": 48.148148148148145,
+        "stdDev": 13.55395246805383,
+        "min": 0,
+        "max": 95.23809523809523,
+        "confidenceInterval95": [
+          46.3631169340277,
+          49.41041708728687
+        ]
+      },
+      "shotsPerGoal": {
+        "mean": 11.74363323993258,
+        "median": 9,
+        "stdDev": 10.007789763704766,
+        "min": 0,
+        "max": 80,
+        "confidenceInterval95": [
+          10.152624919643415,
+          13.334641560221744
+        ]
+      }
+    },
+    {
+      "segment": "Close Matches (0-2 diff)",
+      "matchCount": 77,
+      "avgGoals": {
+        "mean": 5.1558441558441555,
+        "median": 4,
+        "stdDev": 2.71151912693099,
+        "min": 0,
+        "max": 16,
+        "confidenceInterval95": [
+          4.550191841582832,
+          5.761496470105479
+        ]
+      },
+      "avgShots": {
+        "mean": 28.551948051948052,
+        "median": 28,
+        "stdDev": 11.482930419117254,
+        "min": 9,
+        "max": 77,
+        "confidenceInterval95": [
+          26.738319082846118,
+          30.365577021049987
+        ]
+      },
+      "avgShotsOnTarget": {
+        "mean": 12.928571428571429,
+        "median": 12,
+        "stdDev": 5.062091276246786,
+        "min": 3,
+        "max": 27,
+        "confidenceInterval95": [
+          12.129058146878556,
+          13.728084710264302
+        ]
+      },
+      "avgFouls": {
+        "mean": 6.701298701298701,
+        "median": 7,
+        "stdDev": 2.123247543636107,
+        "min": 1,
+        "max": 12,
+        "confidenceInterval95": [
+          6.3659502220201,
+          7.036647180577303
+        ]
+      },
+      "avgYellowCards": {
+        "mean": 1.9090909090909092,
+        "median": 2,
+        "stdDev": 1.3645018898191204,
+        "min": 0,
+        "max": 7,
+        "confidenceInterval95": [
+          1.693579705465543,
+          2.1246021127162753
+        ]
+      },
+      "avgCorners": {
+        "mean": 7.818181818181818,
+        "median": 7,
+        "stdDev": 4.439279433536491,
+        "min": 0,
+        "max": 20,
+        "confidenceInterval95": [
+          7.117036249173038,
+          8.519327387190598
+        ]
+      },
+      "shotAccuracy": {
+        "mean": 46.43945142004052,
+        "median": 45.94594594594595,
+        "stdDev": 11.050661728038168,
+        "min": 23.076923076923077,
+        "max": 75,
+        "confidenceInterval95": [
+          44.69409553036713,
+          48.18480730971391
+        ]
+      },
+      "shotsPerGoal": {
+        "mean": 14.883981981222243,
+        "median": 10.625,
+        "stdDev": 12.686081836200282,
+        "min": 0,
+        "max": 80,
+        "confidenceInterval95": [
+          12.050384111049892,
+          17.717579851394596
+        ]
+      }
+    },
+    {
+      "segment": "Moderate (3-4 diff)",
+      "matchCount": 33,
+      "avgGoals": {
+        "mean": 5.636363636363637,
+        "median": 5,
+        "stdDev": 1.5534552264213695,
+        "min": 3,
+        "max": 9,
+        "confidenceInterval95": [
+          5.106336821246419,
+          6.166390451480854
+        ]
+      },
+      "avgShots": {
+        "mean": 29.696969696969695,
+        "median": 30,
+        "stdDev": 11.31634604397376,
+        "min": 0,
+        "max": 53,
+        "confidenceInterval95": [
+          26.966795719267722,
+          32.42714367467167
+        ]
+      },
+      "avgShotsOnTarget": {
+        "mean": 12.515151515151516,
+        "median": 13,
+        "stdDev": 5.292196726234237,
+        "min": 0,
+        "max": 25,
+        "confidenceInterval95": [
+          11.238359719398808,
+          13.791943310904223
+        ]
+      },
+      "avgFouls": {
+        "mean": 6.5,
+        "median": 7,
+        "stdDev": 2.304475224558958,
+        "min": 0,
+        "max": 12,
+        "confidenceInterval95": [
+          5.944023869020846,
+          7.055976130979154
+        ]
+      },
+      "avgYellowCards": {
+        "mean": 2.0454545454545454,
+        "median": 2,
+        "stdDev": 1.6554027083225897,
+        "min": 0,
+        "max": 7,
+        "confidenceInterval95": [
+          1.6460732098787856,
+          2.4448358810303055
+        ]
+      },
+      "avgCorners": {
+        "mean": 7.348484848484849,
+        "median": 8,
+        "stdDev": 4.276406110213038,
+        "min": 0,
+        "max": 17,
+        "confidenceInterval95": [
+          6.316762008371915,
+          8.380207688597782
+        ]
+      },
+      "shotAccuracy": {
+        "mean": 42.69376157577783,
+        "median": 41.17647058823529,
+        "stdDev": 13.995295711603251,
+        "min": 0,
+        "max": 75,
+        "confidenceInterval95": [
+          39.31726601673553,
+          46.070257134820125
+        ]
+      },
+      "shotsPerGoal": {
+        "mean": 11.222619047619048,
+        "median": 10.75,
+        "stdDev": 4.19920421624913,
+        "min": 3.875,
+        "max": 24,
+        "confidenceInterval95": [
+          9.789883299004941,
+          12.655354796233155
+        ]
+      }
+    },
+    {
+      "segment": "Blowouts (5+ diff)",
+      "matchCount": 42,
+      "avgGoals": {
+        "mean": 9.047619047619047,
+        "median": 9,
+        "stdDev": 2.487611026020758,
+        "min": 5,
+        "max": 14,
+        "confidenceInterval95": [
+          8.295279486772474,
+          9.799958608465621
+        ]
+      },
+      "avgShots": {
+        "mean": 26.821428571428573,
+        "median": 28,
+        "stdDev": 11.512064804127093,
+        "min": 0,
+        "max": 54,
+        "confidenceInterval95": [
+          24.359532847488268,
+          29.283324295368878
+        ]
+      },
+      "avgShotsOnTarget": {
+        "mean": 14.404761904761905,
+        "median": 14,
+        "stdDev": 6.488302748975135,
+        "min": 0,
+        "max": 33,
+        "confidenceInterval95": [
+          13.017215442410036,
+          15.792308367113774
+        ]
+      },
+      "avgFouls": {
+        "mean": 5.928571428571429,
+        "median": 6,
+        "stdDev": 2.3542550853301174,
+        "min": 0,
+        "max": 12,
+        "confidenceInterval95": [
+          5.425105662329297,
+          6.432037194813561
+        ]
+      },
+      "avgYellowCards": {
+        "mean": 1.25,
+        "median": 1,
+        "stdDev": 1.153411090139653,
+        "min": 0,
+        "max": 4,
+        "confidenceInterval95": [
+          1.0033389640282302,
+          1.4966610359717698
+        ]
+      },
+      "avgCorners": {
+        "mean": 7.369047619047619,
+        "median": 7,
+        "stdDev": 4.014200275880027,
+        "min": 0,
+        "max": 18,
+        "confidenceInterval95": [
+          6.510596710164086,
+          8.227498527931152
+        ]
+      },
+      "shotAccuracy": {
+        "mean": 54.620397482764595,
+        "median": 57.14285714285714,
+        "stdDev": 14.720912706849742,
+        "min": 0,
+        "max": 95.23809523809523,
+        "confidenceInterval95": [
+          51.47227829979237,
+          57.76851666573682
+        ]
+      },
+      "shotsPerGoal": {
+        "mean": 6.395695508195509,
+        "median": 6.142857142857143,
+        "stdDev": 2.5826003006089517,
+        "min": 2.8181818181818183,
+        "max": 16.6,
+        "confidenceInterval95": [
+          5.614627907321258,
+          7.17676310906976
+        ]
+      }
+    },
+    {
+      "segment": "Typical (6-8 goals)",
+      "matchCount": 44,
+      "avgGoals": {
+        "mean": 6.818181818181818,
+        "median": 7,
+        "stdDev": 0.7767276132106844,
+        "min": 6,
+        "max": 8,
+        "confidenceInterval95": [
+          6.588673474892584,
+          7.047690161471053
+        ]
+      },
+      "avgShots": {
+        "mean": 28.59090909090909,
+        "median": 28,
+        "stdDev": 10.286394769566833,
+        "min": 8,
+        "max": 58,
+        "confidenceInterval95": [
+          26.4417036919926,
+          30.74011448982558
+        ]
+      },
+      "avgShotsOnTarget": {
+        "mean": 13.397727272727273,
+        "median": 13,
+        "stdDev": 4.846600900554552,
+        "min": 5,
+        "max": 27,
+        "confidenceInterval95": [
+          12.385094464517056,
+          14.41036008093749
+        ]
+      },
+      "avgFouls": {
+        "mean": 6.579545454545454,
+        "median": 6,
+        "stdDev": 2.0765005029720016,
+        "min": 3,
+        "max": 12,
+        "confidenceInterval95": [
+          6.145688287693966,
+          7.013402621396942
+        ]
+      },
+      "avgYellowCards": {
+        "mean": 1.7045454545454546,
+        "median": 1,
+        "stdDev": 1.4936158909679778,
+        "min": 0,
+        "max": 7,
+        "confidenceInterval95": [
+          1.3924742761892484,
+          2.016616632901661
+        ]
+      },
+      "avgCorners": {
+        "mean": 6.863636363636363,
+        "median": 6,
+        "stdDev": 4.210867482915805,
+        "min": 0,
+        "max": 20,
+        "confidenceInterval95": [
+          5.9838315990768915,
+          7.743441128195835
+        ]
+      },
+      "shotAccuracy": {
+        "mean": 48.078264838572174,
+        "median": 46.875,
+        "stdDev": 10.324679040104224,
+        "min": 23.333333333333332,
+        "max": 75,
+        "confidenceInterval95": [
+          45.92106045043003,
+          50.235469226714315
+        ]
+      },
+      "shotsPerGoal": {
+        "mean": 8.490530303030303,
+        "median": 8.25,
+        "stdDev": 2.1183685642017727,
+        "min": 3.875,
+        "max": 13.333333333333334,
+        "confidenceInterval95": [
+          7.8645923920086345,
+          9.11646821405197
+        ]
+      }
+    }
+  ],
+  "timingDistributions": {
+    "goals": [
+      {
+        "minute": 39,
+        "goals": 51,
+        "probability": 0.05263157894736842,
+        "cumulativeProbability": 1
+      },
+      {
+        "minute": 38,
+        "goals": 40,
+        "probability": 0.0412796697626419,
+        "cumulativeProbability": 0.9473684210526316
+      },
+      {
+        "minute": 36,
+        "goals": 37,
+        "probability": 0.038183694530443756,
+        "cumulativeProbability": 0.8813209494324047
+      },
+      {
+        "minute": 22,
+        "goals": 31,
+        "probability": 0.03199174406604747,
+        "cumulativeProbability": 0.5128998968008256
+      },
+      {
+        "minute": 8,
+        "goals": 30,
+        "probability": 0.030959752321981424,
+        "cumulativeProbability": 0.1940144478844169
+      },
+      {
+        "minute": 21,
+        "goals": 30,
+        "probability": 0.030959752321981424,
+        "cumulativeProbability": 0.48090815273477816
+      },
+      {
+        "minute": 27,
+        "goals": 30,
+        "probability": 0.030959752321981424,
+        "cumulativeProbability": 0.6418988648090815
+      },
+      {
+        "minute": 35,
+        "goals": 30,
+        "probability": 0.030959752321981424,
+        "cumulativeProbability": 0.8431372549019609
+      },
+      {
+        "minute": 6,
+        "goals": 29,
+        "probability": 0.029927760577915376,
+        "cumulativeProbability": 0.14860681114551083
+      },
+      {
+        "minute": 26,
+        "goals": 28,
+        "probability": 0.02889576883384933,
+        "cumulativeProbability": 0.6109391124871001
+      },
+      {
+        "minute": 28,
+        "goals": 27,
+        "probability": 0.02786377708978328,
+        "cumulativeProbability": 0.6697626418988648
+      },
+      {
+        "minute": 18,
+        "goals": 26,
+        "probability": 0.026831785345717233,
+        "cumulativeProbability": 0.4066047471620227
+      },
+      {
+        "minute": 30,
+        "goals": 26,
+        "probability": 0.026831785345717233,
+        "cumulativeProbability": 0.7192982456140351
+      },
+      {
+        "minute": 19,
+        "goals": 25,
+        "probability": 0.025799793601651185,
+        "cumulativeProbability": 0.4324045407636739
+      },
+      {
+        "minute": 32,
+        "goals": 25,
+        "probability": 0.025799793601651185,
+        "cumulativeProbability": 0.7667698658410733
+      },
+      {
+        "minute": 15,
+        "goals": 24,
+        "probability": 0.02476780185758514,
+        "cumulativeProbability": 0.33952528379772967
+      },
+      {
+        "minute": 25,
+        "goals": 24,
+        "probability": 0.02476780185758514,
+        "cumulativeProbability": 0.5820433436532507
+      },
+      {
+        "minute": 37,
+        "goals": 24,
+        "probability": 0.02476780185758514,
+        "cumulativeProbability": 0.9060887512899898
+      },
+      {
+        "minute": 1,
+        "goals": 23,
+        "probability": 0.023735810113519093,
+        "cumulativeProbability": 0.04540763673890609
+      },
+      {
+        "minute": 5,
+        "goals": 23,
+        "probability": 0.023735810113519093,
+        "cumulativeProbability": 0.11867905056759546
+      },
+      {
+        "minute": 12,
+        "goals": 23,
+        "probability": 0.023735810113519093,
+        "cumulativeProbability": 0.2776057791537668
+      },
+      {
+        "minute": 34,
+        "goals": 23,
+        "probability": 0.023735810113519093,
+        "cumulativeProbability": 0.8121775025799794
+      },
+      {
+        "minute": 24,
+        "goals": 22,
+        "probability": 0.022703818369453045,
+        "cumulativeProbability": 0.5572755417956656
+      },
+      {
+        "minute": 29,
+        "goals": 22,
+        "probability": 0.022703818369453045,
+        "cumulativeProbability": 0.6924664602683178
+      },
+      {
+        "minute": 0,
+        "goals": 21,
+        "probability": 0.021671826625386997,
+        "cumulativeProbability": 0.021671826625386997
+      },
+      {
+        "minute": 14,
+        "goals": 21,
+        "probability": 0.021671826625386997,
+        "cumulativeProbability": 0.3147574819401445
+      },
+      {
+        "minute": 23,
+        "goals": 21,
+        "probability": 0.021671826625386997,
+        "cumulativeProbability": 0.5345717234262126
+      },
+      {
+        "minute": 31,
+        "goals": 21,
+        "probability": 0.021671826625386997,
+        "cumulativeProbability": 0.7409700722394221
+      },
+      {
+        "minute": 33,
+        "goals": 21,
+        "probability": 0.021671826625386997,
+        "cumulativeProbability": 0.7884416924664603
+      },
+      {
+        "minute": 10,
+        "goals": 20,
+        "probability": 0.02063983488132095,
+        "cumulativeProbability": 0.23426212590299275
+      },
+      {
+        "minute": 16,
+        "goals": 20,
+        "probability": 0.02063983488132095,
+        "cumulativeProbability": 0.3601651186790506
+      },
+      {
+        "minute": 2,
+        "goals": 19,
+        "probability": 0.0196078431372549,
+        "cumulativeProbability": 0.06501547987616099
+      },
+      {
+        "minute": 9,
+        "goals": 19,
+        "probability": 0.0196078431372549,
+        "cumulativeProbability": 0.2136222910216718
+      },
+      {
+        "minute": 11,
+        "goals": 19,
+        "probability": 0.0196078431372549,
+        "cumulativeProbability": 0.25386996904024767
+      },
+      {
+        "minute": 17,
+        "goals": 19,
+        "probability": 0.0196078431372549,
+        "cumulativeProbability": 0.3797729618163055
+      },
+      {
+        "minute": 20,
+        "goals": 17,
+        "probability": 0.017543859649122806,
+        "cumulativeProbability": 0.4499484004127967
+      },
+      {
+        "minute": 3,
+        "goals": 15,
+        "probability": 0.015479876160990712,
+        "cumulativeProbability": 0.0804953560371517
+      },
+      {
+        "minute": 13,
+        "goals": 15,
+        "probability": 0.015479876160990712,
+        "cumulativeProbability": 0.2930856553147575
+      },
+      {
+        "minute": 4,
+        "goals": 14,
+        "probability": 0.014447884416924664,
+        "cumulativeProbability": 0.09494324045407637
+      },
+      {
+        "minute": 7,
+        "goals": 14,
+        "probability": 0.014447884416924664,
+        "cumulativeProbability": 0.1630546955624355
+      },
+      {
+        "minute": 40,
+        "goals": 0,
+        "probability": 0,
+        "cumulativeProbability": 1
+      }
+    ],
+    "firstHalfGoals": 419,
+    "secondHalfGoals": 550
+  },
+  "correlations": [
+    {
+      "name": "Shots to Goals",
+      "correlation": -0.020743771922846398,
+      "description": "Correlation between total shots and total goals"
+    },
+    {
+      "name": "Shots on Target to Goals",
+      "correlation": 0.36103941310897464,
+      "description": "Correlation between shots on target and goals scored"
+    },
+    {
+      "name": "Fouls to Yellow Cards",
+      "correlation": 0.5914606511241923,
+      "description": "Correlation between fouls committed and yellow cards received"
+    },
+    {
+      "name": "Shot Accuracy to Goals",
+      "correlation": 0.3214329629651947,
+      "description": "Correlation between shot accuracy percentage and goals scored"
+    }
+  ],
+  "positionAnalysis": [
+    {
+      "position": "FORWARD",
+      "goals": 625,
+      "percentage": 64.49948400412796,
+      "goalsPerMatch": 4.139072847682119
+    },
+    {
+      "position": "DEFENDER",
+      "goals": 309,
+      "percentage": 31.88854489164087,
+      "goalsPerMatch": 2.0463576158940397
+    },
+    {
+      "position": "GOALKEEPER",
+      "goals": 33,
+      "percentage": 3.4055727554179565,
+      "goalsPerMatch": 0.2185430463576159
+    },
+    {
+      "position": "UNKNOWN",
+      "goals": 2,
+      "percentage": 0.20639834881320948,
+      "goalsPerMatch": 0.013245033112582781
+    }
+  ],
+  "gameEngineConfig": {
+    "baseStatistics": {
+      "avgGoalsPerMatch": 5.1558441558441555,
+      "avgShotsPerTeam": 28.551948051948052,
+      "avgShotsOnTargetPerTeam": 12.928571428571429,
+      "avgFoulsPerTeam": 6.701298701298701,
+      "avgYellowCardsPerTeam": 1.9090909090909092,
+      "avgCornersPerTeam": 7.818181818181818
+    },
+    "probabilities": {
+      "shotOnTargetToGoal": 0.19939728779507784,
+      "shotToSave": 0.35,
+      "foulToYellowCard": 0.28488372093023256,
+      "shotAccuracy": 0.4643945142004052
+    },
+    "timingMultipliers": {
+      "byMinute": {
+        "0": 0.8885448916408668,
+        "1": 0.9731682146542828,
+        "2": 0.8039215686274509,
+        "3": 0.6346749226006192,
+        "4": 0.5923632610939112,
+        "5": 0.9731682146542828,
+        "6": 1.2270381836945303,
+        "7": 0.5923632610939112,
+        "8": 1.2693498452012384,
+        "9": 0.8039215686274509,
+        "10": 0.8462332301341589,
+        "11": 0.8039215686274509,
+        "12": 0.9731682146542828,
+        "13": 0.6346749226006192,
+        "14": 0.8885448916408668,
+        "15": 1.0154798761609907,
+        "16": 0.8462332301341589,
+        "17": 0.8039215686274509,
+        "18": 1.1001031991744066,
+        "19": 1.0577915376676985,
+        "20": 0.719298245614035,
+        "21": 1.2693498452012384,
+        "22": 1.3116615067079462,
+        "23": 0.8885448916408668,
+        "24": 0.9308565531475749,
+        "25": 1.0154798761609907,
+        "26": 1.1847265221878225,
+        "27": 1.2693498452012384,
+        "28": 1.1424148606811144,
+        "29": 0.9308565531475749,
+        "30": 1.1001031991744066,
+        "31": 0.8885448916408668,
+        "32": 1.0577915376676985,
+        "33": 0.8885448916408668,
+        "34": 0.9731682146542828,
+        "35": 1.2693498452012384,
+        "36": 1.565531475748194,
+        "37": 1.0154798761609907,
+        "38": 1.6924664602683177,
+        "39": 2.157894736842105,
+        "40": 0
+      },
+      "earlyGame": 0.8758513931888545,
+      "midGame": 0.9816305469556244,
+      "lateGame": 1.1462613753635427
+    },
+    "positionModifiers": {
+      "forward": 0.6463288521199587,
+      "defender": 0.31954498448810764,
+      "goalkeeper": 0.03412616339193382
+    },
+    "qualityAdjustment": {
+      "ratingDifferenceImpact": 0.1,
+      "maxAdjustment": 0.5
+    },
+    "homeAdvantage": {
+      "crowdBoost": 1.02,
+      "travelPenalty": 0.98
+    }
+  },
+  "insights": [
+    "Average goals per match: 6.34 (±2.97)",
+    "Close matches (0-2 diff) average 5.16 goals - use this for competitive simulations",
+    "56.8% of goals scored in second half (fatigue effect)",
+    "Most dangerous minutes: 39 (51 goals), 38 (40 goals), 36 (37 goals)",
+    "Teams average 28.3 shots per match with 47.9% accuracy",
+    "Average 11.7 shots required per goal",
+    "Shots on target strongly correlate with goals (r=0.36)",
+    "Forwards score 64.5% of goals (4.14 per match)",
+    "Average 6.4 fouls and 1.8 yellow cards per team"
+  ],
+  "recommendations": [
+    "Use \"Close Matches\" statistics for competitive league simulations",
+    "Apply timing multipliers: 1.3x for late game (min 35-40), 1.1x for early game (min 0-10)",
+    "Set home advantage to minimal 2-3% (tournament format skews data)",
+    "Use team quality ratings as primary factor for expected goals, not venue",
+    "Apply position modifiers conservatively: Forward base with ±10% tactical adjustments",
+    "Shots on target have ~30% goal conversion rate in close matches",
+    "Yellow card probability: ~12% per foul committed",
+    "Second half should have 1.3x goal frequency vs first half",
+    "Goalkeeper goals (fly goalkeeper) occur in ~3-4% of total goals",
+    "Shot accuracy should average 32-35% across all teams"
+  ]
+}
