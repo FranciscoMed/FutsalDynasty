@@ -63,7 +63,7 @@ export function CompetitionsPage() {
           {/* League Competitions */}
           {leagueCompetitions.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-[#1B4332]">League Competitions</h2>
+              <h2 className="text-2xl font-bold text-primary">League Competitions</h2>
               {leagueCompetitions.map((competition) => (
                 <LeagueTable
                   key={competition.id}
@@ -80,7 +80,7 @@ export function CompetitionsPage() {
           {/* Knockout Competitions */}
           {knockoutCompetitions.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-[#1B4332] mt-8">Knockout Competitions</h2>
+              <h2 className="text-2xl font-bold text-primary mt-8">Knockout Competitions</h2>
               {knockoutCompetitions.map((competition) => (
                 <KnockoutBracket
                   key={competition.id}

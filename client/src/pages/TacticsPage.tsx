@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, RotateCcw, Save } from "lucide-react";
+import { Settings, RotateCcw, Save, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 
@@ -210,6 +210,59 @@ export function TacticsPage() {
     }
   };
 
+  // Quick select best players
+  const handleQuickSelect = () => {
+    // Sort players by ability
+    const sortedPlayers = [...players].sort((a, b) => b.currentAbility - a.currentAbility);
+    
+    // Find best goalkeeper
+    const goalkeeper = sortedPlayers.find(p => p.position === "Goalkeeper");
+    
+    // Get field players (excluding goalkeeper)
+    const fieldPlayers = sortedPlayers.filter(p => p.position !== "Goalkeeper").slice(0, 4);
+    
+    // Get substitutes (next 5 best players)
+    const benchPlayers = sortedPlayers
+      .filter(p => !fieldPlayers.includes(p) && p !== goalkeeper)
+      .slice(0, 5);
+    
+    // Assign to formation positions
+    const newAssignments: Record<string, Player | null> = {};
+    const positions = FORMATIONS[formation].positions;
+    
+    // Assign goalkeeper
+    const gkPosition = positions.find(p => p.role === "Goalkeeper");
+    if (gkPosition && goalkeeper) {
+      newAssignments[gkPosition.id] = goalkeeper;
+    }
+    
+    // Assign field players to remaining positions
+    const fieldPositions = positions.filter(p => p.role !== "Goalkeeper");
+    fieldPlayers.forEach((player, index) => {
+      if (fieldPositions[index]) {
+        newAssignments[fieldPositions[index].id] = player;
+      }
+    });
+    
+    // Fill remaining positions with null
+    positions.forEach(pos => {
+      if (!newAssignments[pos.id]) {
+        newAssignments[pos.id] = null;
+      }
+    });
+    
+    setAssignments(newAssignments);
+    setSubstitutes([
+      benchPlayers[0] || null,
+      benchPlayers[1] || null,
+      benchPlayers[2] || null,
+      benchPlayers[3] || null,
+      benchPlayers[4] || null,
+    ]);
+    
+    toast.success("Best players auto-selected!");
+  };
+
   // Reset all assignments
   const handleReset = () => {
     const newAssignments: Record<string, Player | null> = {};
@@ -329,7 +382,7 @@ export function TacticsPage() {
                 </Select>
 
                 <Button variant="outline" disabled>
-                  <Settings className="w-4 h-4 mr-2" />
+                  <Settings className="w-4 h-4 mr-0" />
                   Instructions
                   <Badge variant="secondary" className="ml-2 bg-accent text-white">TBI</Badge>
                 </Button>
@@ -337,13 +390,18 @@ export function TacticsPage() {
 
               <div className="flex-1" />
 
+              <Button variant="outline" onClick={handleQuickSelect} disabled={isLoading || players.length < 5}>
+                <Zap className="w-4 h-4 mr-0" />
+                Quick Select
+              </Button>
+
               <Button variant="outline" onClick={handleReset} disabled={isLoading}>
-                <RotateCcw className="w-4 h-4 mr-2" />
+                <RotateCcw className="w-4 h-4 mr-0" />
                 Reset
               </Button>
 
               <Button onClick={handleSave} disabled={!isValid || isSaving || isLoading}>
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-4 h-4 mr-0" />
                 {isSaving ? "Saving..." : "Save Tactics"}
               </Button>
             </div>
@@ -367,28 +425,39 @@ export function TacticsPage() {
 
         {/* Field & Player Pool Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Field (2 columns on large screens) */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Field and Bench Card */}
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Futsal Field</CardTitle>
+                <CardTitle>Team Setup</CardTitle>
               </CardHeader>
               <CardContent>
-                <FutsalField
-                  formation={FORMATIONS[formation]}
-                  assignments={assignments}
-                  onPlayerDrop={handlePlayerDrop}
-                  onSlotClick={handleSlotClick}
-                />
+                <div className="flex flex-col md:flex-row gap-6 items-start justify-center">
+                  {/* Futsal Field */}
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold">Starting XI</h3>
+                      <span className="text-xs text-muted-foreground">{filledPositions}/5</span>
+                    </div>
+                    <FutsalField
+                      formation={FORMATIONS[formation]}
+                      assignments={assignments}
+                      onPlayerDrop={handlePlayerDrop}
+                      onSlotClick={handleSlotClick}
+                    />
+                  </div>
+
+                  {/* Substitutes Bench - Vertical beside field */}
+                  <div className="flex-shrink-0 h-[450px] flex items-center">
+                    <SubstitutesBench
+                      substitutes={substitutes}
+                      onPlayerDrop={handleSubstituteDrop}
+                      onSlotClick={handleSubSlotClick}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
-
-            {/* Substitutes Bench */}
-            <SubstitutesBench
-              substitutes={substitutes}
-              onPlayerDrop={handleSubstituteDrop}
-              onSlotClick={handleSubSlotClick}
-            />
           </div>
 
           {/* Player Pool (1 column on large screens) */}

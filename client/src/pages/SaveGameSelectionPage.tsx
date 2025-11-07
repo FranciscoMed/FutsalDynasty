@@ -169,14 +169,18 @@ export default function SaveGameSelectionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f6efe3] to-[#f6efe3] p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-[#703214] mb-2">Futsal Manager</h1>
-            <p className="text-[#703214]/80">Welcome, {user?.username}!</p>
-          </div>
+        <div className="flex justify-end items-center mb-2">
           <Button variant="outline" onClick={logout}>
             Logout
           </Button>
+        </div>
+        <div className="flex flex-col items-center mb-8">
+          <img 
+            src="/logo.png" 
+            alt="Futsal Manager" 
+            className="w-32 h-32 object-contain mb-2"
+          />
+          <p className="text-[#703214]/80 text-lg">Welcome, {user?.username}!</p>
         </div>
 
         <div className="grid gap-6">

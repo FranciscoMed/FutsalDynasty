@@ -42,17 +42,17 @@ export function LeagueTable({
     return "";
   };
 
-  const getFormBadgeVariant = (result: string) => {
-    if (result === "W") return "default";
-    if (result === "D") return "secondary";
-    return "destructive";
+  const getFormBadgeClassName = (result: string) => {
+    if (result === "W") return "bg-green-700 hover:bg-green-600 text-white border-green-700";
+    if (result === "D") return "bg-yellow-600 hover:bg-yellow-500 text-white border-gray-400";
+    return "bg-red-700 hover:bg-red-600 text-white border-red-600";
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span className="text-[#1B4332]">{competitionName}</span>
+          <span className="text-default">{competitionName}</span>
           {currentMatchday && totalMatchdays && (
             <Badge variant="outline" className="text-sm">
               Matchday {currentMatchday} / {totalMatchdays}
@@ -96,11 +96,11 @@ export function LeagueTable({
                     <td className="py-3 px-2 text-sm font-medium text-center">
                       {position}
                     </td>
-                    <td className={`py-3 px-4 text-sm ${isPlayerTeam ? "text-[#1B4332] font-bold" : ""}`}>
+                    <td className={`py-3 px-4 text-sm ${isPlayerTeam ? "text-primary font-bold" : ""}`}>
                       {standing.teamName || `Team ${standing.teamId}`}
                     </td>
                     <td className="py-3 px-2 text-sm text-center">{standing.played}</td>
-                    <td className="py-3 px-2 text-sm text-center text-green-600 font-medium">
+                    <td className="py-3 px-2 text-sm text-center text-green-700 font-medium">
                       {standing.won}
                     </td>
                     <td className="py-3 px-2 text-sm text-center text-yellow-600 font-medium">
@@ -124,13 +124,12 @@ export function LeagueTable({
                       <td className="py-3 px-4">
                         <div className="flex gap-1">
                           {standing.form.slice(-5).map((result, idx) => (
-                            <Badge
+                            <div
                               key={idx}
-                              variant={getFormBadgeVariant(result)}
-                              className="w-6 h-6 flex items-center justify-center p-0 text-xs"
+                              className={`w-6 h-6 flex items-center justify-center rounded-sm text-xs font-semibold ${getFormBadgeClassName(result)}`}
                             >
                               {result}
-                            </Badge>
+                            </div>
                           ))}
                         </div>
                       </td>

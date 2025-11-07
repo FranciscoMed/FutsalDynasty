@@ -1,7 +1,8 @@
 import { useDrop } from "react-dnd";
 import { PlayerMarker, ItemTypes } from "./PlayerMarker";
 import type { Player } from "@/../../shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus } from "lucide-react";
 
 interface SubstitutesBenchProps {
   substitutes: (Player | null)[];
@@ -31,46 +32,48 @@ function SubstituteSlot({
     }),
   }), [index, onDrop]);
 
+  // Get position abbreviation
+  const getPositionAbbr = (position: string) => {
+    switch (position) {
+      case "Goalkeeper": return "GK";
+      case "Defender": return "DEF";
+      case "Winger": return "WIN";
+      case "Pivot": return "PIV";
+      default: return position.substring(0, 3).toUpperCase();
+    }
+  };
+
   return (
-    <div
+    <div 
       ref={drop}
-      className={`
-        relative w-14 h-14 rounded-full border-2
-        flex items-center justify-center
-        transition-all duration-200
-        cursor-pointer
-        ${player 
-          ? "border-primary bg-card" 
-          : "border-dashed border-border bg-transparent"
-        }
-        ${isOver && canDrop ? "border-primary bg-primary/10 scale-110" : ""}
-        ${!player && "hover:border-primary hover:bg-primary/5"}
-      `}
-      onClick={!player ? onClick : undefined}
+      className={`flex items-center gap-2 ${isOver && canDrop ? "scale-105" : ""}`}
     >
       {player ? (
-        <div className="relative group">
-          <PlayerMarker 
-            player={player} 
-            isGoalkeeper={player.position === "Goalkeeper"}
-            onClick={onClick}
-            size="sm"
-          />
-          {/* Tooltip on hover */}
-          <div className="
-            absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2
-            opacity-0 group-hover:opacity-100
-            transition-opacity duration-200
-            pointer-events-none
-            z-10
-          ">
-            <div className="bg-slate-950 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+        <>
+          <div className="hover:scale-110 transition-transform">
+            <PlayerMarker
+              player={player}
+              isGoalkeeper={player.position === "Goalkeeper"}
+              onClick={onClick}
+              size="md"
+            />
+          </div>
+          <div className="flex flex-col gap-0.5 items-center">
+            <div className="text-[11px] font-bold text-foreground whitespace-nowrap">
               {player.name}
             </div>
+            <div className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded whitespace-nowrap leading-tight">
+              {getPositionAbbr(player.position)} | ⭐{Math.round(player.currentAbility / 10)}
+            </div>
           </div>
-        </div>
+        </>
       ) : (
-        <span className="text-lg text-muted-foreground">+</span>
+        <button
+          onClick={onClick}
+          className="w-12 h-12 rounded-full border-2 border-dashed border-muted-foreground/40 bg-muted/30 hover:bg-muted/50 hover:border-foreground transition-all cursor-pointer flex items-center justify-center"
+        >
+          <Plus className="w-5 h-5 text-muted-foreground" />
+        </button>
       )}
     </div>
   );
@@ -84,31 +87,23 @@ export function SubstitutesBench({
   const filledCount = substitutes.filter(p => p !== null).length;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Substitutes Bench</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            {filledCount}/5
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-center gap-4">
-          {substitutes.map((player, index) => (
-            <SubstituteSlot
-              key={index}
-              player={player}
-              index={index}
-              onDrop={onPlayerDrop}
-              onClick={() => onSlotClick(index)}
-            />
-          ))}
-        </div>
-        <p className="text-sm text-muted-foreground text-center mt-3">
-          Drag players here or click empty slots to assign substitutes
-        </p>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold">Substitutes</h3>
+        <span className="text-xs text-muted-foreground">{filledCount}/5</span>
+      </div>
+      
+      <div className="flex flex-col gap-3 flex-1 justify-center">
+        {substitutes.map((player, index) => (
+          <SubstituteSlot
+            key={index}
+            player={player}
+            index={index}
+            onDrop={onPlayerDrop}
+            onClick={() => onSlotClick(index)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

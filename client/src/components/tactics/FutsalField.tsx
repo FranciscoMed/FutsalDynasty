@@ -16,32 +16,44 @@ export function FutsalField({
   onSlotClick 
 }: FutsalFieldProps) {
   return (
-    <div className="w-full max-w-[420px] mx-auto">
+    <div className="w-[300px] h-[450px] mx-auto">
       <div 
         className="
-          relative w-full
-          aspect-[2/3]
-          rounded-3xl
-          border-4 border-white/35
+          relative w-full h-full
+          rounded-lg
+          border-4 border-gray-800
           shadow-2xl
           overflow-hidden
         "
         style={{
-          backgroundImage: "url(/fields/futsal-field.svg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          background: 'linear-gradient(to bottom, #16a34a 0%, #22c55e 50%, #16a34a 100%)',
         }}
       >
-        {/* Position slots */}
-        {formation.positions.map((slot) => (
-          <PositionSlot
-            key={slot.id}
-            slot={slot}
-            player={assignments[slot.id] || null}
-            onDrop={onPlayerDrop}
-            onClick={() => onSlotClick(slot.id)}
+        {/* Field Background Image */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <img
+            src="/fields/futsal-field.svg"
+            alt="Futsal field"
+            className="w-full h-full object-cover opacity-90"
+            onError={(e) => {
+              // Fallback if image doesn't load - field will still show with green background
+              console.log('Field image not found, using solid background');
+            }}
           />
-        ))}
+        </div>
+
+        {/* Position slots */}
+        <div className="relative z-10 w-full h-full">
+          {formation.positions.map((slot) => (
+            <PositionSlot
+              key={slot.id}
+              slot={slot}
+              player={assignments[slot.id] || null}
+              onDrop={onPlayerDrop}
+              onClick={() => onSlotClick(slot.id)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -2,12 +2,22 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   Home, Users, Zap, GraduationCap, TrendingUp, Trophy, 
-  Mail, DollarSign, Building, Calendar 
+  Mail, DollarSign, Building, Calendar, Settings2, LogOut, Save, Moon 
 } from "lucide-react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { useAdvancementStore } from "@/lib/stores/advancementStore";
+import { useAuth } from "@/lib/stores/useAuth";
 import { NavigationLock } from "@/components/NavigationLock";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
@@ -15,9 +25,14 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { unreadInboxCount } = useFutsalManager();
   const { isAdvancing } = useAdvancementStore();
+  const { logout, setActiveSaveGame } = useAuth();
+
+  const handleLoadSave = () => {
+    setActiveSaveGame(null);
+  };
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -40,8 +55,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         tooltipMessage="Cannot navigate while time is advancing"
       >
         <aside className="w-64 bg-card border-r border-border flex flex-col">
-          <div className="p-6 border-b border-border">
-            <h1 className="text-2xl font-bold text-primary">Futsal Manager</h1>
+          <div className="p-4 border-b border-border flex items-center justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Futsal Manager" 
+              className="w-32 h-32 object-contain"
+            />
           </div>
           
           <nav className="flex-1 overflow-y-auto p-4">
@@ -86,7 +105,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </NavigationLock>
 
       {/* Main content area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto relative">
+        {/* Global Settings Menu */}
+        <div className="absolute top-4 right-4 z-50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full shadow-md">
+                <Settings2 className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                <Settings2 className="mr-2 h-4 w-4" />
+                <span>Preferences</span>
+                <Badge variant="secondary" className="ml-auto text-[10px]">TBI</Badge>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <Moon className="mr-2 h-4 w-4" />
+                <span>Dark Mode</span>
+                <Badge variant="secondary" className="ml-auto text-[10px]">TBI</Badge>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLoadSave}>
+                <Save className="mr-2 h-4 w-4" />
+                <span>Load Save</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout} className="text-red-600 focus:text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         <div className="p-6">
           {children}
         </div>

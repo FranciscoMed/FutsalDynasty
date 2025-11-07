@@ -50,28 +50,24 @@ export function PlayerMarker({
       className={`
         ${sizeClasses[size]}
         rounded-full
-        border-[3px]
+        border-2
         flex items-center justify-center
         cursor-pointer
         transition-all duration-200
         hover:scale-110
         ${isDragging ? "opacity-50 scale-95" : ""}
         ${isGoalkeeper 
-          ? "border-green-200 bg-gradient-to-b from-green-700 via-green-700 to-green-200" 
-          : "border-white bg-gradient-to-b from-green-500 via-green-500 to-white"
+          ? "bg-red-700 text-white border-black" 
+          : "bg-white text-black border-black"
         }
         shadow-lg
       `}
-      style={{
-        backgroundSize: "100% 100%",
-      }}
       title={player.name}
     >
       <span 
         className={`
           ${numberSize[size]}
-          font-bold text-white 
-          drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]
+          font-bold
         `}
       >
         {player.id % 100 || "?"}

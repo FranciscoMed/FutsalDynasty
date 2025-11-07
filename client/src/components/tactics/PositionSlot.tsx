@@ -24,6 +24,17 @@ export function PositionSlot({ slot, player, onDrop, onClick }: PositionSlotProp
 
   const isGoalkeeper = slot.role === "Goalkeeper";
 
+  // Get position abbreviation
+  const getPositionAbbr = (position: string) => {
+    switch (position) {
+      case "Goalkeeper": return "GK";
+      case "Defender": return "DEF";
+      case "Winger": return "WIN";
+      case "Pivot": return "PIV";
+      default: return position.substring(0, 3).toUpperCase();
+    }
+  };
+
   return (
     <div
       ref={drop}
@@ -34,40 +45,36 @@ export function PositionSlot({ slot, player, onDrop, onClick }: PositionSlotProp
         transform: "translate(-50%, -50%)",
       }}
     >
-      {/* Drop zone indicator */}
-      <div
-        className={`
-          w-12 h-12 md:w-14 md:h-14
-          rounded-full
-          border-2 border-dashed
-          flex items-center justify-center
-          transition-all duration-200
-          ${player ? "border-transparent" : "border-white/50"}
-          ${isOver && canDrop ? "border-primary bg-white/20 scale-110" : ""}
-          ${!player && "hover:border-white hover:bg-white/10"}
-        `}
-        onClick={!player ? onClick : undefined}
-      >
-        {player ? (
-          <div className="relative">
-            <PlayerMarker 
-              player={player} 
-              isGoalkeeper={isGoalkeeper}
-              onClick={onClick}
-            />
-            {/* Player name label below */}
-            <div className="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-              <div className="bg-slate-950/85 text-white text-xs px-2 py-0.5 rounded-full">
-                {player.name.split(" ").pop()}
-              </div>
-            </div>
+      {player ? (
+        // Player marker - draggable with labels
+        <div className="relative flex flex-col items-center gap-0.5 hover:scale-110 transition-transform">
+          <PlayerMarker 
+            player={player} 
+            isGoalkeeper={isGoalkeeper}
+            onClick={onClick}
+            size="md"
+          />
+          <div 
+            className="text-[9px] font-bold text-white whitespace-nowrap"
+            style={{
+              textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #000'
+            }}
+          >
+            {player.name.split(" ").pop()}
           </div>
-        ) : (
-          <span className="text-xs text-white/70 font-medium">
-            {slot.role}
-          </span>
-        )}
-      </div>
+          <div className="text-[9px] font-bold text-white bg-black/70 px-1.5 py-0.5 rounded whitespace-nowrap">
+            {getPositionAbbr(player.position)} | ⭐{Math.round(player.currentAbility / 10)}
+          </div>
+        </div>
+      ) : (
+        // Empty slot - clickable
+        <div 
+          onClick={onClick}
+          className={`w-10 h-10 rounded-full border-2 border-dashed border-white/60 bg-white/10 hover:bg-white/20 transition-colors cursor-pointer
+            ${isOver && canDrop ? "border-white bg-white/30 scale-110" : ""}
+          `}
+        />
+      )}
     </div>
   );
 }

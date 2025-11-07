@@ -39,13 +39,17 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f1debd] to-[#f1debd] p-4">
-      <Card className="w-full max-w-md shadow-2xl border-[#f1debd]">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-bold text-center">
-            Futsal Manager
-          </CardTitle>
-          <CardDescription className="text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f6eee3] to-[#f6eee3] p-4">
+      <Card className="w-full max-w-md shadow-2xl border-[#eaae65]">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Futsal Manager" 
+              className="w-32 h-32 object-contain"
+            />
+          </div>
+          <CardDescription className="text-center text-base">
             {isLogin ? "Sign in to your account" : "Create a new account"}
           </CardDescription>
         </CardHeader>
