@@ -1,0 +1,1640 @@
+{
+  "season": "2024/2025",
+  "competition": "Liga Placard (Portuguese Futsal League)",
+  "scrapedAt": "2025-11-12T00:51:28.669Z",
+  "teams": [
+    {
+      "teamName": "Benfica",
+      "teamUrl": "https://www.zerozero.pt/equipa/benfica/4368?epoca_id=155",
+      "players": [
+        {
+          "name": "André Correia",
+          "position": "Goalkeeper",
+          "age": 27,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Léo Gugiel",
+          "position": "Goalkeeper",
+          "age": 29,
+          "number": 22,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Diogo Carrera",
+          "position": "Goalkeeper",
+          "age": 19,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Raúl Moreira",
+          "position": "Fixo",
+          "age": 22,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "André Coelho",
+          "position": "Fixo",
+          "age": 32,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Afonso Jesus",
+          "position": "Fixo/Winger",
+          "age": 27,
+          "number": 4,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Peléh",
+          "position": "Fixo/Winger",
+          "age": 26,
+          "number": 80,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Arthur",
+          "position": "Winger",
+          "age": 31,
+          "number": 10,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Pany Varela",
+          "position": "Winger",
+          "age": 36,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Edmilson Kutchy",
+          "position": "Winger",
+          "age": 23,
+          "number": 14,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Carlos Monteiro",
+          "position": "Winger",
+          "age": 23,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diego Nunes",
+          "position": "Winger",
+          "age": 31,
+          "number": 18,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Silvestre Ferreira",
+          "position": "Winger",
+          "age": 26,
+          "number": 2,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Lúcio Rocha",
+          "position": "Winger",
+          "age": 21,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Eduardo Tchuda",
+          "position": "Pivot",
+          "age": 17,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Higor de Souza",
+          "position": "Pivot",
+          "age": 27,
+          "number": 9,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Jacaré",
+          "position": "Pivot",
+          "age": 26,
+          "number": 99,
+          "nationality": "Brazil"
+        }
+      ]
+    },
+    {
+      "teamName": "Sporting",
+      "teamUrl": "https://www.zerozero.pt/equipa/sporting/4369?epoca_id=155",
+      "players": [
+        {
+          "name": "Gonçalo Portugal",
+          "position": "Goalkeeper",
+          "age": 33,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Bernardo Paçó",
+          "position": "Goalkeeper",
+          "age": 25,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Henrique Rafagnin",
+          "position": "Goalkeeper",
+          "age": 33,
+          "number": 92,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Tomás Nogueira",
+          "position": "Fixo",
+          "age": 17,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tomás Paçó",
+          "position": "Fixo",
+          "age": 25,
+          "number": 4,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Bruno Maior",
+          "position": "Fixo",
+          "age": 21,
+          "number": 44,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "João Matos",
+          "position": "Fixo",
+          "age": 38,
+          "number": 9,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diogo Santos",
+          "position": "Fixo/Winger",
+          "age": 23,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Wesley",
+          "position": "Fixo/Winger",
+          "age": 25,
+          "number": 8,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Luís Montes",
+          "position": "Winger",
+          "age": 18,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pauleta",
+          "position": "Winger",
+          "age": 31,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Felipe Valério",
+          "position": "Winger",
+          "age": 32,
+          "number": 14,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Bruno Pinto",
+          "position": "Winger",
+          "age": 32,
+          "number": 25,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Alex Merlim",
+          "position": "Winger",
+          "age": 39,
+          "number": 29,
+          "nationality": "Italy"
+        },
+        {
+          "name": "Taynan",
+          "position": "Winger",
+          "age": 32,
+          "number": 33,
+          "nationality": "Kazakhstan"
+        },
+        {
+          "name": "Rúben Freire",
+          "position": "Winger",
+          "age": 27,
+          "number": 77,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Allan Guilherme",
+          "position": "Pivot",
+          "age": 26,
+          "number": 11,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Pedro Santos",
+          "position": "Pivot",
+          "age": 20,
+          "number": 18,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Zicky Té",
+          "position": "Pivot",
+          "age": 24,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rocha",
+          "position": "Pivot",
+          "age": 30,
+          "number": 70,
+          "nationality": "Brazil"
+        }
+      ]
+    },
+    {
+      "teamName": "Leões Porto Salvo",
+      "teamUrl": "https://www.zerozero.pt/equipa/leoes-porto-salvo/14914?epoca_id=155",
+      "players": [
+        {
+          "name": "Rodrigo Madeira",
+          "position": "Goalkeeper",
+          "age": 20,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Martim Figueira",
+          "position": "Goalkeeper",
+          "age": 25,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rodrigo Prazeres",
+          "position": "Goalkeeper",
+          "age": 20,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "João Ribeiro",
+          "position": "Goalkeeper",
+          "age": 18,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "André Sousa",
+          "position": "Goalkeeper",
+          "age": 39,
+          "number": 3,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ricardo Bernardo",
+          "position": "Goalkeeper",
+          "age": 18,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Joel Ribeiro",
+          "position": "Fixo",
+          "age": 18,
+          "number": 28,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Henrique Rodrigues",
+          "position": "Fixo",
+          "age": 23,
+          "number": 29,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "João Peyroteo",
+          "position": "Fixo",
+          "age": 17,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Leonildo Injai",
+          "position": "Fixo",
+          "age": 18,
+          "number": 4,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rúben Carrilho",
+          "position": "Fixo",
+          "age": 20,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Paulo Solinho",
+          "position": "Fixo/Winger",
+          "age": 19,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rodrigo Hiroshi",
+          "position": "Universal",
+          "age": 33,
+          "number": 13,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Diogo Alves",
+          "position": "Universal",
+          "age": 19,
+          "number": 33,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ruan Silvestre",
+          "position": "Winger",
+          "age": 29,
+          "number": 10,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Anderson Fortes",
+          "position": "Winger",
+          "age": 21,
+          "number": 11,
+          "nationality": "Angola"
+        },
+        {
+          "name": "Ré",
+          "position": "Winger",
+          "age": 40,
+          "number": 14,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rúben Teixeira",
+          "position": "Winger",
+          "age": 22,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Bruno Marques",
+          "position": "Winger",
+          "age": 18,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Enzo Faustino",
+          "position": "Winger",
+          "age": 20,
+          "number": 12,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Bruno Sá",
+          "position": "Winger",
+          "age": 25,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Landelino Neto",
+          "position": "Pivot",
+          "age": 23,
+          "number": 47,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Andriy Dzyalo",
+          "position": "Pivot",
+          "age": 19,
+          "number": 9,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Isaías Furtado",
+          "position": "Pivot",
+          "age": 25,
+          "number": 99,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "Ferreira do Zêzere",
+      "teamUrl": "https://www.zerozero.pt/equipa/ferreira-do-zezere/92774?epoca_id=155",
+      "players": [
+        {
+          "name": "Pedro Martinho",
+          "position": "Goalkeeper",
+          "age": 24,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gonçalo Leal",
+          "position": "Goalkeeper",
+          "age": 19,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Nilton",
+          "position": "Goalkeeper",
+          "age": 37,
+          "number": 13,
+          "nationality": "São Tomé and Príncipe"
+        },
+        {
+          "name": "Tomás Bento",
+          "position": "Fixo",
+          "age": 19,
+          "number": 9,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Djaelson",
+          "position": "Fixo",
+          "age": 33,
+          "number": 92,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Daniel Sodré",
+          "position": "Fixo/Winger",
+          "age": 23,
+          "number": 20,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Chapinha",
+          "position": "Fixo/Winger",
+          "age": 25,
+          "number": 36,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Jó Mahrez",
+          "position": "Winger",
+          "age": 27,
+          "number": 11,
+          "nationality": "Angola"
+        },
+        {
+          "name": "Francisco Oliveira",
+          "position": "Winger",
+          "age": 24,
+          "number": 18,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Lourenço Aguiar",
+          "position": "Winger",
+          "age": 20,
+          "number": 19,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Octávio Alves",
+          "position": "Winger",
+          "age": 25,
+          "number": 30,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Wendell",
+          "position": "Winger",
+          "age": 30,
+          "number": 41,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Kaká",
+          "position": "Winger",
+          "age": 26,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Barreto",
+          "position": "Pivot",
+          "age": 21,
+          "number": 14,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Rodrigo Monteiro",
+          "position": "Pivot",
+          "age": 19,
+          "number": 5,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rui Fortes",
+          "position": "Pivot",
+          "age": 31,
+          "number": 7,
+          "nationality": "Cape Verde"
+        }
+      ]
+    },
+    {
+      "teamName": "SC Braga",
+      "teamUrl": "https://www.zerozero.pt/equipa/sc-braga/6555?epoca_id=155",
+      "players": [
+        {
+          "name": "João Cunha",
+          "position": "Goalkeeper",
+          "age": 20,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Dudu",
+          "position": "Goalkeeper",
+          "age": 29,
+          "number": 2,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Leandro Costa",
+          "position": "Goalkeeper",
+          "age": 26,
+          "number": 21,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gonçalo Pereira",
+          "position": "Goalkeeper",
+          "age": 17,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Martins Sousa",
+          "position": "Fixo",
+          "age": 19,
+          "number": 28,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Sousa",
+          "position": "Fixo",
+          "age": 28,
+          "number": 3,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ricardo Lopes",
+          "position": "Fixo",
+          "age": 24,
+          "number": 9,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Vitão",
+          "position": "Fixo/Winger",
+          "age": 29,
+          "number": 31,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Gonçalo Paixão",
+          "position": "Fixo/Winger",
+          "age": 21,
+          "number": 76,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Bebé",
+          "position": "Winger",
+          "age": 27,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Mamadú Turé",
+          "position": "Winger",
+          "age": 27,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Simão Nogueira",
+          "position": "Winger",
+          "age": 19,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Brito",
+          "position": "Winger",
+          "age": 34,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Vilian Sousa",
+          "position": "Winger",
+          "age": 36,
+          "number": 66,
+          "nationality": "Unknown"
+        },
+        {
+          "name": "Gabriel Mazetto",
+          "position": "Winger",
+          "age": 26,
+          "number": 7,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Rafael Henmi",
+          "position": "Winger",
+          "age": 33,
+          "number": 8,
+          "nationality": "Unknown"
+        },
+        {
+          "name": "André Gomes",
+          "position": "Pivot",
+          "age": 17,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Willian Carioca",
+          "position": "Pivot",
+          "age": 35,
+          "number": 14,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Hugo Neves",
+          "position": "Pivot",
+          "age": 25,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Luís Fernandes",
+          "position": "Pivot",
+          "age": 20,
+          "number": 19,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Leandro Ribeiro",
+          "position": "Pivot",
+          "age": 19,
+          "number": 97,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "FC Famalicão",
+      "teamUrl": "https://www.zerozero.pt/equipa/fc-famalicao/264123?epoca_id=155",
+      "players": [
+        {
+          "name": "Paulo Pereira",
+          "position": "Goalkeeper",
+          "age": 29,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Cláudio Carvalho",
+          "position": "Goalkeeper",
+          "age": 30,
+          "number": 14,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Guilherme Oliveira",
+          "position": "Goalkeeper",
+          "age": 25,
+          "number": 31,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Leandro Moreira",
+          "position": "Goalkeeper",
+          "age": 20,
+          "number": 99,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Buzuzu",
+          "position": "Fixo",
+          "age": 29,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ciro",
+          "position": "Fixo",
+          "age": 35,
+          "number": 59,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Guilherme Amorim",
+          "position": "Universal",
+          "age": 18,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Miks Babris",
+          "position": "Universal",
+          "age": 26,
+          "number": 19,
+          "nationality": "Unknown"
+        },
+        {
+          "name": "Rodrigo Pereira",
+          "position": "Universal",
+          "age": 20,
+          "number": 21,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Natan Minatti",
+          "position": "Winger",
+          "age": 22,
+          "number": 11,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Amílcar Gomes",
+          "position": "Winger",
+          "age": 39,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Chiquinho",
+          "position": "Winger",
+          "age": 17,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ricardo Vieira",
+          "position": "Winger",
+          "age": 23,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Alan Gitahy",
+          "position": "Winger",
+          "age": 29,
+          "number": 9,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Mathis Pereira",
+          "position": "Winger",
+          "age": 17,
+          "number": 90,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ruizinho",
+          "position": "Winger",
+          "age": 29,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diogo Tavares",
+          "position": "Winger",
+          "age": 28,
+          "number": 3,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Douglas Risi",
+          "position": "Winger",
+          "age": 29,
+          "number": 6,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Henrique Rodrigues",
+          "position": "Winger",
+          "age": 17,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Romário",
+          "position": "Pivot",
+          "age": 36,
+          "number": 89,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Luis Guimarães",
+          "position": "Pivot",
+          "age": 17,
+          "number": 14,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "Rio Ave",
+      "teamUrl": "https://www.zerozero.pt/equipa/rio-ave/6557?epoca_id=155",
+      "players": [
+        {
+          "name": "Pedro Silva",
+          "position": "Goalkeeper",
+          "age": 19,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Moreira",
+          "position": "Goalkeeper",
+          "age": 30,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Nuno Costa",
+          "position": "Goalkeeper",
+          "age": 25,
+          "number": 24,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Peixinho",
+          "position": "Fixo",
+          "age": 24,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Dinis Ramos",
+          "position": "Fixo",
+          "age": 27,
+          "number": 3,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pedro Rodrigues",
+          "position": "Universal",
+          "age": 29,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Zézinho",
+          "position": "Winger",
+          "age": 25,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Cigano",
+          "position": "Winger",
+          "age": 31,
+          "number": 15,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Sérgio Costa",
+          "position": "Winger",
+          "age": 30,
+          "number": 18,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Careca",
+          "position": "Winger",
+          "age": 24,
+          "number": 19,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gustavo Rodrigues",
+          "position": "Winger",
+          "age": 24,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Torres",
+          "position": "Winger",
+          "age": 27,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Cruz",
+          "position": "Winger",
+          "age": 30,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rúben Góis",
+          "position": "Pivot",
+          "age": 24,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Francisco Silva",
+          "position": "Pivot",
+          "age": 21,
+          "number": 4,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "Torreense",
+      "teamUrl": "https://www.zerozero.pt/equipa/torreense/231427?epoca_id=155",
+      "players": [
+        {
+          "name": "Cristiano Marques",
+          "position": "Goalkeeper",
+          "age": 29,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Bruno Felipe",
+          "position": "Goalkeeper",
+          "age": 26,
+          "number": 17,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Santiago Oliveira",
+          "position": "Goalkeeper",
+          "age": 17,
+          "number": 24,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Felipe Palermi",
+          "position": "Goalkeeper",
+          "age": 18,
+          "number": 24,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Duarte Correia",
+          "position": "Fixo",
+          "age": 21,
+          "number": 2,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tomás Silva",
+          "position": "Fixo",
+          "age": 19,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Romada",
+          "position": "Fixo",
+          "age": 28,
+          "number": 8,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Nicolas Tomé",
+          "position": "Fixo",
+          "age": 30,
+          "number": 88,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Rodrigo Correia",
+          "position": "Fixo/Winger",
+          "age": 18,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Jefferson",
+          "position": "Fixo/Winger",
+          "age": 36,
+          "number": 23,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Vicente Guia",
+          "position": "Fixo/Winger",
+          "age": 18,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Nuno Miranda",
+          "position": "Winger",
+          "age": 27,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gabrielzinho",
+          "position": "Winger",
+          "age": 30,
+          "number": 18,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Sandro Kingani",
+          "position": "Winger",
+          "age": 21,
+          "number": 27,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Célio Coque",
+          "position": "Winger",
+          "age": 25,
+          "number": 28,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gonçalo Rodrigues",
+          "position": "Winger",
+          "age": 22,
+          "number": 30,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Danny",
+          "position": "Winger",
+          "age": 29,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Paulo Major",
+          "position": "Winger",
+          "age": 34,
+          "number": 84,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Edson Patrick",
+          "position": "Pivot",
+          "age": 27,
+          "number": 9,
+          "nationality": "Cape Verde"
+        },
+        {
+          "name": "Tintim",
+          "position": "Pivot",
+          "age": 23,
+          "number": 90,
+          "nationality": "Brazil"
+        }
+      ]
+    },
+    {
+      "teamName": "ADCR Caxinas",
+      "teamUrl": "https://www.zerozero.pt/equipa/adcr-caxinas-poca-barca/32291?epoca_id=155",
+      "players": [
+        {
+          "name": "Rui Pedro",
+          "position": "Goalkeeper",
+          "age": 31,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Luís Pontes",
+          "position": "Goalkeeper",
+          "age": 19,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Sacramento",
+          "position": "Goalkeeper",
+          "age": 36,
+          "number": 33,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ricardo Marques",
+          "position": "Fixo",
+          "age": 21,
+          "number": 19,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rodrigo Gabriel",
+          "position": "Fixo",
+          "age": 17,
+          "number": 20,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Martim Castela",
+          "position": "Fixo",
+          "age": 18,
+          "number": 27,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Léo Evangelista",
+          "position": "Fixo",
+          "age": 29,
+          "number": 4,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Filipe Costa",
+          "position": "Fixo",
+          "age": 18,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diogo Pereira",
+          "position": "Fixo/Winger",
+          "age": 17,
+          "number": 14,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diogo Sousa",
+          "position": "Universal",
+          "age": 18,
+          "number": 20,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Sévio Marcelo",
+          "position": "Winger",
+          "age": 24,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Adaílton Souza",
+          "position": "Winger",
+          "age": 27,
+          "number": 11,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Tomás Colaço",
+          "position": "Winger",
+          "age": 21,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Kiko",
+          "position": "Winger",
+          "age": 31,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tomas Bazan",
+          "position": "Winger",
+          "age": 24,
+          "number": 9,
+          "nationality": "Argentina"
+        },
+        {
+          "name": "Matheus Correia",
+          "position": "Pivot",
+          "age": 28,
+          "number": 12,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Martín Dorda",
+          "position": "Pivot",
+          "age": 28,
+          "number": 21,
+          "nationality": "Argentina"
+        },
+        {
+          "name": "Rodrigo Simão",
+          "position": "Pivot",
+          "age": 22,
+          "number": 7,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "Quinta dos Lombos",
+      "teamUrl": "https://www.zerozero.pt/equipa/quinta-dos-lombos/16391?epoca_id=155",
+      "players": [
+        {
+          "name": "Pedro Nunes",
+          "position": "Goalkeeper",
+          "age": 22,
+          "number": 1,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Pinto",
+          "position": "Goalkeeper",
+          "age": 24,
+          "number": 13,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pedro Sousa",
+          "position": "Goalkeeper",
+          "age": 18,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tomás Silva",
+          "position": "Fixo",
+          "age": 22,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gonçalo Sobral",
+          "position": "Fixo",
+          "age": 29,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Francisco Cruz",
+          "position": "Fixo",
+          "age": 19,
+          "number": 5,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pedro Seiça",
+          "position": "Fixo/Winger",
+          "age": 19,
+          "number": 6,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Gabi Vidal",
+          "position": "Fixo/Winger",
+          "age": 32,
+          "number": 7,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Thales Alves",
+          "position": "Winger",
+          "age": 24,
+          "number": 10,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "David Gita",
+          "position": "Winger",
+          "age": 19,
+          "number": 20,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "David Costa",
+          "position": "Winger",
+          "age": 27,
+          "number": 23,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Ciro Mouralinho",
+          "position": "Winger",
+          "age": 19,
+          "number": 4,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "André Cruz",
+          "position": "Winger",
+          "age": 23,
+          "number": 67,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Kaká",
+          "position": "Winger",
+          "age": 30,
+          "number": 73,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Fábio Lima",
+          "position": "Winger",
+          "age": 37,
+          "number": 9,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Milton Dias",
+          "position": "Pivot",
+          "age": 25,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Iury Bahia",
+          "position": "Pivot",
+          "age": 27,
+          "number": 97,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Duarte Ganhão",
+          "position": "Pivot",
+          "age": 19,
+          "number": 18,
+          "nationality": "Portugal"
+        }
+      ]
+    },
+    {
+      "teamName": "Eléctrico",
+      "teamUrl": "https://www.zerozero.pt/equipa/electrico/14910?epoca_id=155",
+      "players": [
+        {
+          "name": "Leandro Rodrigues",
+          "position": "Goalkeeper",
+          "age": 23,
+          "number": 16,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Miguel Simões",
+          "position": "Goalkeeper",
+          "age": 21,
+          "number": 22,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Diogo Basílio",
+          "position": "Goalkeeper",
+          "age": 29,
+          "number": 99,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Chico Ramos",
+          "position": "Fixo",
+          "age": 18,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Tiago Reis",
+          "position": "Fixo",
+          "age": 20,
+          "number": 2,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Telmo Sousa",
+          "position": "Fixo",
+          "age": 25,
+          "number": 33,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Augusto Matias",
+          "position": "Fixo",
+          "age": 22,
+          "number": 8,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Tomás Teodoro",
+          "position": "Fixo",
+          "age": 17,
+          "number": null,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Samuel Silva",
+          "position": "Winger",
+          "age": 24,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Renato Almeida",
+          "position": "Winger",
+          "age": 19,
+          "number": 11,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Alê Teixeira",
+          "position": "Winger",
+          "age": 22,
+          "number": 13,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Lucas Mestre",
+          "position": "Winger",
+          "age": 21,
+          "number": 15,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Henrique Vicente",
+          "position": "Winger",
+          "age": 27,
+          "number": 20,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Thiaguinho",
+          "position": "Winger",
+          "age": 25,
+          "number": 23,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "João Costa",
+          "position": "Pivot",
+          "age": 25,
+          "number": 19,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Simi Saiotti",
+          "position": "Pivot",
+          "age": 38,
+          "number": 77,
+          "nationality": "Unknown"
+        }
+      ]
+    },
+    {
+      "teamName": "AD Fundão",
+      "teamUrl": "https://www.zerozero.pt/equipa/ad-fundao/7891?epoca_id=155",
+      "players": [
+        {
+          "name": "Jaime Arthur",
+          "position": "Goalkeeper",
+          "age": 20,
+          "number": 30,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Kiko",
+          "position": "Goalkeeper",
+          "age": 19,
+          "number": 88,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Martim Borrego",
+          "position": "Goalkeeper",
+          "age": 18,
+          "number": 12,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Rui Moreira",
+          "position": "Fixo",
+          "age": 24,
+          "number": 18,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Uesler",
+          "position": "Fixo",
+          "age": 32,
+          "number": 6,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Dinis Lopes",
+          "position": "Fixo/Winger",
+          "age": 20,
+          "number": 15,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Duarte Moreira",
+          "position": "Fixo/Winger",
+          "age": 22,
+          "number": 3,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pedro Almeida",
+          "position": "Fixo/Winger",
+          "age": 17,
+          "number": 2,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Pedro Marques",
+          "position": "Winger",
+          "age": 20,
+          "number": 10,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Welinton Oliveira",
+          "position": "Winger",
+          "age": 23,
+          "number": 11,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Mário Freitas",
+          "position": "Winger",
+          "age": 35,
+          "number": 17,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Romarinho",
+          "position": "Winger",
+          "age": 27,
+          "number": 20,
+          "nationality": "Brazil"
+        },
+        {
+          "name": "Gui Torres",
+          "position": "Winger",
+          "age": 24,
+          "number": 28,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Sissi",
+          "position": "Winger",
+          "age": 25,
+          "number": 8,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Mohamedi Bangura",
+          "position": "Winger",
+          "age": 19,
+          "number": 14,
+          "nationality": "Guinea-Bissau"
+        },
+        {
+          "name": "Tiago Tavares",
+          "position": "Pivot",
+          "age": 22,
+          "number": 77,
+          "nationality": "Portugal"
+        },
+        {
+          "name": "Chino",
+          "position": "Pivot",
+          "age": 24,
+          "number": 9,
+          "nationality": "Unknown"
+        }
+      ]
+    }
+  ]
+}

@@ -15,7 +15,9 @@
     "uefa:fetch": "tsx scripts/uefa/fetch-fixtures.ts",
     "uefa:analyze": "tsx scripts/uefa/analyze-fixtures.ts",
     "uefa:scrape-stats": "tsx scripts/uefa/scrape-statistics.ts",
-    "uefa:analyze-all": "tsx scripts/uefa/analyze-all-data.ts"
+    "uefa:analyze-all": "tsx scripts/uefa/analyze-all-data.ts",
+    "zerozero:scrape-players": "tsx scripts/zerozero/scrape-players.ts",
+    "zerozero:scrape-competition": "tsx scripts/zerozero/scrape-competition.ts"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.5",
