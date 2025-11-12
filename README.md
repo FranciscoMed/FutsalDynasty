@@ -133,23 +133,17 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - User team matches protected (never auto-simulated)
    - Comprehensive logging for debugging
 
-2. **Hybrid State Management** ⭐ *NEW*
-   - Separated UI state (Zustand) from server state (TanStack Query)
-   - Automatic cache management with TanStack Query
-   - Granular query invalidation (only refetch what changed)
-   - Per-query loading and error states
-   - Optimistic updates support
-   - React Query DevTools integration
-   - Backward compatible with existing code
-   - Improved performance (selective component re-renders)
-   - Centralized query keys for consistent cache management
+2. **Full Match Engine Creation** ⭐ *NEW*
+   - Developed a robust match engine for real-time simulation
+   - Minute-by-minute event processing (goals, cards, substitutions)
+   - Player ratings and match statistics generation
+   - Supports both user and AI matches with detailed event logs
 
-3. **Code Quality Improvements** ⭐ *NEW*
-   - All TypeScript errors resolved
-   - Strict type checking enabled
-   - Pre-commit hooks for type safety
-   - Centralized attribute conversion utilities
-   - Consistent error handling patterns
+3. **Enhanced Matchday UI Flow** ⭐ *NEW*
+   - "Continue" button now detects match days and navigates directly to match preparation
+   - Match preparation popup for tactics confirmation before kickoff
+   - Smart event detection: stops advancement for matches, shows overlays and modals
+   - Improved feedback: simulation summary, match notifications, and progress overlays
 
 ### Core Features
 
@@ -182,6 +176,7 @@ Futsal Manager is a full-stack web application that simulates the experience of 
      - Financial summary (budget, wage budget)
      - Performance rating based on objectives achieved
    - **Simulation summary**: Shows "Simulated X background matches" during time advancement
+   - **Matchday Flow**: On match days, advancement pauses and navigates to match preparation UI. User confirms tactics before simulation begins. After match, summary and notifications are displayed.
 
 6. **Player Management**
    - Dual-scale attribute system (0-200 internal, 0-20 display)
@@ -207,6 +202,7 @@ Futsal Manager is a full-stack web application that simulates the experience of 
    - Home advantage modifier (1.1x)
    - Team strength calculation (70% ability, 30% fitness, multiplied by form and morale)
    - Automatic background simulation during time advancement
+   - **Detailed Event Logging**: All match events (goals, cards, substitutions) are logged and displayed in the UI. Player ratings and statistics are generated for each match.
 
 9. **Multiple Competitions**
    - **First Division**: 12-team league with player team + 11 AI teams (reputation 40-70)
@@ -300,6 +296,7 @@ The game features a priority-based event system for intelligent time advancement
 - [x] Goals, cards, and substitutions
 - [x] Home advantage (1.1x multiplier)
 - [x] Team strength calculation (ability + fitness + form + morale)
+- [x] Detailed event logging for all match events
 
 #### Competition System
 - [x] First Division (12 teams, round-robin, 22 matchdays)
@@ -377,6 +374,7 @@ The game features a priority-based event system for intelligent time advancement
 - [x] GPU-accelerated animations
 - [x] Navigation breadcrumbs
 - [x] Page-specific layouts
+    - **Matchday Experience**: Seamless flow from dashboard to match preparation, with overlays and modals guiding the user through tactics setup and match simulation. Enhanced feedback and notifications for match events.
 
 #### Technical Infrastructure
 - [x] TypeScript strict mode
@@ -414,7 +412,6 @@ The game features a priority-based event system for intelligent time advancement
 - [ ] Career mode with player retirement
 
 #### Tactical Depth
-- [ ] Custom formation creator
 - [ ] Player instructions (individual roles)
 - [ ] Set piece tactics
 - [ ] In-match tactical adjustments
@@ -434,14 +431,12 @@ The game features a priority-based event system for intelligent time advancement
 - [ ] Competition history
 
 #### Media & Interaction
-- [ ] Press conferences
-- [ ] Media interactions
 - [ ] Fan satisfaction tracking
 - [ ] Board confidence meter
 - [ ] News feed
 
 #### Enhanced Simulation
-- [ ] 3D match viewer
+- [ ] 2D match viewer
 - [ ] Extended highlights
 - [ ] Commentary system
 - [ ] Match replays

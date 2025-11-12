@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,6 @@ import { format } from "date-fns";
 import { TacticsReview } from "./TacticsReview";
 import { TacticsReviewV2 } from "./match-prep/TacticsReviewV2";
 import { OpponentAnalysis } from "./OpponentAnalysis";
-import { InstructionsDialog } from "./tactics/InstructionsDialog";
 import type { Formation as OldFormation, TacticalPreset, Player } from "@shared/schema";
 import type { Formation } from "@/lib/formations";
 
@@ -72,6 +71,9 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
   const [substitutes, setSubstitutes] = useState<(number | null)[]>([null, null, null, null, null]);
   const [hasChanges, setHasChanges] = useState(false);
   
+  // Track if we've initialized tactics from saved data
+  const hasInitializedTactics = useRef(false);
+  
   // Tactical instructions state
   const [tacticalInstructions, setTacticalInstructions] = useState<{
     mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
@@ -95,6 +97,16 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
     setSubstitutes(data.substitutes);
   }, []);
 
+  // Handle instructions change
+  const handleInstructionsChange = useCallback((instructions: {
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+  }) => {
+    console.log('Instructions changed in parent:', instructions);
+    setTacticalInstructions(instructions);
+  }, []);
+
   // Fetch match preparation data
   const { data, isLoading, error } = useQuery<MatchPreparationData>({
     queryKey: ["matchPreparation", matchId],
@@ -108,20 +120,15 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
 
   // Initialize with existing tactics from team data (only once when data loads)
   useEffect(() => {
-    if (data?.playerTeam) {
+    if (data?.playerTeam && !hasInitializedTactics.current) {
       console.log('Match prep data loaded:', {
         hasTactics: !!data.playerTeam.tactics,
         tactics: data.playerTeam.tactics,
-        currentAssignments: assignments,
-        currentSubstitutes: substitutes
+        hasInitialized: hasInitializedTactics.current
       });
       
-      // Check if we should load saved tactics (only if we haven't set anything yet)
-      const hasNoAssignments = Object.keys(assignments).length === 0;
-      const hasNoSubstitutes = substitutes.every(s => s === null);
-      const shouldLoadTactics = hasNoAssignments && hasNoSubstitutes;
-      
-      if (shouldLoadTactics && data.playerTeam.tactics) {
+      // Load saved tactics if available
+      if (data.playerTeam.tactics) {
         const savedTactics = data.playerTeam.tactics;
         console.log('Loading saved tactics from database:', savedTactics);
         
@@ -129,16 +136,19 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
           setFormation(savedTactics.formation as Formation);
         }
         if (savedTactics.assignments && Object.keys(savedTactics.assignments).length > 0) {
+          console.log('Setting assignments:', savedTactics.assignments);
           setAssignments(savedTactics.assignments);
         }
         if (savedTactics.substitutes && savedTactics.substitutes.length > 0) {
+          console.log('Setting substitutes:', savedTactics.substitutes);
           setSubstitutes(savedTactics.substitutes);
         }
+        
+        // Mark as initialized
+        hasInitializedTactics.current = true;
       } else {
-        console.log('Not loading tactics:', {
-          shouldLoadTactics,
-          hasTactics: !!data.playerTeam.tactics
-        });
+        console.log('No saved tactics found in database');
+        hasInitializedTactics.current = true;
       }
     }
   }, [data]);
@@ -283,22 +293,14 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <TabsContent value="tactics" className="mt-0 space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#1B4332]">Formation & Lineup</h3>
-                    <p className="text-sm text-muted-foreground">Set your starting XI and substitutes</p>
-                  </div>
-                  <InstructionsDialog
-                    initialInstructions={tacticalInstructions}
-                    onSave={(instructions) => setTacticalInstructions(instructions)}
-                  />
-                </div>
                 <TacticsReviewV2
                   squad={data.playerTeam.squad}
                   initialFormation={formation}
                   initialAssignments={assignments}
                   initialSubstitutes={substitutes}
+                  initialInstructions={tacticalInstructions}
                   onTacticsChange={handleTacticsChange}
+                  onInstructionsChange={handleInstructionsChange}
                 />
               </TabsContent>
 

@@ -9,16 +9,27 @@ import { CompactFutsalField } from "./CompactFutsalField";
 import { CompactSubstitutesBench } from "./CompactSubstitutesBench";
 import { TacticsControls } from "./TacticsControls";
 import { QuickPlayerSelector } from "./QuickPlayerSelector";
+import { InstructionsDialog } from "../tactics/InstructionsDialog";
 
 interface TacticsReviewV2Props {
   squad: Player[];
   initialFormation?: Formation;
   initialAssignments?: Record<string, number | null>;
   initialSubstitutes?: (number | null)[];
+  initialInstructions?: {
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+  };
   onTacticsChange: (data: {
     formation: Formation;
     assignments: Record<string, number | null>;
     substitutes: (number | null)[];
+  }) => void;
+  onInstructionsChange: (instructions: {
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
   }) => void;
 }
 
@@ -27,7 +38,13 @@ export function TacticsReviewV2({
   initialFormation = "3-1",
   initialAssignments = {},
   initialSubstitutes = [null, null, null, null, null],
-  onTacticsChange 
+  initialInstructions = {
+    mentality: 'Balanced',
+    pressingIntensity: 'Medium',
+    flyGoalkeeper: 'Never',
+  },
+  onTacticsChange,
+  onInstructionsChange
 }: TacticsReviewV2Props) {
   const [formation, setFormation] = useState<Formation>(initialFormation);
   const [assignments, setAssignments] = useState<Record<string, Player | null>>(() => {
@@ -57,6 +74,41 @@ export function TacticsReviewV2({
   
   // Track if this is the first render to avoid notifying parent of initial state
   const isFirstRender = useRef(true);
+  const hasLoadedInitialAssignments = useRef(false);
+  const hasLoadedInitialSubstitutes = useRef(false);
+
+  // Update assignments when initialAssignments prop changes (from parent loading saved tactics)
+  useEffect(() => {
+    if (!hasLoadedInitialAssignments.current && Object.keys(initialAssignments).length > 0) {
+      console.log('TacticsReviewV2: Loading initial assignments from props:', initialAssignments);
+      const playerAssignments: Record<string, Player | null> = {};
+      Object.entries(initialAssignments).forEach(([slotId, playerId]) => {
+        if (playerId !== null) {
+          const player = squad.find(p => p.id === playerId);
+          playerAssignments[slotId] = player || null;
+        } else {
+          playerAssignments[slotId] = null;
+        }
+      });
+      setAssignments(playerAssignments);
+      hasLoadedInitialAssignments.current = true;
+    }
+  }, [initialAssignments, squad]);
+
+  // Update substitutes when initialSubstitutes prop changes (from parent loading saved tactics)
+  useEffect(() => {
+    if (!hasLoadedInitialSubstitutes.current && initialSubstitutes.some(id => id !== null)) {
+      console.log('TacticsReviewV2: Loading initial substitutes from props:', initialSubstitutes);
+      const playerSubs = initialSubstitutes.map(id => {
+        if (id !== null) {
+          return squad.find(p => p.id === id) || null;
+        }
+        return null;
+      });
+      setSubstitutes(playerSubs);
+      hasLoadedInitialSubstitutes.current = true;
+    }
+  }, [initialSubstitutes, squad]);
 
   // Initialize empty assignments when formation changes
   useEffect(() => {
@@ -233,10 +285,7 @@ export function TacticsReviewV2({
     toast.success("Best 5 auto-assigned!");
   };
 
-  // Instructions placeholder
-  const handleInstructionsClick = () => {
-    toast.info("Tactical Instructions feature coming soon!");
-  };
+
 
   // Get available players (not assigned anywhere)
   const assignedIds = [
@@ -256,24 +305,17 @@ export function TacticsReviewV2({
 
   return (
     <div className="space-y-4">
-      {/* Validation Alert */}
-      {!isComplete && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {!hasGoalkeeper && "You need a Goalkeeper in the starting lineup. "}
-            {filledPositions < 5 && `Assign ${5 - filledPositions} more player(s) to complete your lineup.`}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Controls */}
       <TacticsControls
         formation={formation}
         onFormationChange={setFormation}
         onQuickFill={handleQuickFill}
-        onInstructionsClick={handleInstructionsClick}
-      />
+      >
+        <InstructionsDialog
+          initialInstructions={initialInstructions}
+          onSave={onInstructionsChange}
+        />
+      </TacticsControls>
 
       {/* Field | Substitutes | Available Players - All Side by Side */}
       <div className="flex gap-4">

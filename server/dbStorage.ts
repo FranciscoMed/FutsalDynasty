@@ -25,7 +25,7 @@ import {
   users,
   saveGames,
 } from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray, or, gte, lt, sql } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DbStorage implements IStorage {
@@ -100,6 +100,17 @@ export class DbStorage implements IStorage {
     return result as Team[];
   }
 
+  async getTeamsByIds(saveGameId: number, userId: number, ids: number[]): Promise<Team[]> {
+    if (ids.length === 0) return [];
+    const result = await db.select().from(teams)
+      .where(and(
+        eq(teams.saveGameId, saveGameId),
+        eq(teams.userId, userId),
+        inArray(teams.id, ids)
+      ));
+    return result as Team[];
+  }
+
   async createTeam(saveGameId: number, userId: number, team: Omit<Team, "id" | "userId" | "saveGameId">): Promise<Team> {
     const result = await db.insert(teams)
       .values({ ...team, saveGameId, userId })
@@ -150,6 +161,157 @@ export class DbStorage implements IStorage {
     return result as Match[];
   }
 
+  async getMatchesByDate(saveGameId: number, userId: number, date: Date): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>> {
+    // Normalize date to midnight UTC for accurate comparison
+    const targetDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    const nextDay = new Date(targetDate);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+
+    // Efficiently fetch all matches on a specific date with competition details
+    const matchResults = await db
+      .select({
+        id: matches.id,
+        homeTeamId: matches.homeTeamId,
+        awayTeamId: matches.awayTeamId,
+        date: matches.date,
+        played: matches.played,
+        homeScore: matches.homeScore,
+        awayScore: matches.awayScore,
+        events: matches.events,
+        preparationStatus: matches.preparationStatus,
+        homeStats: matches.homeStats,
+        awayStats: matches.awayStats,
+        playerRatings: matches.playerRatings,
+        userId: matches.userId,
+        saveGameId: matches.saveGameId,
+        competitionId: competitions.id,
+        competitionName: competitions.name,
+        competitionType: competitions.type,
+        matchCompetitionId: matches.competitionId,
+        matchCompetitionType: matches.competitionType,
+      })
+      .from(matches)
+      .innerJoin(competitions, eq(matches.competitionId, competitions.id))
+      .where(
+        and(
+          eq(matches.saveGameId, saveGameId),
+          eq(matches.userId, userId),
+          gte(matches.date, targetDate),
+          lt(matches.date, nextDay)
+        )
+      );
+
+    // If no matches found, return empty array
+    if (matchResults.length === 0) {
+      return [];
+    }
+
+    // Get unique team IDs
+    const teamIds = new Set<number>();
+    matchResults.forEach(match => {
+      teamIds.add(match.homeTeamId);
+      teamIds.add(match.awayTeamId);
+    });
+
+    // Fetch all teams in one query
+    const teamsList = await db
+      .select()
+      .from(teams)
+      .where(
+        and(
+          eq(teams.saveGameId, saveGameId),
+          eq(teams.userId, userId),
+          inArray(teams.id, Array.from(teamIds))
+        )
+      );
+
+    // Create a map for quick team name lookup
+    const teamMap = new Map(teamsList.map(team => [team.id, team.name]));
+
+    // Combine the data
+    return matchResults.map(row => ({
+      id: row.id,
+      homeTeamId: row.homeTeamId,
+      awayTeamId: row.awayTeamId,
+      date: row.date,
+      played: row.played,
+      homeScore: row.homeScore,
+      awayScore: row.awayScore,
+      events: row.events,
+      preparationStatus: row.preparationStatus,
+      homeStats: row.homeStats,
+      awayStats: row.awayStats,
+      playerRatings: row.playerRatings,
+      userId: row.userId,
+      saveGameId: row.saveGameId,
+      competitionId: row.competitionId,
+      competitionName: row.competitionName,
+      competitionType: row.competitionType,
+      homeTeamName: teamMap.get(row.homeTeamId) || 'Unknown',
+      awayTeamName: teamMap.get(row.awayTeamId) || 'Unknown',
+    }));
+  }
+
+  async getUnplayedMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string }>> {
+    // Efficiently fetch unplayed matches for a team using SQL OR in WHERE clause
+    const teamMatches = await db
+      .select({
+        id: matches.id,
+        homeTeamId: matches.homeTeamId,
+        awayTeamId: matches.awayTeamId,
+        date: matches.date,
+        played: matches.played,
+        homeScore: matches.homeScore,
+        awayScore: matches.awayScore,
+        events: matches.events,
+        preparationStatus: matches.preparationStatus,
+        homeStats: matches.homeStats,
+        awayStats: matches.awayStats,
+        playerRatings: matches.playerRatings,
+        userId: matches.userId,
+        saveGameId: matches.saveGameId,
+        competitionId: competitions.id,
+        competitionName: competitions.name,
+        competitionType: competitions.type,
+        matchCompetitionId: matches.competitionId,
+        matchCompetitionType: matches.competitionType,
+      })
+      .from(matches)
+      .innerJoin(competitions, eq(matches.competitionId, competitions.id))
+      .where(
+        and(
+          eq(matches.saveGameId, saveGameId),
+          eq(matches.userId, userId),
+          eq(matches.played, false),
+          or(
+            eq(matches.homeTeamId, teamId),
+            eq(matches.awayTeamId, teamId)
+          )
+        )
+      );
+    
+    // Map to proper type
+    return teamMatches.map(match => ({
+      id: match.id,
+      userId: match.userId,
+      saveGameId: match.saveGameId,
+      competitionId: match.matchCompetitionId,
+      competitionType: match.matchCompetitionType,
+      homeTeamId: match.homeTeamId,
+      awayTeamId: match.awayTeamId,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore,
+      date: match.date,
+      played: match.played,
+      preparationStatus: match.preparationStatus,
+      events: match.events,
+      homeStats: match.homeStats,
+      awayStats: match.awayStats,
+      playerRatings: match.playerRatings,
+      competitionName: match.competitionName,
+    })) as Array<Match & { competitionId: number, competitionName: string, competitionType: string }>;
+  }
+
   async createMatch(saveGameId: number, userId: number, match: Omit<Match, "id" | "userId" | "saveGameId">): Promise<Match> {
     const result = await db.insert(matches)
       .values({ ...match, saveGameId, userId })
@@ -167,6 +329,78 @@ export class DbStorage implements IStorage {
       ))
       .returning();
     return result[0] as Match | undefined;
+  }
+
+  async getAllMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>> {
+    // Efficiently fetch matches for a team with competition details using SQL OR in WHERE clause
+    const teamMatches = await db
+      .select({
+        id: matches.id,
+        homeTeamId: matches.homeTeamId,
+        awayTeamId: matches.awayTeamId,
+        date: matches.date,
+        played: matches.played,
+        homeScore: matches.homeScore,
+        awayScore: matches.awayScore,
+        events: matches.events,
+        preparationStatus: matches.preparationStatus,
+        homeStats: matches.homeStats,
+        awayStats: matches.awayStats,
+        playerRatings: matches.playerRatings,
+        userId: matches.userId,
+        saveGameId: matches.saveGameId,
+        competitionId: competitions.id,
+        competitionName: competitions.name,
+        competitionType: competitions.type,
+        matchCompetitionId: matches.competitionId,
+        matchCompetitionType: matches.competitionType,
+      })
+      .from(matches)
+      .innerJoin(competitions, eq(matches.competitionId, competitions.id))
+      .where(
+        and(
+          eq(matches.saveGameId, saveGameId),
+          eq(matches.userId, userId),
+          or(
+            eq(matches.homeTeamId, teamId),
+            eq(matches.awayTeamId, teamId)
+          )
+        )
+      );
+
+    // Get unique team IDs from matches
+    const teamIds = new Set<number>();
+    teamMatches.forEach(match => {
+      teamIds.add(match.homeTeamId);
+      teamIds.add(match.awayTeamId);
+    });
+
+    // Fetch only the needed teams
+    const teams = await this.getTeamsByIds(saveGameId, userId, Array.from(teamIds));
+    const teamMap = new Map(teams.map(team => [team.id, team.name]));
+    
+    // Map to proper type with team names
+    return teamMatches.map(match => ({
+      id: match.id,
+      userId: match.userId,
+      saveGameId: match.saveGameId,
+      competitionId: match.matchCompetitionId,
+      competitionType: match.matchCompetitionType,
+      homeTeamId: match.homeTeamId,
+      awayTeamId: match.awayTeamId,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore,
+      date: match.date,
+      played: match.played,
+      preparationStatus: match.preparationStatus,
+      events: match.events,
+      homeStats: match.homeStats,
+      awayStats: match.awayStats,
+      playerRatings: match.playerRatings,
+      competitionName: match.competitionName,
+      homeTeamName: teamMap.get(match.homeTeamId) || 'Unknown',
+      awayTeamName: teamMap.get(match.awayTeamId) || 'Unknown',
+    })) as Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>;
   }
 
   // Competition methods with userId security
@@ -197,27 +431,44 @@ export class DbStorage implements IStorage {
   }
 
   async getAllCompetitions(saveGameId: number, userId: number): Promise<Competition[]> {
+    // Fetch all competitions first
     const result = await db.select().from(competitions)
       .where(and(
         eq(competitions.saveGameId, saveGameId),
         eq(competitions.userId, userId)
       ));
-    const comps: Competition[] = [];
     
-    for (const comp of result) {
-      const compMatches = await this.getMatchesByCompetition(saveGameId, userId, comp.id);
-      comps.push({
-        id: comp.id,
-        name: comp.name,
-        type: comp.type,
-        season: comp.season,
-        teams: comp.teams,
-        fixtures: compMatches,
-        standings: comp.standings,
-        currentMatchday: comp.currentMatchday,
-        totalMatchdays: comp.totalMatchdays,
-      } as Competition);
+    if (result.length === 0) {
+      return [];
     }
+    
+    // Fetch ALL matches for this save game at once (much faster than N+1 queries)
+    const allMatches = await db.select().from(matches)
+      .where(and(
+        eq(matches.saveGameId, saveGameId),
+        eq(matches.userId, userId)
+      ));
+    
+    // Group matches by competition ID
+    const matchesByCompetition = new Map<number, Match[]>();
+    for (const match of allMatches) {
+      const compMatches = matchesByCompetition.get(match.competitionId) || [];
+      compMatches.push(match as Match);
+      matchesByCompetition.set(match.competitionId, compMatches);
+    }
+    
+    // Build competitions with their matches
+    const comps: Competition[] = result.map(comp => ({
+      id: comp.id,
+      name: comp.name,
+      type: comp.type,
+      season: comp.season,
+      teams: comp.teams,
+      fixtures: matchesByCompetition.get(comp.id) || [],
+      standings: comp.standings,
+      currentMatchday: comp.currentMatchday,
+      totalMatchdays: comp.totalMatchdays,
+    } as Competition));
     
     return comps;
   }
@@ -424,18 +675,34 @@ export class DbStorage implements IStorage {
     }
     
     const state = result[0];
-    const comps = await this.getAllCompetitions(saveGameId, userId);
+    // PERFORMANCE: Don't load competitions here - they're fetched separately via /api/competitions
+    // This was causing 10+ second delays on every game state request
     
     return {
       currentDate: state.currentDate,
       season: state.season,
       currentMonth: state.currentMonth,
       playerTeamId: state.playerTeamId,
-      competitions: comps,
+      competitions: [], // Empty array - frontend uses /api/competitions endpoint
       nextMatchId: state.nextMatchId,
       monthlyTrainingInProgress: state.monthlyTrainingInProgress,
       lastTrainingReportMonth: state.lastTrainingReportMonth,
     };
+  }
+
+  // Fast method to get just the player team ID without loading full game state
+  async getPlayerTeamId(saveGameId: number, userId: number): Promise<number> {
+    const result = await db.select({ playerTeamId: gameStates.playerTeamId })
+      .from(gameStates)
+      .where(and(
+        eq(gameStates.saveGameId, saveGameId),
+        eq(gameStates.userId, userId)
+      ))
+      .limit(1);
+    if (!result[0]) {
+      throw new Error("Game state not found");
+    }
+    return result[0].playerTeamId;
   }
 
   async updateGameState(saveGameId: number, userId: number, state: Partial<GameState>): Promise<GameState> {
@@ -722,6 +989,32 @@ export class DbStorage implements IStorage {
           primary: "technical",
           secondary: "physical",
           intensity: "medium",
+        },
+        traits: [],
+        seasonStats: {
+          season: 1,
+          appearances: 0,
+          goals: 0,
+          assists: 0,
+          yellowCards: 0,
+          redCards: 0,
+          cleanSheets: 0,
+          totalMinutesPlayed: 0,
+          averageRating: 0,
+          shotsTotal: 0,
+          shotsOnTarget: 0,
+          passesTotal: 0,
+          tacklesTotal: 0,
+          interceptionsTotal: 0,
+        },
+        competitionStats: [],
+        careerStats: {
+          totalAppearances: 0,
+          totalGoals: 0,
+          totalAssists: 0,
+          totalYellowCards: 0,
+          totalRedCards: 0,
+          totalCleanSheets: 0,
         },
       });
     }

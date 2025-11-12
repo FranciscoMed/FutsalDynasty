@@ -58,12 +58,12 @@ function AppContent() {
       <DashboardLayout>
         <Switch>
           <Route path="/" component={HomePage} />
+          <Route path="/inbox" component={InboxPage} />
           <Route path="/squad" component={SquadPage} />
           <Route path="/tactics" component={TacticsPage} />
           <Route path="/matches" component={MatchesPage} />
           <Route path="/match/:matchId" component={MatchPage} />
           <Route path="/match/:matchId/post-match" component={PostMatchPage} />
-          <Route path="/inbox" component={InboxPage} />
           <Route path="/training" component={TrainingPage} />
           <Route path="/finances" component={FinancesPage} />
           <Route path="/club" component={ClubPage} />

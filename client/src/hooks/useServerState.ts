@@ -16,6 +16,9 @@ import type {
   InboxMessage,
   Club,
   FinancialTransaction,
+  PlayerSeasonStats,
+  PlayerCompetitionStats,
+  PlayerCareerStats,
 } from "@shared/schema";
 
 // Local type for upcoming fixtures (includes team names)
@@ -49,6 +52,14 @@ export const queryKeys = {
     byId: (id: number) => ["matches", id] as const,
   },
   inbox: ["inbox"] as const,
+  statistics: {
+    topScorers: (competitionId: number, limit?: number) => ["statistics", "top-scorers", competitionId, limit] as const,
+    topAssisters: (competitionId: number, limit?: number) => ["statistics", "top-assisters", competitionId, limit] as const,
+    cleanSheets: (competitionId: number, limit?: number) => ["statistics", "clean-sheets", competitionId, limit] as const,
+    discipline: (competitionId: number) => ["statistics", "discipline", competitionId] as const,
+    teamForm: (teamId: number, competitionId?: number) => ["statistics", "form", teamId, competitionId] as const,
+    playerStats: (playerId: number) => ["statistics", "player", playerId] as const,
+  },
   club: ["club"] as const,
   financialTransactions: ["financialTransactions"] as const,
   nextMatch: (date?: string) => ["matches", "next-unplayed", date] as const,
@@ -303,5 +314,136 @@ export function useUpdatePlayer() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.players });
     },
+  });
+}
+
+/**
+ * Statistics Hooks
+ */
+
+interface StatLeader {
+  playerId: number;
+  playerName: string;
+  teamId: number;
+  teamName: string;
+  value: number;
+  assists?: number; // For scorers (used in sorting)
+  goals?: number; // For assisters (used in sorting)
+}
+
+interface DisciplineRecord {
+  playerId: number;
+  playerName: string;
+  teamId: number;
+  teamName: string;
+  yellowCards: number;
+  redCards: number;
+}
+
+interface FormRecord {
+  matchId: number;
+  date: string;
+  opponentName: string;
+  result: "W" | "D" | "L";
+  score: string;
+  competitionName: string;
+}
+
+interface PlayerStatsResponse {
+  seasonStats: PlayerSeasonStats | null;
+  competitionStats: PlayerCompetitionStats[];
+  careerStats: PlayerCareerStats | null;
+}
+
+/**
+ * Get Top Scorers
+ */
+export function useTopScorers(competitionId: number, limit: number = 10) {
+  return useQuery({
+    queryKey: queryKeys.statistics.topScorers(competitionId, limit),
+    queryFn: async () => {
+      const response = await fetch(`/api/statistics/top-scorers/${competitionId}?limit=${limit}`);
+      if (!response.ok) throw new Error("Failed to fetch top scorers");
+      return response.json() as Promise<StatLeader[]>;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
+ * Get Top Assisters
+ */
+export function useTopAssisters(competitionId: number, limit: number = 10) {
+  return useQuery({
+    queryKey: queryKeys.statistics.topAssisters(competitionId, limit),
+    queryFn: async () => {
+      const response = await fetch(`/api/statistics/top-assisters/${competitionId}?limit=${limit}`);
+      if (!response.ok) throw new Error("Failed to fetch top assisters");
+      return response.json() as Promise<StatLeader[]>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Get Top Clean Sheets (Goalkeepers)
+ */
+export function useTopCleanSheets(competitionId: number, limit: number = 10) {
+  return useQuery({
+    queryKey: queryKeys.statistics.cleanSheets(competitionId, limit),
+    queryFn: async () => {
+      const response = await fetch(`/api/statistics/clean-sheets/${competitionId}?limit=${limit}`);
+      if (!response.ok) throw new Error("Failed to fetch clean sheets");
+      return response.json() as Promise<StatLeader[]>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Get Discipline Statistics
+ */
+export function useDisciplineStats(competitionId: number) {
+  return useQuery({
+    queryKey: queryKeys.statistics.discipline(competitionId),
+    queryFn: async () => {
+      const response = await fetch(`/api/statistics/discipline/${competitionId}`);
+      if (!response.ok) throw new Error("Failed to fetch discipline stats");
+      return response.json() as Promise<DisciplineRecord[]>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Get Team Form (Last 5 Matches)
+ */
+export function useTeamForm(teamId: number, competitionId?: number) {
+  return useQuery({
+    queryKey: queryKeys.statistics.teamForm(teamId, competitionId),
+    queryFn: async () => {
+      const url = competitionId 
+        ? `/api/statistics/form/${teamId}?competitionId=${competitionId}`
+        : `/api/statistics/form/${teamId}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch team form");
+      return response.json() as Promise<FormRecord[]>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Get Individual Player Statistics
+ */
+export function usePlayerStatistics(playerId: number) {
+  return useQuery({
+    queryKey: queryKeys.statistics.playerStats(playerId),
+    queryFn: async () => {
+      const response = await fetch(`/api/statistics/player/${playerId}`);
+      if (!response.ok) throw new Error("Failed to fetch player statistics");
+      return response.json() as Promise<PlayerStatsResponse>;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }

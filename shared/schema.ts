@@ -313,6 +313,45 @@ export interface PlayerAttributes {
   distribution?: number;
 }
 
+export interface PlayerSeasonStats {
+  season: number;
+  appearances: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  cleanSheets: number;
+  totalMinutesPlayed: number;
+  averageRating: number;
+  shotsTotal: number;
+  shotsOnTarget: number;
+  passesTotal: number;
+  tacklesTotal: number;
+  interceptionsTotal: number;
+}
+
+export interface PlayerCompetitionStats {
+  competitionId: number;
+  competitionName: string;
+  season: number;
+  appearances: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  cleanSheets: number;
+  averageRating: number;
+}
+
+export interface PlayerCareerStats {
+  totalAppearances: number;
+  totalGoals: number;
+  totalAssists: number;
+  totalYellowCards: number;
+  totalRedCards: number;
+  totalCleanSheets: number;
+}
+
 export interface Player {
   id: number;
   name: string;
@@ -341,6 +380,9 @@ export interface Player {
     intensity: TrainingIntensity;
   };
   traits: PlayerTrait[];
+  seasonStats: PlayerSeasonStats;
+  competitionStats: PlayerCompetitionStats[];
+  careerStats: PlayerCareerStats;
 }
 
 export interface PlayerContract {
@@ -619,7 +661,9 @@ export const teams = pgTable("teams", {
   substitutes: jsonb("substitutes").notNull().$type<number[]>(),
   isPlayerTeam: boolean("is_player_team").notNull().default(false),
   tactics: jsonb("tactics").$type<TacticsData>(), // New tactics system data
-});
+}, (table) => ({
+  userSaveIdx: index("teams_user_save_idx").on(table.userId, table.saveGameId),
+}));
 
 export const players = pgTable("players", {
   id: serial("id").primaryKey(),
@@ -647,7 +691,35 @@ export const players = pgTable("players", {
   teamId: integer("team_id").notNull(),
   trainingFocus: jsonb("training_focus").notNull().$type<{ primary: string; secondary: string; intensity: TrainingIntensity }>(),
   traits: jsonb("traits").notNull().$type<PlayerTrait[]>().default([]),
-});
+  seasonStats: jsonb("season_stats").notNull().$type<PlayerSeasonStats>().default({
+    season: 1,
+    appearances: 0,
+    goals: 0,
+    assists: 0,
+    yellowCards: 0,
+    redCards: 0,
+    cleanSheets: 0,
+    totalMinutesPlayed: 0,
+    averageRating: 0,
+    shotsTotal: 0,
+    shotsOnTarget: 0,
+    passesTotal: 0,
+    tacklesTotal: 0,
+    interceptionsTotal: 0,
+  }),
+  competitionStats: jsonb("competition_stats").notNull().$type<PlayerCompetitionStats[]>().default([]),
+  careerStats: jsonb("career_stats").notNull().$type<PlayerCareerStats>().default({
+    totalAppearances: 0,
+    totalGoals: 0,
+    totalAssists: 0,
+    totalYellowCards: 0,
+    totalRedCards: 0,
+    totalCleanSheets: 0,
+  }),
+}, (table) => ({
+  userSaveIdx: index("players_user_save_idx").on(table.userId, table.saveGameId),
+  teamIdx: index("players_team_idx").on(table.teamId),
+}));
 
 export const matches = pgTable("matches", {
   id: serial("id").primaryKey(),
@@ -666,7 +738,12 @@ export const matches = pgTable("matches", {
   homeStats: jsonb("home_stats").notNull().$type<MatchStats>(),
   awayStats: jsonb("away_stats").notNull().$type<MatchStats>(),
   playerRatings: jsonb("player_ratings").notNull().$type<Record<number, number>>().default({}),
-});
+}, (table) => ({
+  userSaveIdx: index("matches_user_save_idx").on(table.userId, table.saveGameId),
+  competitionIdx: index("matches_competition_idx").on(table.competitionId),
+  teamsIdx: index("matches_teams_idx").on(table.homeTeamId, table.awayTeamId),
+  dateIdx: index("matches_date_idx").on(table.date),
+}));
 
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
@@ -679,7 +756,9 @@ export const competitions = pgTable("competitions", {
   standings: jsonb("standings").notNull().$type<LeagueStanding[]>(),
   currentMatchday: integer("current_matchday").notNull().default(0),
   totalMatchdays: integer("total_matchdays").notNull(),
-});
+}, (table) => ({
+  userSaveIdx: index("competitions_user_save_idx").on(table.userId, table.saveGameId),
+}));
 
 export const transferOffers = pgTable("transfer_offers", {
   id: serial("id").primaryKey(),
@@ -747,7 +826,9 @@ export const gameStates = pgTable("game_states", {
   nextMatchId: integer("next_match_id"),
   monthlyTrainingInProgress: boolean("monthly_training_in_progress").notNull().default(true),
   lastTrainingReportMonth: integer("last_training_report_month").notNull(),
-});
+}, (table) => ({
+  userSaveIdx: index("game_states_user_save_idx").on(table.userId, table.saveGameId),
+}));
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),

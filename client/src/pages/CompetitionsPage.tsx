@@ -1,20 +1,25 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { LeagueTable } from "@/components/LeagueTable";
 import { KnockoutBracket } from "@/components/KnockoutBracket";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Trophy } from "lucide-react";
 import type { Competition } from "@shared/schema";
 
 export function CompetitionsPage() {
   const { gameState, loading } = useFutsalManager();
+  const [showAllCompetitions, setShowAllCompetitions] = useState(false);
 
   // Fetch competitions with caching
   const { data: competitions = [], isLoading: loadingCompetitions } = useQuery<Competition[]>({
-    queryKey: ["competitions", gameState?.playerTeamId],
+    queryKey: ["competitions", showAllCompetitions],
     queryFn: async () => {
-      const response = await fetch("/api/competitions");
+      const url = showAllCompetitions 
+        ? "/api/competitions?showAll=true" 
+        : "/api/competitions";
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch competitions");
       return response.json();
     },
@@ -43,9 +48,22 @@ export function CompetitionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Competitions</h1>
-        <p className="text-muted-foreground">
-          View league tables and knockout tournament brackets
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-muted-foreground">
+            View league tables and knockout tournament brackets
+          </p>
+          <div className="flex items-center gap-2 ml-4 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+            <Trophy className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
+              {showAllCompetitions ? "All Competitions" : "My Club Only"}
+            </span>
+            <Switch
+              checked={showAllCompetitions}
+              onCheckedChange={setShowAllCompetitions}
+              className="data-[state=checked]:bg-primary"
+            />
+          </div>
+        </div>
       </div>
 
       {competitions.length === 0 ? (
@@ -67,6 +85,7 @@ export function CompetitionsPage() {
               {leagueCompetitions.map((competition) => (
                 <LeagueTable
                   key={competition.id}
+                  competitionId={competition.id}
                   competitionName={competition.name}
                   standings={competition.standings}
                   playerTeamId={gameState.playerTeamId}

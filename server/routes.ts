@@ -4,6 +4,7 @@ import { storage } from "./dbStorage";
 import { GameEngine } from "./gameEngine";
 import { CompetitionEngine } from "./competitionEngine";
 import { MatchEngine } from "./matchEngine";
+import { StatisticsEngine } from "./statisticsEngine";
 import { setupAuthRoutes } from "./authRoutes";
 import { validateActiveSave } from "./middleware/validateSaveAccess";
 
@@ -66,8 +67,9 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const team = await storage.getTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
+      // PERFORMANCE: Use optimized method to get just the playerTeamId without loading full game state
+      const playerTeamId = await storage.getPlayerTeamId(validatedSaveId, validatedUserId);
+      const team = await storage.getTeam(validatedSaveId, validatedUserId, playerTeamId);
       res.json(team);
     } catch (error) {
       console.error("Error fetching player team:", error);
@@ -295,22 +297,23 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
 
   app.get("/api/competitions", validateActiveSave, async (req, res) => {
     const { validatedSaveId, validatedUserId } = res.locals;
+    const showAll = req.query.showAll === 'true';
 
     try {
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       const competitions = await storage.getAllCompetitions(validatedSaveId, validatedUserId);
       
-      // Filter to only show competitions the player's team is in
-      const playerCompetitions = competitions.filter(comp => 
-        comp.teams.includes(gameState.playerTeamId)
-      );
+      // Filter to only show competitions the player's team is in (unless showAll is true)
+      const filteredCompetitions = showAll 
+        ? competitions 
+        : competitions.filter(comp => comp.teams.includes(gameState.playerTeamId));
       
       // Batch fetch all teams once to avoid N+1 query problem
       const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
       const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
       
       // Enrich competitions with team names in standings and fixtures
-      for (const competition of playerCompetitions) {
+      for (const competition of filteredCompetitions) {
         // Resolve team names in standings
         for (const standing of competition.standings) {
           standing.teamName = teamMap.get(standing.teamId) || 'Unknown';
@@ -324,7 +327,7 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
         }));
       }
       
-      res.json(playerCompetitions);
+      res.json(filteredCompetitions);
     } catch (error) {
       res.status(500).json({ error: "Failed to get competitions" });
     }
@@ -334,33 +337,17 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const allMatches = await storage.getAllMatches(validatedSaveId, validatedUserId);
-      
-      // Filter to only show matches involving the player's team
-      const playerMatches = allMatches.filter(match => 
-        match.homeTeamId === gameState.playerTeamId || 
-        match.awayTeamId === gameState.playerTeamId
-      );
+      // Optimized: Get player team ID and all matches in efficient queries
+      const playerTeamId = await storage.getPlayerTeamId(validatedSaveId, validatedUserId);
+      const allMatches = await storage.getAllMatchesForTeam(validatedSaveId, validatedUserId, playerTeamId);
       
       // Sort by date (most recent first) and apply pagination
       const limit = parseInt(req.query.limit as string) || 50; // Default to 50 matches
-      const sortedMatches = playerMatches
+      const sortedMatches = allMatches
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, limit);
       
-      // Batch fetch all teams once to avoid N+1 query problem
-      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
-      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
-      
-      // Enrich matches with team names
-      const enrichedMatches = sortedMatches.map(match => ({
-        ...match,
-        homeTeamName: teamMap.get(match.homeTeamId) || 'Unknown',
-        awayTeamName: teamMap.get(match.awayTeamId) || 'Unknown',
-      }));
-      
-      res.json(enrichedMatches);
+      res.json(sortedMatches);
     } catch (error) {
       res.status(500).json({ error: "Failed to get matches" });
     }
@@ -370,44 +357,46 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const competitions = await storage.getAllCompetitions(validatedSaveId, validatedUserId);
+      // Optimized: Use efficient query to get player team matches with team names
+      const playerTeamId = await storage.getPlayerTeamId(validatedSaveId, validatedUserId);
+      const allMatches = await storage.getAllMatchesForTeam(validatedSaveId, validatedUserId, playerTeamId);
       
-      // Batch fetch all teams once to avoid N+1 query problem
-      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
-      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
-      
-      const upcomingFixtures: any[] = [];
-      
-      for (const competition of competitions) {
-        if (!competition.teams.includes(gameState.playerTeamId)) continue;
-        
-        const upcomingMatches = competition.fixtures
-          .filter(match => 
-            !match.played && 
-            (match.homeTeamId === gameState.playerTeamId || match.awayTeamId === gameState.playerTeamId)
-          )
-          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        if (upcomingMatches.length > 0) {
-          for (const match of upcomingMatches) {
-            upcomingFixtures.push({
-              ...match,
-              competitionName: competition.name,
-              competitionType: competition.type,
-              homeTeamName: teamMap.get(match.homeTeamId) || 'Unknown',
-              awayTeamName: teamMap.get(match.awayTeamId) || 'Unknown',
-            });
-          }
-        }
-      }
-      
-      upcomingFixtures.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      // Filter for unplayed matches and sort by date
+      const upcomingFixtures = allMatches
+        .filter(match => !match.played)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       
       res.json(upcomingFixtures);
     } catch (error) {
       console.error("Error fetching upcoming fixtures:", error);
       res.status(500).json({ error: "Failed to get upcoming fixtures" });
+    }
+  });
+
+  // Get matches on a specific date (for daily simulation)
+  app.get("/api/matches/by-date", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    const { date } = req.query;
+
+    try {
+      if (!date || typeof date !== 'string') {
+        res.status(400).json({ error: "Date parameter is required" });
+        return;
+      }
+
+      const targetDate = new Date(date);
+      if (isNaN(targetDate.getTime())) {
+        res.status(400).json({ error: "Invalid date format" });
+        return;
+      }
+
+      // Optimized: SQL-side date filtering
+      const matchesOnDate = await storage.getMatchesByDate(validatedSaveId, validatedUserId, targetDate);
+      
+      res.json(matchesOnDate);
+    } catch (error) {
+      console.error("Error fetching matches by date:", error);
+      res.status(500).json({ error: "Failed to get matches for date" });
     }
   });
 
@@ -423,9 +412,10 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
         return;
       }
 
-      // Enrich with team names
-      const allTeams = await storage.getAllTeams(validatedSaveId, validatedUserId);
-      const teamMap = new Map(allTeams.map(team => [team.id, team.name]));
+      // Enrich with team names - optimized to fetch only needed teams
+      const teamIds = [nextMatch.homeTeamId, nextMatch.awayTeamId];
+      const teams = await storage.getTeamsByIds(validatedSaveId, validatedUserId, teamIds);
+      const teamMap = new Map(teams.map(team => [team.id, team.name]));
 
       const enrichedMatch = {
         ...nextMatch,
@@ -954,6 +944,134 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     } catch (error) {
       console.error("Error in advance-until:", error);
       res.status(500).json({ error: "Failed to advance" });
+    }
+  });
+
+  // Statistics routes
+  const statisticsEngine = new StatisticsEngine(storage);
+
+  app.get('/api/statistics/top-scorers/:competitionId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { competitionId } = req.params;
+      const { limit = '10' } = req.query;
+      
+      const topScorers = await statisticsEngine.getTopScorers(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(competitionId),
+        parseInt(limit as string)
+      );
+      
+      res.json(topScorers);
+    } catch (error) {
+      console.error('Error fetching top scorers:', error);
+      res.status(500).json({ error: 'Failed to fetch top scorers' });
+    }
+  });
+
+  app.get('/api/statistics/top-assisters/:competitionId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { competitionId } = req.params;
+      const { limit = '10' } = req.query;
+      
+      const topAssisters = await statisticsEngine.getTopAssisters(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(competitionId),
+        parseInt(limit as string)
+      );
+      
+      res.json(topAssisters);
+    } catch (error) {
+      console.error('Error fetching top assisters:', error);
+      res.status(500).json({ error: 'Failed to fetch top assisters' });
+    }
+  });
+
+  app.get('/api/statistics/clean-sheets/:competitionId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { competitionId } = req.params;
+      const { limit = '10' } = req.query;
+      
+      const topCleanSheets = await statisticsEngine.getTopCleanSheets(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(competitionId),
+        parseInt(limit as string)
+      );
+      
+      res.json(topCleanSheets);
+    } catch (error) {
+      console.error('Error fetching clean sheets:', error);
+      res.status(500).json({ error: 'Failed to fetch clean sheets' });
+    }
+  });
+
+  app.get('/api/statistics/discipline/:competitionId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { competitionId } = req.params;
+      
+      const disciplineStats = await statisticsEngine.getDisciplineStats(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(competitionId)
+      );
+      
+      res.json(disciplineStats);
+    } catch (error) {
+      console.error('Error fetching discipline stats:', error);
+      res.status(500).json({ error: 'Failed to fetch discipline stats' });
+    }
+  });
+
+  app.get('/api/statistics/form/:teamId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { teamId } = req.params;
+      const { competitionId } = req.query;
+      
+      const form = await statisticsEngine.getTeamForm(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(teamId),
+        competitionId ? parseInt(competitionId as string) : undefined
+      );
+      
+      res.json(form);
+    } catch (error) {
+      console.error('Error fetching team form:', error);
+      res.status(500).json({ error: 'Failed to fetch team form' });
+    }
+  });
+
+  app.get('/api/statistics/player/:playerId', validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+    try {
+      const { playerId } = req.params;
+      
+      const player = await storage.getPlayer(
+        validatedSaveId,
+        validatedUserId,
+        parseInt(playerId)
+      );
+
+      if (!player) {
+        res.status(404).json({ error: 'Player not found' });
+        return;
+      }
+      
+      res.json({
+        seasonStats: player.seasonStats,
+        competitionStats: player.competitionStats,
+        careerStats: player.careerStats,
+      });
+    } catch (error) {
+      console.error('Error fetching player statistics:', error);
+      res.status(500).json({ error: 'Failed to fetch player statistics' });
     }
   });
 

@@ -224,16 +224,18 @@ A user discovers a unique formation that exploits opponents' weaknesses. They sh
 - ✅ Basic match simulation
 - ✅ Tactics editor
 - ✅ Financial tracking
+- ✅ Live match commentary and events
+- ✅ Player statistics and ratings
+- ✅ AI match details (goal scorers, cards)
 
 ### Phase 2: Engagement (Weeks 1-5)
 **Goal:** Make matches exciting and league feel alive
 **Focus:** Match experience, AI intelligence
 
 **Deliverables:**
-- Live match commentary and events
-- Player statistics and ratings
-- AI match details (goal scorers, cards)
+
 - League context (top scorers, form)
+- AI Managers (Tactical changes in-game)
 
 ### Phase 3: Strategy (Weeks 6-9)
 **Goal:** Enable meaningful management decisions

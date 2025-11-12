@@ -113,7 +113,7 @@ export function InstructionsDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
-            <Settings className="w-6 h-6 text-[#2D6A4F]" />
+            <Settings className="w-6 h-6 text-primary" />
             Tactical Instructions
           </DialogTitle>
           <DialogDescription>
@@ -138,8 +138,8 @@ export function InstructionsDialog({
                   className={`
                     p-3 border rounded-lg text-left transition-all
                     ${mentality === option.value
-                      ? 'border-[#2D6A4F] bg-[#2D6A4F]/10 ring-2 ring-[#2D6A4F]/20'
-                      : 'border-border hover:border-[#2D6A4F]/50 hover:bg-accent'
+                      ? 'border-secondary bg-secondary/10 ring-2 ring-secondary/20'
+                      : 'border-border hover:border-secondary/50 hover:bg-accent'
                     }
                   `}
                 >
@@ -149,7 +149,7 @@ export function InstructionsDialog({
                       <div className="text-xs text-muted-foreground">{option.description}</div>
                     </div>
                     {mentality === option.value && (
-                      <Badge className="bg-[#2D6A4F]">Selected</Badge>
+                      <Badge className="bg-primary">Selected</Badge>
                     )}
                   </div>
                 </button>
@@ -175,8 +175,8 @@ export function InstructionsDialog({
                   className={`
                     p-3 border rounded-lg text-left transition-all
                     ${pressingIntensity === option.value
-                      ? 'border-[#2D6A4F] bg-[#2D6A4F]/10 ring-2 ring-[#2D6A4F]/20'
-                      : 'border-border hover:border-[#2D6A4F]/50 hover:bg-accent'
+                      ? 'border-secondary bg-secondary/10 ring-2 ring-secondary/20'
+                      : 'border-border hover:border-secondary/50 hover:bg-accent'
                     }
                   `}
                 >
@@ -186,7 +186,7 @@ export function InstructionsDialog({
                       <div className="text-xs text-muted-foreground">{option.description}</div>
                     </div>
                     {pressingIntensity === option.value && (
-                      <Badge className="bg-[#2D6A4F]">Selected</Badge>
+                      <Badge className="bg-secondary">Selected</Badge>
                     )}
                   </div>
                 </button>
@@ -212,8 +212,8 @@ export function InstructionsDialog({
                   className={`
                     p-3 border rounded-lg text-left transition-all
                     ${flyGoalkeeper === option.value
-                      ? 'border-[#2D6A4F] bg-[#2D6A4F]/10 ring-2 ring-[#2D6A4F]/20'
-                      : 'border-border hover:border-[#2D6A4F]/50 hover:bg-accent'
+                      ? 'border-secondary bg-secondary/10 ring-2 ring-secondary/20'
+                      : 'border-border hover:border-secondary/50 hover:bg-accent'
                     }
                   `}
                 >
@@ -223,7 +223,7 @@ export function InstructionsDialog({
                       <div className="text-xs text-muted-foreground">{option.description}</div>
                     </div>
                     {flyGoalkeeper === option.value && (
-                      <Badge className="bg-[#2D6A4F]">Selected</Badge>
+                      <Badge className="bg-secondary">Selected</Badge>
                     )}
                   </div>
                 </button>
@@ -236,7 +236,7 @@ export function InstructionsDialog({
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-[#2D6A4F] hover:bg-[#1B4332]">
+          <Button onClick={handleSave} className="bg-primary hover:bg-primary/80">
             <Save className="w-4 h-4 mr-2" />
             Save Instructions
           </Button>

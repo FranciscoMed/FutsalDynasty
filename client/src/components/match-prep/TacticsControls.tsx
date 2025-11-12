@@ -1,21 +1,21 @@
 import { Formation } from "@/lib/formations";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Settings, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface TacticsControlsProps {
   formation: Formation;
   onFormationChange: (formation: Formation) => void;
   onQuickFill: () => void;
-  onInstructionsClick: () => void;
+  children?: ReactNode;
 }
 
 export function TacticsControls({
   formation,
   onFormationChange,
   onQuickFill,
-  onInstructionsClick,
+  children,
 }: TacticsControlsProps) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -30,18 +30,7 @@ export function TacticsControls({
         </SelectContent>
       </Select>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onInstructionsClick}
-        className="flex items-center gap-1"
-      >
-        <Settings className="w-3 h-3" />
-        Instructions
-        <Badge variant="secondary" className="text-[10px] px-1 py-0 ml-1">
-          TBI
-        </Badge>
-      </Button>
+      {children}
 
       <Button
         variant="outline"

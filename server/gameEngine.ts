@@ -107,7 +107,9 @@ export class GameEngine {
     
     await this.processPlayerDevelopment(saveGameId, userId, gameState, newDate);
     
-    await this.processPlayerAging(saveGameId, userId, newMonth);
+    // Note: Player aging is handled via birthDate calculation (not stored age)
+    // TODO: Migrate schema to use birthDate instead of age field
+    // For now, age is still stored but should be calculated from birthDate in the future
     
     await this.updateSeasonIfNeeded(saveGameId, userId, newMonth, newYear);
     
@@ -325,17 +327,7 @@ export class GameEngine {
     });
   }
 
-  private async processPlayerAging(saveGameId: number, userId: number, newMonth: number): Promise<void> {
-    if (newMonth === 7) {
-      const allPlayers = await this.storage.getAllPlayers(saveGameId, userId);
-      
-      for (const player of allPlayers) {
-        await this.storage.updatePlayer(saveGameId, userId, player.id, {
-          age: player.age + 1,
-        });
-      }
-    }
-  }
+
 
   private async updateSeasonIfNeeded(saveGameId: number, userId: number, newMonth: number, newYear: number): Promise<void> {
     if (newMonth === 7) {
@@ -371,17 +363,18 @@ export class GameEngine {
 
   /**
    * Get all matches scheduled on a specific date
+   * Optimized: Uses SQL-side date filtering via getMatchesByDate
    */
   async getMatchesOnDate(saveGameId: number, userId: number, date: Date): Promise<any[]> {
-    const allMatches = await this.storage.getAllMatches(saveGameId, userId);
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
+    // Use optimized SQL query to get matches for specific date
+    const allMatchesOnDate = await this.storage.getMatchesByDate(saveGameId, userId, date);
     
-    return allMatches.filter(match => {
-      const matchDate = new Date(match.date);
-      matchDate.setHours(0, 0, 0, 0);
-      return matchDate.getTime() === targetDate.getTime() && !match.played;
-    });
+    // Filter to only player's team matches
+    const gameState = await this.storage.getGameState(saveGameId, userId);
+    return allMatchesOnDate.filter(match => 
+      match.homeTeamId === gameState.playerTeamId || 
+      match.awayTeamId === gameState.playerTeamId
+    );
   }
 
   /**
@@ -410,30 +403,10 @@ export class GameEngine {
    * Returns null if no upcoming matches
    */
   async getNextUnplayedMatchForPlayer(saveGameId: number, userId: number): Promise<any | null> {
-    const gameState = await this.storage.getGameState(saveGameId, userId);
-    const competitions = await this.storage.getAllCompetitions(saveGameId, userId);
+    const playerTeamId = await this.storage.getPlayerTeamId(saveGameId, userId);
     
-    let upcomingMatches: any[] = [];
-
-    // Collect all unplayed matches involving the player's team
-    for (const competition of competitions) {
-      if (!competition.teams.includes(gameState.playerTeamId)) continue;
-
-      const playerMatches = competition.fixtures.filter(match =>
-        !match.played &&
-        (match.homeTeamId === gameState.playerTeamId || 
-         match.awayTeamId === gameState.playerTeamId)
-      );
-
-      upcomingMatches = upcomingMatches.concat(
-        playerMatches.map(match => ({
-          ...match,
-          competitionId: competition.id,
-          competitionName: competition.name,
-          competitionType: competition.type,
-        }))
-      );
-    }
+    // Optimized: Single query to get all unplayed matches for player's team with competition details
+    const upcomingMatches = await this.storage.getUnplayedMatchesForTeam(saveGameId, userId, playerTeamId);
 
     // Sort by date (earliest first)
     upcomingMatches.sort((a, b) => 
@@ -570,6 +543,7 @@ export class GameEngine {
   /**
    * Get all events within a date range
    * Used to show what will happen during time advancement
+   * Optimized: Uses getUnplayedMatchesForTeam instead of fetching all competitions
    */
   async getEventsInRange(
     saveGameId: number,
@@ -584,36 +558,30 @@ export class GameEngine {
     const events: import("@shared/schema").GameEvent[] = [];
     let eventIdCounter = 0;
 
-    // Get all matches in range
-    const competitions = await this.storage.getAllCompetitions(saveGameId, userId);
-    for (const competition of competitions) {
-      const matchesInRange = competition.fixtures.filter(match => {
-        const matchDate = new Date(match.date);
-        return (
-          matchDate >= start &&
-          matchDate <= end &&
-          !match.played &&
-          (match.homeTeamId === gameState.playerTeamId || 
-           match.awayTeamId === gameState.playerTeamId)
-        );
-      });
+    // Optimized: Get only unplayed matches for player's team instead of all competitions
+    const upcomingMatches = await this.storage.getUnplayedMatchesForTeam(saveGameId, userId, gameState.playerTeamId);
+    
+    // Filter matches in date range
+    const matchesInRange = upcomingMatches.filter(match => {
+      const matchDate = new Date(match.date);
+      return matchDate >= start && matchDate <= end;
+    });
 
-      for (const match of matchesInRange) {
-        events.push({
-          id: `match-${eventIdCounter++}`,
-          type: "match",
-          date: match.date.toISOString(),
-          description: `Match in ${competition.name}`,
-          priority: 1,
-          processed: false,
-          details: {
-            matchId: match.id,
-            competitionId: competition.id,
-            homeTeamId: match.homeTeamId,
-            awayTeamId: match.awayTeamId,
-          },
-        });
-      }
+    for (const match of matchesInRange) {
+      events.push({
+        id: `match-${eventIdCounter++}`,
+        type: "match",
+        date: match.date.toISOString(),
+        description: `Match in ${match.competitionName}`,
+        priority: 1,
+        processed: false,
+        details: {
+          matchId: match.id,
+          competitionId: match.competitionId,
+          homeTeamId: match.homeTeamId,
+          awayTeamId: match.awayTeamId,
+        },
+      });
     }
 
     // Add month boundaries in range

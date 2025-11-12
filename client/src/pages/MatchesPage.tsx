@@ -28,21 +28,9 @@ export function MatchesPage() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
-  // Fetch upcoming fixtures with caching
-  const { data: upcomingFixtures = [], isLoading: loadingUpcoming } = useQuery<UpcomingFixture[]>({
-    queryKey: ["matches", "upcoming", gameState?.playerTeamId],
-    queryFn: async () => {
-      const response = await fetch("/api/matches/upcoming");
-      if (!response.ok) throw new Error("Failed to fetch upcoming fixtures");
-      return response.json();
-    },
-    enabled: !!gameState,
-    staleTime: 30000, // Cache for 30 seconds
-  });
-
-  // Fetch all matches (including played ones) with caching
+  // Fetch all matches (both played and unplayed) with caching - single optimized call
   const { data: allMatches = [], isLoading: loadingMatches } = useQuery<UpcomingFixture[]>({
-    queryKey: ["matches", "all", gameState?.playerTeamId],
+    queryKey: ["matches", "all"],
     queryFn: async () => {
       const response = await fetch("/api/matches");
       if (!response.ok) throw new Error("Failed to fetch matches");
@@ -51,6 +39,15 @@ export function MatchesPage() {
     enabled: !!gameState,
     staleTime: 30000, // Cache for 30 seconds
   });
+
+  // Compute upcoming fixtures from cached match data
+  const upcomingFixtures = useMemo(() => {
+    if (!gameState) return [];
+    
+    return allMatches
+      .filter(m => !m.played)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [allMatches, gameState]);
 
   // Compute recent results from cached match data
   const recentResults = useMemo(() => {
@@ -94,7 +91,7 @@ export function MatchesPage() {
     }, {} as Record<string, UpcomingFixture[]>);
   }, [upcomingFixtures]);
 
-  if (loading || loadingUpcoming || loadingMatches || !gameState) {
+  if (loading || loadingMatches || !gameState) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Loading matches...</p>

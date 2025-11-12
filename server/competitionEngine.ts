@@ -394,6 +394,31 @@ export class CompetitionEngine {
           intensity: "medium",
         },
         traits,
+        seasonStats: {
+          season: 1,
+          appearances: 0,
+          goals: 0,
+          assists: 0,
+          yellowCards: 0,
+          redCards: 0,
+          cleanSheets: 0,
+          totalMinutesPlayed: 0,
+          averageRating: 0,
+          shotsTotal: 0,
+          shotsOnTarget: 0,
+          passesTotal: 0,
+          tacklesTotal: 0,
+          interceptionsTotal: 0,
+        },
+        competitionStats: [],
+        careerStats: {
+          totalAppearances: 0,
+          totalGoals: 0,
+          totalAssists: 0,
+          totalYellowCards: 0,
+          totalRedCards: 0,
+          totalCleanSheets: 0,
+        },
       });
     }
   }

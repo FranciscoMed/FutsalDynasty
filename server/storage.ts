@@ -25,6 +25,7 @@ export interface IStorage {
   // Team methods - now require userId for security
   getTeam(saveGameId: number, userId: number, id: number): Promise<Team | undefined>;
   getAllTeams(saveGameId: number, userId: number): Promise<Team[]>;
+  getTeamsByIds(saveGameId: number, userId: number, ids: number[]): Promise<Team[]>;
   createTeam(saveGameId: number, userId: number, team: Omit<Team, "id" | "userId" | "saveGameId">): Promise<Team>;
   updateTeam(saveGameId: number, userId: number, id: number, team: Partial<Team>): Promise<Team | undefined>;
   
@@ -32,6 +33,9 @@ export interface IStorage {
   getMatch(saveGameId: number, userId: number, id: number): Promise<Match | undefined>;
   getAllMatches(saveGameId: number, userId: number): Promise<Match[]>;
   getMatchesByCompetition(saveGameId: number, userId: number, competitionId: number): Promise<Match[]>;
+  getMatchesByDate(saveGameId: number, userId: number, date: Date): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>>;
+  getUnplayedMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string }>>;
+  getAllMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>>;
   createMatch(saveGameId: number, userId: number, match: Omit<Match, "id" | "userId" | "saveGameId">): Promise<Match>;
   updateMatch(saveGameId: number, userId: number, id: number, match: Partial<Match>): Promise<Match | undefined>;
   
@@ -67,6 +71,7 @@ export interface IStorage {
   
   // GameState methods - now require userId for security
   getGameState(saveGameId: number, userId: number): Promise<GameState>;
+  getPlayerTeamId(saveGameId: number, userId: number): Promise<number>;
   updateGameState(saveGameId: number, userId: number, state: Partial<GameState>): Promise<GameState>;
   createGameState(saveGameId: number, userId: number, state: Omit<GameState, "id" | "userId" | "saveGameId">): Promise<GameState>;
   
@@ -451,6 +456,32 @@ export class MemStorage {
           primary: "technical",
           secondary: "physical",
           intensity: "medium",
+        },
+        traits: [],
+        seasonStats: {
+          season: 1,
+          appearances: 0,
+          goals: 0,
+          assists: 0,
+          yellowCards: 0,
+          redCards: 0,
+          cleanSheets: 0,
+          totalMinutesPlayed: 0,
+          averageRating: 0,
+          shotsTotal: 0,
+          shotsOnTarget: 0,
+          passesTotal: 0,
+          tacklesTotal: 0,
+          interceptionsTotal: 0,
+        },
+        competitionStats: [],
+        careerStats: {
+          totalAppearances: 0,
+          totalGoals: 0,
+          totalAssists: 0,
+          totalYellowCards: 0,
+          totalRedCards: 0,
+          totalCleanSheets: 0,
         },
       });
     }

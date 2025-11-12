@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { 
-  Home, Users, Zap, GraduationCap, TrendingUp, Trophy, 
-  Mail, DollarSign, Building, Calendar, Settings2, LogOut, Save, Moon 
+import {
+  Home, Users, Zap, GraduationCap, TrendingUp, Trophy,
+  Mail, DollarSign, Building, Calendar, Settings2, LogOut, Save, Moon,
+  HandCoins
 } from "lucide-react";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { useAdvancementStore } from "@/lib/stores/advancementStore";
@@ -36,13 +37,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
+    { path: "/inbox", label: "Inbox", icon: Mail, badge: unreadInboxCount },
     { path: "/squad", label: "Squad", icon: Users },
     { path: "/tactics", label: "Tactics", icon: Zap },
+    { path: "/competitions", label: "Competitions", icon: Trophy },
     { path: "/matches", label: "Matches", icon: Calendar },
     { path: "/training", label: "Training", icon: GraduationCap },
-    { path: "/transfers", label: "Transfers", icon: TrendingUp },
-    { path: "/competitions", label: "Competitions", icon: Trophy },
-    { path: "/inbox", label: "Inbox", icon: Mail, badge: unreadInboxCount },
+    { path: "/transfers", label: "Transfers", icon: HandCoins },
+
     { path: "/finances", label: "Finances", icon: DollarSign },
     { path: "/club", label: "Club", icon: Building },
   ];
@@ -56,19 +58,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         <aside className="w-64 bg-card border-r border-border flex flex-col">
           <div className="p-4 border-b border-border flex items-center justify-center">
-            <img 
-              src="/logo.png" 
-              alt="Futsal Manager" 
+            <img
+              src="/logo.png"
+              alt="Futsal Manager"
               className="w-32 h-32 object-contain"
             />
           </div>
-          
+
           <nav className="flex-1 overflow-y-auto p-4">
             <ul className="space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.path;
-                
+
                 return (
                   <li key={item.path}>
                     <Link href={item.path}>

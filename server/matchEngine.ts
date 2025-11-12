@@ -12,6 +12,7 @@ import {
   gameStates
 } from "@shared/schema";
 import { TraitEngine } from "./traitsEngine";
+import { StatisticsEngine } from "./statisticsEngine";
 
 // ============================================================================
 // ENHANCED MATCH ENGINE - Phase 1-5 Implementation
@@ -22,6 +23,7 @@ import { MatchEngineConfig as CONFIG } from './matchEngineConfig';
 export class MatchEngine {
   private storage: IStorage;
   private traitEngine: TraitEngine; // Phase 5: Trait-based player selection
+  private statisticsEngine: StatisticsEngine; // Statistics tracking
   
   // Match state
   private homeTeamQuality: number = 0;
@@ -72,6 +74,7 @@ export class MatchEngine {
   constructor(storage: IStorage) {
     this.storage = storage;
     this.traitEngine = new TraitEngine(); // Phase 5: Initialize trait engine
+    this.statisticsEngine = new StatisticsEngine(storage); // Initialize statistics engine
   }
 
   // ============================================================================
@@ -317,6 +320,11 @@ export class MatchEngine {
       playerRatings,
     });
 
+    // Update player statistics
+    if (updatedMatch) {
+      await this.statisticsEngine.updatePlayerStatistics(state.saveGameId, state.userId, updatedMatch);
+    }
+
     // Clean up real-time state
     this.currentState = null;
     this.isRealTimeMatch = false;
@@ -441,6 +449,11 @@ export class MatchEngine {
       awayStats,
       playerRatings,
     });
+
+    // Update player statistics
+    if (updatedMatch) {
+      await this.statisticsEngine.updatePlayerStatistics(saveGameId, userId, updatedMatch);
+    }
 
     return updatedMatch!;
   }
