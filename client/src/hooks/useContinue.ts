@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import type { NextEvent } from "@shared/schema";
 import { Calendar, Trophy, FileText, DollarSign, Award } from "lucide-react";
+import { useMatchDay } from "./useMatchDay";
 
 interface ContinueHookResult {
   nextEvent: NextEvent | null;
@@ -11,6 +12,8 @@ interface ContinueHookResult {
   buttonIcon: any;
   advancementSpeed: number;
   refetch: () => void;
+  hasUnplayedMatchToday: boolean;
+  unplayedMatchId: number | null;
 }
 
 /**
@@ -19,6 +22,7 @@ interface ContinueHookResult {
  */
 export function useContinue(): ContinueHookResult {
   const { gameState } = useFutsalManager();
+  const { nextMatch, hasMatchToday } = useMatchDay();
 
   const { data: nextEvent, isLoading, error, refetch } = useQuery<NextEvent>({
     queryKey: ["nextEvent", gameState?.currentDate],
@@ -116,6 +120,25 @@ export function useContinue(): ContinueHookResult {
     return Math.max(10, msPerDay);
   };
 
+  // Check if there's an unplayed match today that blocks advancement
+  // hasMatchToday already validates: match exists, is today, and is pending/unplayed
+  const hasUnplayedMatchToday = hasMatchToday;
+  const unplayedMatchId = hasUnplayedMatchToday && nextMatch ? nextMatch.id : null;
+
+  // Debug logging
+  console.log('🔍 useContinue Debug:', {
+    hasMatchToday,
+    nextMatch: nextMatch ? {
+      id: nextMatch.id,
+      date: nextMatch.date,
+      played: nextMatch.played,
+      preparationStatus: nextMatch.preparationStatus,
+    } : null,
+    hasUnplayedMatchToday,
+    unplayedMatchId,
+    currentDate: gameState?.currentDate,
+  });
+
   return {
     nextEvent: nextEvent || null,
     isLoading,
@@ -124,5 +147,7 @@ export function useContinue(): ContinueHookResult {
     buttonIcon: getButtonIcon(),
     advancementSpeed: calculateAdvancementSpeed(),
     refetch,
+    hasUnplayedMatchToday,
+    unplayedMatchId,
   };
 }

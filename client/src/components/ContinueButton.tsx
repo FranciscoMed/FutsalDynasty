@@ -4,6 +4,7 @@ import { useContinue } from "@/hooks/useContinue";
 import { useAdvancementStore } from "@/lib/stores/advancementStore";
 import { advancementEngine } from "@/lib/advancementEngine";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 interface ContinueButtonProps {
   onStart?: () => void;
@@ -16,18 +17,35 @@ interface ContinueButtonProps {
  * Automatically detects next event and advances time with animation
  */
 export function ContinueButton({ onStart, onComplete, className }: ContinueButtonProps) {
+  const [, setLocation] = useLocation();
   const {
     nextEvent,
     isLoading,
     buttonLabel,
     buttonIcon: Icon,
     advancementSpeed,
+    hasUnplayedMatchToday,
+    unplayedMatchId,
   } = useContinue();
 
   const { isAdvancing } = useAdvancementStore();
 
+  // Debug logging
+  console.log('🎯 ContinueButton Debug:', {
+    hasUnplayedMatchToday,
+    unplayedMatchId,
+    buttonLabel,
+    isAdvancing,
+  });
+
   const handleContinue = async () => {
     if (!nextEvent || isAdvancing) return;
+
+    // If there's an unplayed match today, navigate to match instead of advancing
+    if (hasUnplayedMatchToday && unplayedMatchId) {
+      setLocation(`/match/${unplayedMatchId}`);
+      return;
+    }
 
     // Notify parent component
     if (onStart) {
@@ -109,7 +127,9 @@ export function ContinueButton({ onStart, onComplete, className }: ContinueButto
       disabled={isAdvancing}
       className={cn(
         "w-full md:w-auto min-w-[240px] h-12 text-base font-semibold",
-        "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+        hasUnplayedMatchToday
+          ? "bg-gradient-to-r from-success to-success/80 hover:from-success/90 hover:to-success/70"
+          : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
         "shadow-lg hover:shadow-xl transition-all duration-200",
         "relative overflow-hidden group",
         isAdvancing && "cursor-not-allowed opacity-50",
@@ -128,7 +148,13 @@ export function ContinueButton({ onStart, onComplete, className }: ContinueButto
         ) : (
           <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
         )}
-        <span>{isAdvancing ? "Advancing..." : buttonLabel}</span>
+        <span>
+          {isAdvancing 
+            ? "Advancing..." 
+            : hasUnplayedMatchToday 
+              ? "Go to Match" 
+              : buttonLabel}
+        </span>
       </span>
     </Button>
   );

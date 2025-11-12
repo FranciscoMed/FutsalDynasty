@@ -54,6 +54,19 @@ export function useMatchDay() {
     isMatchToday && 
     (!nextMatch.preparationStatus || nextMatch.preparationStatus === "pending");
 
+  // Debug logging
+  console.log('📅 useMatchDay Debug:', {
+    nextMatch: nextMatch ? {
+      id: nextMatch.id,
+      date: nextMatch.date,
+      played: nextMatch.played,
+      preparationStatus: nextMatch.preparationStatus,
+    } : null,
+    isMatchToday,
+    hasMatchToday,
+    currentDate: gameState?.currentDate,
+  });
+
   return { 
     nextMatch, 
     isLoading, 

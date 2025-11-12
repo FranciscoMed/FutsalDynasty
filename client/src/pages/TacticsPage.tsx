@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Settings, RotateCcw, Save, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
+import { InstructionsDialog } from "@/components/tactics/InstructionsDialog";
 
 // Detect if device supports touch
 const isTouchDevice = () => {
@@ -31,6 +32,17 @@ export function TacticsPage() {
   const [pendingSubIndex, setPendingSubIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Tactical instructions state
+  const [tacticalInstructions, setTacticalInstructions] = useState<{
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+  }>({
+    mentality: 'Balanced',
+    pressingIntensity: 'Medium',
+    flyGoalkeeper: 'Never',
+  });
 
   // Load tactics from backend on mount
   useEffect(() => {
@@ -68,6 +80,15 @@ export function TacticsPage() {
             return null;
           });
           setSubstitutes(loadedSubs);
+        }
+        
+        // Load tactical instructions if available
+        if (data.instructions) {
+          setTacticalInstructions({
+            mentality: data.instructions.mentality || 'Balanced',
+            pressingIntensity: data.instructions.pressingIntensity || 'Medium',
+            flyGoalkeeper: data.instructions.flyGoalkeeper || 'Never',
+          });
         }
       } catch (error) {
         console.error("Failed to load tactics:", error);
@@ -307,6 +328,7 @@ export function TacticsPage() {
           formation,
           assignments: assignmentsData,
           substitutes: substitutesData,
+          instructions: tacticalInstructions,
         }),
       });
 
@@ -381,11 +403,11 @@ export function TacticsPage() {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" disabled>
-                  <Settings className="w-4 h-4 mr-0" />
-                  Instructions
-                  <Badge variant="secondary" className="ml-2 bg-accent text-white">TBI</Badge>
-                </Button>
+                <InstructionsDialog
+                  initialInstructions={tacticalInstructions}
+                  onSave={(instructions) => setTacticalInstructions(instructions)}
+                  disabled={isLoading}
+                />
               </div>
 
               <div className="flex-1" />

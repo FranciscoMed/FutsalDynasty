@@ -14,6 +14,8 @@ import { FinancesPage } from "./pages/FinancesPage";
 import { ClubPage } from "./pages/ClubPage";
 import { MatchesPage } from "./pages/MatchesPage";
 import { CompetitionsPage } from "./pages/CompetitionsPage";
+import MatchPage from "./pages/MatchPage";
+import PostMatchPage from "./pages/PostMatchPage";
 import AuthPage from "./pages/AuthPage";
 import SaveGameSelectionPage from "./pages/SaveGameSelectionPage";
 import { useAuth } from "./lib/stores/useAuth";
@@ -59,6 +61,8 @@ function AppContent() {
           <Route path="/squad" component={SquadPage} />
           <Route path="/tactics" component={TacticsPage} />
           <Route path="/matches" component={MatchesPage} />
+          <Route path="/match/:matchId" component={MatchPage} />
+          <Route path="/match/:matchId/post-match" component={PostMatchPage} />
           <Route path="/inbox" component={InboxPage} />
           <Route path="/training" component={TrainingPage} />
           <Route path="/finances" component={FinancesPage} />

@@ -5,15 +5,33 @@ export type Position = "Goalkeeper" | "Defender" | "Winger" | "Pivot";
 export type Formation = "2-2" | "3-1" | "4-0" | "1-2-1" | "1-3" | "2-1-1";
 
 // New formation types for tactics overhaul
-export type TacticsFormation = "4-0" | "3-1" | "2-2";
+export type TacticsFormation = "4-0" | "3-1" | "2-2" | "5-0";
 
 export type TacticalPreset = "Defensive" | "Balanced" | "Attacking";
+
+// Fly-goalkeeper usage settings
+export type FlyGoalkeeperUsage = "Never" | "Sometimes" | "EndGame" | "Always";
 
 // Tactics data structure for new tactics system
 export interface TacticsData {
   formation: TacticsFormation;
   assignments: Record<string, number | null>; // slotId -> playerId
   substitutes: (number | null)[]; // Array of 5 player IDs
+  // Tactical instructions (replaces individual fields)
+  instructions?: {
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+  };
+  // Phase 3: Tactical modifiers (deprecated - use instructions instead)
+  mentality?: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+  pressingIntensity?: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+  width?: 'Narrow' | 'Balanced' | 'Wide';
+  // Fly-goalkeeper settings
+  flyGoalkeeper?: {
+    usage: FlyGoalkeeperUsage;
+    advancedPlayerId?: number; // Optional: specific player to use as advanced GK, otherwise uses GK
+  };
 }
 
 export type TrainingIntensity = "low" | "medium" | "high";
@@ -25,6 +43,208 @@ export type InboxCategory = "urgent" | "match" | "financial" | "squad" | "compet
 export type CompetitionType = "league" | "cup" | "continental" | "super_cup";
 
 export type EventType = "match" | "training_completion" | "contract_expiry" | "month_end" | "season_end";
+
+// ============================================================================
+// MATCH ENGINE TYPES (Phase 1 - Enhanced Match Simulation)
+// ============================================================================
+
+// Player traits that affect match behavior
+export type PlayerTrait = 
+  // Offensive traits (affect selection for offensive actions)
+  | 'attempts1v1' 
+  | 'finisher'
+  | 'attemptsLongShots'
+  | 'playsWithFlair'
+  | 'beatPlayerRepeatedly'
+  // Playmaking traits
+  | 'playmaker' 
+  | 'does1_2' 
+  | 'looksForPass'
+  | 'triesKillerBalls'
+  // Defensive traits
+  | 'hardTackler' 
+  | 'anticipates'
+  | 'marksOpponentTightly'
+  // Mental/Performance traits (affect success rates as exception)
+  | 'nerveless' 
+  | 'choker' 
+  | 'classy'
+  | 'bigMatchPlayer'
+  | 'consistentPerformer'
+  | 'inconsistent'
+  // Teamwork traits
+  | 'selfish'
+  | 'leader'
+  | 'communicator'
+  // Goalkeeper traits (affect save success)
+  | 'isFlyGoalkeeper';
+
+// Tactical setup for a team
+export interface TacticalSetup {
+  mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+  pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+  width: 'Narrow' | 'Balanced' | 'Wide';
+  customInstructions?: string;
+  // Fly-goalkeeper settings
+  flyGoalkeeper?: {
+    usage: FlyGoalkeeperUsage;
+    advancedPlayerId?: number;
+  };
+}
+
+// Extended player with match-specific state
+export interface PlayerWithTraits extends Player {
+  traits: PlayerTrait[];
+  energy: number;  // 0-100, current match energy
+  minutesPlayedThisMatch: number;
+}
+
+// Counter-attack state tracking
+export interface CounterAttackState {
+  active: boolean;
+  team: 'home' | 'away' | null;
+  ticksRemaining: number;  // 2-tick window for counter-attack shot
+}
+
+// Live match state (server-side simulation state)
+export interface LiveMatchState {
+  // Match identification
+  matchId: number;
+  saveGameId: number;
+  userId: number;
+  homeTeamId: number;
+  awayTeamId: number;
+  competitionId: number;
+  
+  // Time tracking
+  currentMinute: number;
+  currentTick: number;  // 0-159 (15-second intervals)
+  
+  // Score & possession
+  score: { home: number; away: number };
+  possession: 'home' | 'away';
+  
+  // Momentum system (0-100, 50 = neutral)
+  momentum: {
+    value: number;
+    trend: 'home' | 'away' | 'neutral';
+    lastUpdate: number;  // Minute of last significant change
+  };
+  
+  // Counter-attack tracking
+  counterAttack: CounterAttackState;
+  
+  // Last event for context
+  lastEvent: MatchEvent | null;
+  
+  // Phase 4: Substitution tracking
+  substitutions: {
+    used: { home: number; away: number };
+    homeBench: PlayerWithTraits[];
+    awayBench: PlayerWithTraits[];
+    autoSubEnabled: { home: boolean; away: boolean };
+    energyThreshold: number; // Default: 30%
+  };
+  
+  // Match statistics
+  statistics: {
+    possession: { home: number; away: number };
+    shots: { home: number; away: number };
+    shotsOnTarget: { home: number; away: number };
+    fouls: { home: number; away: number };
+    corners: { home: number; away: number };
+    saves: { home: number; away: number };
+    tackles: { home: number; away: number };
+    interceptions: { home: number; away: number };
+    blocks: { home: number; away: number };
+    dribblesSuccessful: { home: number; away: number };
+    dribblesUnsuccessful: { home: number; away: number };
+  };
+  
+  // Accumulated fouls (reset at half-time, 6+ = penalty kick from 10m)
+  accumulatedFouls: { home: number; away: number };
+  
+  // Yellow card tracking (second yellow = red card)
+  yellowCards: {
+    home: number[]; // Array of player IDs who have received yellow cards
+    away: number[]; // Array of player IDs who have received yellow cards
+  };
+  
+  // Red card tracking (futsal rules: team plays with 4 players for 2 minutes or until opponent scores)
+  redCards: {
+    home: Array<{
+      playerId: number;
+      playerName: string;
+      tickIssued: number;
+      canReturnAt: number | null; // null means permanent expulsion (no return)
+      returnCondition: 'time' | 'goal' | 'none'; // 'time' = after 2 min, 'goal' = after opponent scores, 'none' = no return
+    }>;
+    away: Array<{
+      playerId: number;
+      playerName: string;
+      tickIssued: number;
+      canReturnAt: number | null;
+      returnCondition: 'time' | 'goal' | 'none';
+    }>;
+  };
+  
+  // Suspended players (sent off - cannot be selected for substitution)
+  suspendedPlayers: {
+    home: number[]; // Array of player IDs
+    away: number[]; // Array of player IDs
+  };
+  
+  // Events generated during match
+  events: MatchEvent[];
+  
+  // Lineups with current state
+  homeLineup: OnCourtPlayer[];
+  awayLineup: OnCourtPlayer[];
+  
+  // Phase 3: Tactical setups for both teams
+  homeTactics: TacticalSetup;
+  awayTactics: TacticalSetup;
+  
+  // Team qualities
+  homeTeamQuality: number;
+  awayTeamQuality: number;
+  
+  // Expected goals
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  
+  // Control flags
+  isPaused: boolean;
+  speed: 1 | 2 | 4;
+}
+
+// Player state during match
+export interface OnCourtPlayer {
+  player: PlayerWithTraits;
+  
+  // Effective attributes (base + fatigue modifiers)
+  effectiveAttributes: {
+    shooting: number;
+    passing: number;
+    dribbling: number;
+    pace: number;
+    tackling: number;
+    positioning: number;
+    marking: number;
+  };
+  
+  // Performance tracking
+  performance: {
+    shots: number;
+    passes: number;
+    tackles: number;
+    interceptions: number;
+    fouls: number;
+    rating: number;
+  };
+}
+
+// ============================================================================
 
 export interface NextEvent {
   type: EventType;
@@ -120,6 +340,7 @@ export interface Player {
     secondary: string;
     intensity: TrainingIntensity;
   };
+  traits: PlayerTrait[];
 }
 
 export interface PlayerContract {
@@ -146,13 +367,16 @@ export interface Team {
 
 export interface MatchEvent {
   minute: number;
-  type: "goal" | "yellow_card" | "red_card" | "substitution" | "injury";
+  type: "goal" | "shot" | "tackle" | "foul" | "corner" | "yellow_card" | "red_card" | "substitution" | "injury" | "block" | "dribble" | "interception";
   playerId: number;
   playerName: string;
   teamId: number;
   assistId?: number;
   assistName?: string;
   description: string;
+  shotQuality?: number;  // For shots: xG value
+  isCounter?: boolean;  // For shots: was this a counter-attack?
+  goalContext?: "open_play" | "corner" | "penalty_10m" | "counter_attack" | "dribble_buildup" | "free_kick" | "counter_vs_flyGK";  // For goals: how it was created
 }
 
 export interface MatchStats {
@@ -162,6 +386,10 @@ export interface MatchStats {
   passes: number;
   passAccuracy: number;
   tackles: number;
+  interceptions: number;
+  blocks: number;
+  dribblesSuccessful: number;
+  dribblesUnsuccessful: number;
   fouls: number;
   corners: number;
   saves: number;
@@ -418,6 +646,7 @@ export const players = pgTable("players", {
   value: integer("value").notNull(),
   teamId: integer("team_id").notNull(),
   trainingFocus: jsonb("training_focus").notNull().$type<{ primary: string; secondary: string; intensity: TrainingIntensity }>(),
+  traits: jsonb("traits").notNull().$type<PlayerTrait[]>().default([]),
 });
 
 export const matches = pgTable("matches", {

@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { TacticsReview } from "./TacticsReview";
 import { TacticsReviewV2 } from "./match-prep/TacticsReviewV2";
 import { OpponentAnalysis } from "./OpponentAnalysis";
+import { InstructionsDialog } from "./tactics/InstructionsDialog";
 import type { Formation as OldFormation, TacticalPreset, Player } from "@shared/schema";
 import type { Formation } from "@/lib/formations";
 
@@ -70,6 +71,17 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
   const [assignments, setAssignments] = useState<Record<string, number | null>>({});
   const [substitutes, setSubstitutes] = useState<(number | null)[]>([null, null, null, null, null]);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Tactical instructions state
+  const [tacticalInstructions, setTacticalInstructions] = useState<{
+    mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+    pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+    flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+  }>({
+    mentality: 'Balanced',
+    pressingIntensity: 'Medium',
+    flyGoalkeeper: 'Never',
+  });
 
   // Handle tactics change from TacticsReviewV2 - memoized to prevent re-renders
   const handleTacticsChange = useCallback((data: {
@@ -153,28 +165,23 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
           formation,
           assignments,
           substitutes,
+          instructions: tacticalInstructions,
         }),
       });
       if (!confirmResponse.ok) throw new Error("Failed to confirm tactics");
       
-      // Then, immediately simulate the match
-      const simulateResponse = await fetch(`/api/matches/${matchId}/simulate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!simulateResponse.ok) throw new Error("Failed to simulate match");
-      
-      return simulateResponse.json();
+      // Return success - we'll navigate to the match simulation page
+      return { matchId };
     },
-    onSuccess: (matchResult) => {
+    onSuccess: () => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["nextUnplayedMatch"] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["team"] });
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
       
-      // Navigate directly to the match result page
-      setLocation(`/matches/${matchId}`);
+      // Navigate to the real-time match simulation page
+      setLocation(`/match/${matchId}`);
       onClose();
     },
   });
@@ -276,6 +283,16 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <TabsContent value="tactics" className="mt-0 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1B4332]">Formation & Lineup</h3>
+                    <p className="text-sm text-muted-foreground">Set your starting XI and substitutes</p>
+                  </div>
+                  <InstructionsDialog
+                    initialInstructions={tacticalInstructions}
+                    onSave={(instructions) => setTacticalInstructions(instructions)}
+                  />
+                </div>
                 <TacticsReviewV2
                   squad={data.playerTeam.squad}
                   initialFormation={formation}

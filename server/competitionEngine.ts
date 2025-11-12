@@ -1,5 +1,5 @@
 import type { IStorage } from "./storage";
-import type { Competition, Match, LeagueStanding, Team, Player, PlayerAttributes, Position } from "@shared/schema";
+import type { Competition, Match, LeagueStanding, Team, Player, PlayerAttributes, Position, PlayerTrait } from "@shared/schema";
 import { calculateOverallRating } from "@shared/schema";
 
 export class CompetitionEngine {
@@ -283,6 +283,10 @@ export class CompetitionEngine {
             passes: 0,
             passAccuracy: 0,
             tackles: 0,
+            interceptions: 0,
+            blocks: 0,
+            dribblesSuccessful: 0,
+            dribblesUnsuccessful: 0,
             fouls: 0,
             corners: 0,
             saves: 0,
@@ -294,6 +298,10 @@ export class CompetitionEngine {
             passes: 0,
             passAccuracy: 0,
             tackles: 0,
+            interceptions: 0,
+            blocks: 0,
+            dribblesSuccessful: 0,
+            dribblesUnsuccessful: 0,
             fouls: 0,
             corners: 0,
             saves: 0,
@@ -314,14 +322,14 @@ export class CompetitionEngine {
 
     const positions: Position[] = ["Goalkeeper", "Goalkeeper", "Defender", "Defender", "Defender", "Defender", "Winger", "Winger", "Winger", "Winger", "Pivot", "Pivot", "Pivot"];
 
-    for (let i = 0; i < 13; i++) {
+    for (let i = 0; i < 15; i++) {
       const position = positions[i];
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       
       const playerBaseRating = baseRating + Math.floor(Math.random() * 40) - 20;
       const potential = playerBaseRating + Math.floor(Math.random() * 30) + 10;
-      const age = 18 + Math.floor(Math.random() * 14);
+      const age = 16 + Math.floor(Math.random() * 20);
 
       const attributes: PlayerAttributes = {
         shooting: playerBaseRating + Math.floor(Math.random() * 30) - 15,
@@ -351,6 +359,9 @@ export class CompetitionEngine {
       }
 
       const currentAbility = calculateOverallRating(attributes, position);
+
+      // Generate traits based on attributes and position
+      const traits = this.generatePlayerTraits(position, attributes, age);
 
       await this.storage.createPlayer(saveGameId, userId, {
         name: `${firstName} ${lastName}`,
@@ -382,8 +393,193 @@ export class CompetitionEngine {
           secondary: "physical",
           intensity: "medium",
         },
+        traits,
       });
     }
+  }
+
+  /**
+   * Generate traits for a player based on their attributes and position
+   * Attributes are on 0-200 scale
+   */
+  private generatePlayerTraits(position: Position, attributes: PlayerAttributes, age: number): PlayerTrait[] {
+    const traits: PlayerTrait[] = [];
+
+    // Normalize threshold helper (attributes are 0-200)
+    const hasHighAttribute = (value: number, threshold: number = 140) => value >= threshold;
+    const hasLowAttribute = (value: number, threshold: number = 100) => value <= threshold;
+
+    // GOALKEEPER TRAITS
+    if (position === 'Goalkeeper') {
+      // Fly Goalkeeper - high pace/stamina + decent passing
+      if (attributes.pace && attributes.stamina && attributes.passing &&
+          hasHighAttribute(attributes.pace, 120) && 
+          hasHighAttribute(attributes.stamina, 120) &&
+          hasHighAttribute(attributes.passing, 100)) {
+        traits.push('isFlyGoalkeeper');
+      }
+    }
+
+    // OFFENSIVE TRAITS (all outfield players)
+    if (position !== 'Goalkeeper') {
+      // Attempts 1v1 - high dribbling + pace
+      if (hasHighAttribute(attributes.dribbling, 140) && hasHighAttribute(attributes.pace, 130)) {
+        traits.push('attempts1v1');
+      }
+
+      // Finisher - high shooting + composure
+      if (hasHighAttribute(attributes.shooting, 150) && hasHighAttribute(attributes.composure, 130)) {
+        traits.push('finisher');
+      }
+
+      // Attempts long shots - high shooting + low passing (shoots instead of passes)
+      if (hasHighAttribute(attributes.shooting, 140) && hasLowAttribute(attributes.passing, 110)) {
+        traits.push('attemptsLongShots');
+      }
+
+      // Plays with flair - high dribbling + agility + vision
+      if (hasHighAttribute(attributes.dribbling, 140) && 
+          hasHighAttribute(attributes.agility, 140) &&
+          hasHighAttribute(attributes.vision, 130)) {
+        traits.push('playsWithFlair');
+      }
+
+      // Beat player repeatedly - exceptional dribbling
+      if (hasHighAttribute(attributes.dribbling, 160)) {
+        traits.push('beatPlayerRepeatedly');
+      }
+
+      // Tries killer balls - high vision + passing + risk-taking (low decision making)
+      if (hasHighAttribute(attributes.vision, 150) &&
+          hasHighAttribute(attributes.passing, 140) &&
+          hasLowAttribute(attributes.decisionMaking, 110)) {
+        traits.push('triesKillerBalls');
+      }
+    }
+
+    // PLAYMAKING TRAITS (Pivot, Fixo)
+    if (position === 'Pivot' || position === 'Defender') {
+      // Playmaker - high vision + passing + decision making
+      if (hasHighAttribute(attributes.vision, 150) &&
+          hasHighAttribute(attributes.passing, 145) &&
+          hasHighAttribute(attributes.decisionMaking, 135)) {
+        traits.push('playmaker');
+      }
+
+      // Does 1-2 passes - high first touch + passing + positioning
+      if (hasHighAttribute(attributes.firstTouch, 135) &&
+          hasHighAttribute(attributes.passing, 135) &&
+          hasHighAttribute(attributes.positioning, 130)) {
+        traits.push('does1_2');
+      }
+
+      // Looks for pass - high vision + passing, lower shooting
+      if (hasHighAttribute(attributes.vision, 135) &&
+          hasHighAttribute(attributes.passing, 140) &&
+          hasLowAttribute(attributes.shooting, 110)) {
+        traits.push('looksForPass');
+      }
+    }
+
+    // DEFENSIVE TRAITS (Defender, Pivot)
+    if (position !== 'Goalkeeper') {
+      // Hard tackler - high tackling + strength + aggression (low composure = aggression)
+      if (hasHighAttribute(attributes.tackling, 140) &&
+          hasHighAttribute(attributes.strength, 130) &&
+          hasLowAttribute(attributes.composure, 110)) {
+        traits.push('hardTackler');
+      }
+
+      // Anticipates - high positioning + interceptions + vision
+      if (hasHighAttribute(attributes.positioning, 145) &&
+          hasHighAttribute(attributes.interceptions, 145) &&
+          hasHighAttribute(attributes.vision, 130)) {
+        traits.push('anticipates');
+      }
+
+      // Marks opponent tightly - high marking + positioning + workRate
+      if (hasHighAttribute(attributes.marking, 145) &&
+          hasHighAttribute(attributes.positioning, 135) &&
+          hasHighAttribute(attributes.workRate, 135)) {
+        traits.push('marksOpponentTightly');
+      }
+
+    }
+
+    // MENTAL TRAITS (all players)
+    // Nerveless - high composure + high pressure situations (age 25+)
+    if (hasHighAttribute(attributes.composure, 150) && age >= 25) {
+      traits.push('nerveless');
+    }
+
+    // Choker - low composure
+    if (hasLowAttribute(attributes.composure, 90)) {
+      traits.push('choker');
+    }
+
+    // Classy - high first touch + ball control + composure
+    if (hasHighAttribute(attributes.firstTouch, 145) &&
+        hasHighAttribute(attributes.ballControl, 145) &&
+        hasHighAttribute(attributes.composure, 135)) {
+      traits.push('classy');
+    }
+
+    // Big match player - high composure + high current ability
+    if (hasHighAttribute(attributes.composure, 145) && age >= 24) {
+      traits.push('bigMatchPlayer');
+    }
+
+    // Consistent performer - high decision making + composure + workRate
+    if (hasHighAttribute(attributes.decisionMaking, 135) &&
+        hasHighAttribute(attributes.composure, 135) &&
+        hasHighAttribute(attributes.workRate, 135)) {
+      traits.push('consistentPerformer');
+    }
+
+    // Inconsistent - low decision making or low composure
+    if (hasLowAttribute(attributes.decisionMaking, 95) || 
+        hasLowAttribute(attributes.composure, 95)) {
+      traits.push('inconsistent');
+    }
+
+    // TEAMWORK TRAITS
+    // Selfish - high shooting, low passing + vision
+    if (hasHighAttribute(attributes.shooting, 140) &&
+        hasLowAttribute(attributes.passing, 105) &&
+        hasLowAttribute(attributes.vision, 105)) {
+      traits.push('selfish');
+    }
+
+    // Leader - high composure + decision making + age 26+
+    if (hasHighAttribute(attributes.composure, 145) &&
+        hasHighAttribute(attributes.decisionMaking, 140) &&
+        age >= 26) {
+      traits.push('leader');
+    }
+
+    // Communicator - high vision + decision making + workRate
+    if (hasHighAttribute(attributes.vision, 135) &&
+        hasHighAttribute(attributes.decisionMaking, 135) &&
+        hasHighAttribute(attributes.workRate, 135)) {
+      traits.push('communicator');
+    }
+
+    // Ensure at least 1-2 traits per player
+    if (traits.length === 0) {
+      // Give generic trait based on best attribute
+      const attrEntries = Object.entries(attributes).filter(([key]) => key !== 'reflexes' && key !== 'handling' && key !== 'gkPositioning' && key !== 'distribution');
+      const bestAttr = attrEntries.reduce((best, curr) => 
+        (curr[1] as number) > (best[1] as number) ? curr : best
+      );
+
+      if (bestAttr[0] === 'shooting') traits.push('attemptsLongShots');
+      else if (bestAttr[0] === 'passing') traits.push('looksForPass');
+      else if (bestAttr[0] === 'dribbling') traits.push('attempts1v1');
+      else if (bestAttr[0] === 'tackling') traits.push('hardTackler');
+      else traits.push('inconsistent');
+    }
+
+    return traits;
   }
 
   private async generateLeagueFixtures(teamIds: number[], season: number, saveGameId: number, userId: number): Promise<Match[]> {
@@ -430,6 +626,10 @@ export class CompetitionEngine {
             passes: 0,
             passAccuracy: 0,
             tackles: 0,
+            interceptions: 0,
+            blocks: 0,
+            dribblesSuccessful: 0,
+            dribblesUnsuccessful: 0,
             fouls: 0,
             corners: 0,
             saves: 0,
@@ -441,6 +641,10 @@ export class CompetitionEngine {
             passes: 0,
             passAccuracy: 0,
             tackles: 0,
+            interceptions: 0,
+            blocks: 0,
+            dribblesSuccessful: 0,
+            dribblesUnsuccessful: 0,
             fouls: 0,
             corners: 0,
             saves: 0,

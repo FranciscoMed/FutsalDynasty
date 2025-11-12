@@ -33,6 +33,22 @@ export function HomePage() {
   const { isAdvancing } = useAdvancementStore();
   const [showSeasonSummary, setShowSeasonSummary] = useState(false);
 
+  // Debug logging for HomePage
+  console.log('🏠 HomePage Debug:', {
+    hasMatchToday,
+    nextMatch: nextMatch ? {
+      id: nextMatch.id,
+      date: nextMatch.date,
+      played: nextMatch.played,
+      preparationStatus: nextMatch.preparationStatus,
+      homeTeamName: nextMatch.homeTeamName,
+      awayTeamName: nextMatch.awayTeamName,
+    } : null,
+    currentDate: gameState?.currentDate,
+    showMatchPopup,
+    pendingMatchId,
+  });
+
   useEffect(() => {
     if (initialized) {
       loadGameData();

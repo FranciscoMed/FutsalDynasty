@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futsal Dynasty - Match Experience Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f6efe3 0%, #f0e8dc 100%);
+            color: #703214;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #703214;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-tab.active {
+            background: #d18643;
+            border-color: #703214;
+            color: #f6efe3;
+        }
+
+        /* Pre-Match Screen */
+        .pre-match-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .competition-badge {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #eaae65, #d18643);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 4px 20px rgba(209, 134, 67, 0.4);
+        }
+
+        .competition-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #d18643;
+        }
+
+        .match-round {
+            font-size: 16px;
+            color: #8c5e42;
+        }
+
+        .teams-presentation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            margin: 40px 0;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            border: 2px solid rgba(209, 134, 67, 0.2);
+        }
+
+        .team-card {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #d18643 0%, #c17438 100%);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 8px 30px rgba(209, 134, 67, 0.4);
+        }
+
+        .team-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #703214;
+        }
+
+        .team-form {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .form-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .form-w { background: #22c55e; }
+        .form-d { background: #fbbf24; }
+        .form-l { background: #ef4444; }
+
+        .vs-divider {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ccc;
+            position: relative;
+        }
+
+        .kickoff-section {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .kickoff-btn {
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #d18643, #c17438);
+            border: none;
+            border-radius: 12px;
+            color: #f6efe3;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(209, 134, 67, 0.4);
+        }
+
+        .kickoff-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(209, 134, 67, 0.6);
+        }
+
+        /* Match Screen */
+        .match-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 800px;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .match-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .match-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .left-panel, .right-panel {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(209, 134, 67, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .center-panel {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(209, 134, 67, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(209, 134, 67, 0.15);
+            border-radius: 12px;
+            border: 2px solid #d18643;
+            gap: 40px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .score-team {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .score-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .score-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #d18643;
+        }
+
+        .match-time {
+            text-align: center;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            color: #703214;
+            flex-shrink: 0;
+        }
+
+        .time-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .match-phase {
+            font-size: 11px;
+            color: #8c5e42;
+            margin-top: 2px;
+        }
+
+        .momentum-section {
+            margin: 30px 0;
+        }
+
+        .momentum-bar-container {
+            height: 40px;
+            background: rgba(209, 134, 67, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(209, 134, 67, 0.3);
+        }
+
+        .momentum-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #b96b4a 0%, #d18643 50%, #82a84e 100%);
+            transition: all 0.5s;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-weight: 700;
+            color: #f6efe3;
+        }
+
+        .momentum-marker {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #8c5e42;
+        }
+
+        .stat-values {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .event-feed {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+            flex: 1;
+        }
+
+        .event-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(209, 134, 67, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid transparent;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .event-item.goal {
+            border-left-color: #82a84e;
+            background: rgba(130, 168, 78, 0.1);
+        }
+
+        .event-item.shot {
+            border-left-color: #eaae65;
+        }
+
+        .event-item.foul {
+            border-left-color: #b96b4a;
+        }
+
+        .event-time {
+            font-weight: 700;
+            color: #d18643;
+            min-width: 40px;
+        }
+
+        .event-icon {
+            font-size: 24px;
+        }
+
+        .event-desc {
+            flex: 1;
+        }
+
+        .event-player {
+            font-weight: 700;
+        }
+
+        .tactics-panel {
+            display: grid;
+            gap: 15px;
+        }
+
+        .tactic-option {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tactic-option:hover {
+            background: rgba(209, 134, 67, 0.1);
+            border-color: #d18643;
+        }
+
+        .tactic-option.active {
+            background: rgba(209, 134, 67, 0.2);
+            border-color: #d18643;
+        }
+
+        .tactic-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #703214;
+            font-size: 13px;
+        }
+
+        .tactic-desc {
+            font-size: 11px;
+            color: #8c5e42;
+        }
+
+        /* Post-Match Screen */
+        .post-match-header {
+            text-align: center;
+            padding: 40px;
+            background: rgba(209, 134, 67, 0.15);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 2px solid #d18643;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #f6efe3;
+        }
+
+        .result-win {
+            background: linear-gradient(135deg, #82a84e, #6f9240);
+        }
+
+        .result-draw {
+            background: linear-gradient(135deg, #eaae65, #d98c45);
+        }
+
+        .result-loss {
+            background: linear-gradient(135deg, #b96b4a, #9e5839);
+        }
+
+        .final-score {
+            font-size: 64px;
+            font-weight: 700;
+            margin: 20px 0;
+            color: #d18643;
+        }
+
+        .post-match-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(209, 134, 67, 0.2);
+        }
+
+        .stat-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #d18643;
+        }
+
+        .player-ratings {
+            display: grid;
+            gap: 10px;
+        }
+
+        .player-rating-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(209, 134, 67, 0.1);
+            border-radius: 8px;
+        }
+
+        .player-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .player-position {
+            width: 40px;
+            height: 40px;
+            background: rgba(209, 134, 67, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: #703214;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #703214;
+        }
+
+        .rating-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            border: 3px solid;
+        }
+
+        .rating-excellent {
+            background: rgba(130, 168, 78, 0.2);
+            border-color: #82a84e;
+            color: #82a84e;
+        }
+
+        .rating-good {
+            background: rgba(130, 168, 78, 0.1);
+            border-color: #9fc76a;
+            color: #9fc76a;
+        }
+
+        .rating-average {
+            background: rgba(234, 174, 101, 0.1);
+            border-color: #eaae65;
+            color: #eaae65;
+        }
+
+        .rating-poor {
+            background: rgba(185, 107, 74, 0.1);
+            border-color: #b96b4a;
+            color: #b96b4a;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d18643, #c17438);
+            color: #f6efe3;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.5);
+            color: #703214;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(209, 134, 67, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(209, 134, 67, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(209, 134, 67, 0.7);
+        }
+
+        .competition-standings {
+            margin-top: 20px;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .standings-table th {
+            padding: 12px;
+            text-align: left;
+            background: rgba(209, 134, 67, 0.1);
+            font-size: 12px;
+            color: #8c5e42;
+            border-bottom: 2px solid rgba(209, 134, 67, 0.3);
+        }
+
+        .standings-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(209, 134, 67, 0.1);
+            color: #703214;
+        }
+
+        .standings-table tr:hover {
+            background: rgba(209, 134, 67, 0.05);
+        }
+
+        .standings-table tr.player-team {
+            background: rgba(209, 134, 67, 0.15);
+            font-weight: 700;
+        }
+
+        .table-pos {
+            width: 40px;
+            text-align: center;
+            font-weight: 700;
+            color: #d18643;
+        }
+
+        /* Lineup & Stats Tiles */
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #d18643;
+            margin-bottom: 10px;
+        }
+
+        .section-title.center {
+            text-align: center;
+        }
+
+        .lineup-tile {
+            background: rgba(209, 134, 67, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .lineup-list, .bench-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .player-row .player-name {
+            flex: 1;
+            font-weight: 600;
+            color: #703214;
+        }
+
+        .player-row .player-rating {
+            min-width: 32px;
+            text-align: center;
+            padding: 4px 8px;
+            background: rgba(209, 134, 67, 0.2);
+            border-radius: 4px;
+            font-weight: 700;
+            color: #703214;
+        }
+
+        .player-row .player-fatigue {
+            min-width: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #8c5e42;
+        }
+
+        .stats-tile {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(209, 134, 67, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stats-tile .stat-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(209, 134, 67, 0.05);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .stats-tile .stat-row:hover {
+            background: rgba(209, 134, 67, 0.1);
+        }
+
+        .stat-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-row-header .stat-label {
+            color: #8c5e42;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .stat-row-header .stat-values {
+            font-weight: 700;
+            color: #703214;
+            font-size: 14px;
+        }
+
+        .stat-bar-container {
+            height: 8px;
+            background: rgba(209, 134, 67, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-bar {
+            height: 100%;
+            display: flex;
+            transition: all 0.3s;
+        }
+
+        .stat-bar-home {
+            background: linear-gradient(90deg, #d18643, #eaae65);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .stat-bar-away {
+            background: linear-gradient(90deg, #9e5839, #b96b4a);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Individual Stats Bar */
+        .individual-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            background: rgba(209, 134, 67, 0.1);
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .individual-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid rgba(209, 134, 67, 0.2);
+        }
+
+        .individual-stat-item .stat-icon {
+            font-size: 16px;
+        }
+
+        .individual-stat-item .stat-label {
+            color: #8c5e42;
+            font-weight: 600;
+        }
+
+        .individual-stat-item .stat-player {
+            color: #703214;
+            font-weight: 700;
+        }
+
+        .individual-stat-item .stat-count {
+            color: #d18643;
+            font-weight: 700;
+        }
+
+        /* Tactics Popup */
+        #tactics-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #tactics-popup.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #d18643;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 30px; font-size: 36px;">
+            ⚽ Futsal Dynasty - Match Experience
+        </h1>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showScreen('pre-match')">Pre-Match</button>
+            <button class="nav-tab" onclick="showScreen('match')">Match</button>
+            <button class="nav-tab" onclick="showScreen('post-match')">Post-Match</button>
+        </div>
+
+        <!-- PRE-MATCH SCREEN -->
+        <div id="pre-match" class="screen active">
+            <div class="pre-match-header">
+                <div class="competition-badge">🏆</div>
+                <div class="competition-name">UEFA Champions League</div>
+                <div class="match-round">Quarter Finals - First Leg</div>
+            </div>
+
+            <div class="teams-presentation">
+                <div class="team-card">
+                    <div class="team-logo">🔴</div>
+                    <div class="team-name">Benfica</div>
+                    <div style="color: #aaa; margin-top: 5px;">Liga Portugal - 2nd</div>
+                    <div class="team-form">
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-d">D</div>
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-w">W</div>
+                    </div>
+                </div>
+
+                <div class="vs-divider">VS</div>
+
+                <div class="team-card">
+                    <div class="team-logo" style="background: linear-gradient(135deg, #ef4444, #991b1b);">⚪</div>
+                    <div class="team-name">Barcelona</div>
+                    <div style="color: #aaa; margin-top: 5px;">La Liga - 1st</div>
+                    <div class="team-form">
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-w">W</div>
+                        <div class="form-badge form-l">L</div>
+                        <div class="form-badge form-w">W</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-title">Competition Overview</div>
+                <div class="competition-standings">
+                    <table class="standings-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-pos">1</td>
+                                <td>Barcelona</td>
+                                <td>8</td>
+                                <td>7</td>
+                                <td>0</td>
+                                <td>1</td>
+                                <td><strong>21</strong></td>
+                            </tr>
+                            <tr class="player-team">
+                                <td class="table-pos">2</td>
+                                <td>Benfica</td>
+                                <td>8</td>
+                                <td>6</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td><strong>19</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="table-pos">3</td>
+                                <td>Inter Milan</td>
+                                <td>8</td>
+                                <td>5</td>
+                                <td>2</td>
+                                <td>1</td>
+                                <td><strong>17</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="table-pos">4</td>
+                                <td>Sporting CP</td>
+                                <td>8</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>2</td>
+                                <td><strong>14</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="kickoff-section">
+                <button class="kickoff-btn" onclick="showScreen('match')">⚽ Start Match</button>
+            </div>
+        </div>
+
+        <!-- MATCH SCREEN -->
+        <div id="match" class="screen">
+            <div class="match-wrapper">
+                <!-- Header with Scoreboard -->
+                <div class="match-header">
+                    <div class="scoreboard">
+                        <div class="score-team">
+                            <div class="score-name">Benfica</div>
+                            <div class="score-value">2</div>
+                        </div>
+                        <div class="match-time">
+                            <div class="time-value">23'</div>
+                            <div class="match-phase">1st Half</div>
+                        </div>
+                        <div class="score-team">
+                            <div class="score-name">Barcelona</div>
+                            <div class="score-value">1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="match-content">
+                    <div class="match-container">
+                    <!-- Left Panel - Tactics Button & Benfica Lineup -->
+                    <div class="left-panel">
+                        <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="openTacticsPopup()">⚙️ Tactics</button>
+                        <div class="section-title">🧑‍💼 Benfica Lineup</div>
+                        <div class="lineup-tile">
+                            <div class="lineup-list">
+                                <!-- Starting XI -->
+                                <div class="player-row">
+                                    <span class="player-name">Oblak (GK)</span>
+                                    <span class="player-rating">8.5</span>
+                                    <span class="player-fatigue">67%</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Silva (DEF)</span>
+                                    <span class="player-rating">9.0</span>
+                                    <span class="player-fatigue">72%</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Fernandes (MID)</span>
+                                    <span class="player-rating">7.5</span>
+                                    <span class="player-fatigue">65%</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Pedro (FWD)</span>
+                                    <span class="player-rating">8.8</span>
+                                    <span class="player-fatigue">70%</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Santos (MID)</span>
+                                    <span class="player-rating">7.0</span>
+                                    <span class="player-fatigue">68%</span>
+                                </div>
+                            </div>
+                            <div class="bench-list" style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #8c5e42; margin-bottom: 5px;">Bench</div>
+                                <div class="player-row">
+                                    <span class="player-name">Ramos (FWD)</span>
+                                    <span class="player-rating">6.8</span>
+                                    <span class="player-fatigue">100%</span>
+                                    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="substitutePlayer('Pedro','Ramos')">Sub</button>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Dias (DEF)</span>
+                                    <span class="player-rating">7.2</span>
+                                    <span class="player-fatigue">100%</span>
+                                    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="substitutePlayer('Silva','Dias')">Sub</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Panel - Event Feed (Main Focus) -->
+                    <div class="center-panel">
+                        <div class="section-title center">📝 Live Events</div>
+                        <div class="event-feed">
+                            <div class="event-item goal">
+                                <div class="event-time">23'</div>
+                                <div class="event-icon">⚽</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Silva</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Great strike from outside the box!</div>
+                                </div>
+                            </div>
+                            <div class="event-item shot">
+                                <div class="event-time">21'</div>
+                                <div class="event-icon">🥅</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Messi</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Shot saved by goalkeeper</div>
+                                </div>
+                            </div>
+                            <div class="event-item foul">
+                                <div class="event-time">19'</div>
+                                <div class="event-icon">🟨</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Fernandes</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Yellow card for tactical foul</div>
+                                </div>
+                            </div>
+                            <div class="event-item goal">
+                                <div class="event-time">15'</div>
+                                <div class="event-icon">⚽</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Pedro</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Penalty converted!</div>
+                                </div>
+                            </div>
+                            <div class="event-item goal">
+                                <div class="event-time">12'</div>
+                                <div class="event-icon">⚽</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Lewandowski</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Quick counter-attack goal</div>
+                                </div>
+                            </div>
+                            <div class="event-item shot">
+                                <div class="event-time">8'</div>
+                                <div class="event-icon">📊</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Santos</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Shot off target</div>
+                                </div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-time">5'</div>
+                                <div class="event-icon">🔄</div>
+                                <div class="event-desc">
+                                    <div class="event-player">Match Start</div>
+                                    <div style="font-size: 11px; color: #8c5e42;">Game is underway</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel - Barcelona Lineup & Stats -->
+                    <div class="right-panel">
+                        <div class="section-title">🧑‍� Barcelona Lineup</div>
+                        <div class="lineup-tile">
+                            <div class="lineup-list">
+                                <div class="player-row">
+                                    <span class="player-name">Ter Stegen (GK)</span>
+                                    <span class="player-rating">8.0</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Lewandowski (FWD)</span>
+                                    <span class="player-rating">8.7</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Messi (FWD)</span>
+                                    <span class="player-rating">8.5</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Raphinha (MID)</span>
+                                    <span class="player-rating">7.8</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Busquets (MID)</span>
+                                    <span class="player-rating">7.2</span>
+                                </div>
+                            </div>
+                            <div class="bench-list" style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #8c5e42; margin-bottom: 5px;">Bench</div>
+                                <div class="player-row">
+                                    <span class="player-name">Pedri (MID)</span>
+                                    <span class="player-rating">7.5</span>
+                                </div>
+                                <div class="player-row">
+                                    <span class="player-name">Araujo (DEF)</span>
+                                    <span class="player-rating">7.3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Tile (Full Width Below) -->
+                <div class="stats-tile">
+                    <div class="section-title">📊 Match Statistics</div>
+                    
+                    <!-- Individual Player Stats -->
+                    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid rgba(209, 134, 67, 0.2);">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                            <div class="individual-stat-item">
+                                <span class="stat-icon">⚽</span>
+                                <span class="stat-label">Most Shots:</span>
+                                <span class="stat-player">Silva</span>
+                                <span class="stat-count">4</span>
+                            </div>
+                            <div class="individual-stat-item">
+                                <span class="stat-icon">🎯</span>
+                                <span class="stat-label">Most Passes:</span>
+                                <span class="stat-player">Fernandes</span>
+                                <span class="stat-count">32</span>
+                            </div>
+                            <div class="individual-stat-item">
+                                <span class="stat-icon">🏃</span>
+                                <span class="stat-label">Most Dribbles:</span>
+                                <span class="stat-player">Pedro</span>
+                                <span class="stat-count">2</span>
+                            </div>
+                            <div class="individual-stat-item">
+                                <span class="stat-icon">🛡️</span>
+                                <span class="stat-label">Most Tackles:</span>
+                                <span class="stat-player">Silva</span>
+                                <span class="stat-count">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Shots</span>
+                                <span class="stat-values">12 - 6</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 66.7%;"></div>
+                                    <div class="stat-bar-away" style="width: 33.3%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">On Target</span>
+                                <span class="stat-values">7 - 5</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 58.3%;"></div>
+                                    <div class="stat-bar-away" style="width: 41.7%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Possession</span>
+                                <span class="stat-values">58% - 42%</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 58%;"></div>
+                                    <div class="stat-bar-away" style="width: 42%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Pass Accuracy</span>
+                                <span class="stat-values">89% - 85%</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 51.1%;"></div>
+                                    <div class="stat-bar-away" style="width: 48.9%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Fouls</span>
+                                <span class="stat-values">3 - 4</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 42.9%;"></div>
+                                    <div class="stat-bar-away" style="width: 57.1%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Corners</span>
+                                <span class="stat-values">5 - 3</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 62.5%;"></div>
+                                    <div class="stat-bar-away" style="width: 37.5%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="alert('Match simulation paused')">⏸️ Pause</button>
+                    <button class="btn btn-primary" onclick="showScreen('post-match')">⏭️ Skip to End</button>
+                </div>
+
+                <!-- Tactics Popup -->
+                <div id="tactics-popup">
+                    <div class="popup-content">
+                        <div class="popup-title">⚙️ Select Tactic</div>
+                        <div class="tactics-panel">
+                            <div class="tactic-option active" onclick="selectTactic(this, 'Balanced')">
+                                <div class="tactic-name">Balanced</div>
+                                <div class="tactic-desc">Standard approach</div>
+                            </div>
+                            <div class="tactic-option" onclick="selectTactic(this, 'High Press')">
+                                <div class="tactic-name">High Press</div>
+                                <div class="tactic-desc">Aggressive pressing</div>
+                            </div>
+                            <div class="tactic-option" onclick="selectTactic(this, 'Counter')">
+                                <div class="tactic-name">Counter</div>
+                                <div class="tactic-desc">Exploit transitions</div>
+                            </div>
+                            <div class="tactic-option" onclick="selectTactic(this, 'Possession')">
+                                <div class="tactic-name">Possession</div>
+                                <div class="tactic-desc">Patient build-up</div>
+                            </div>
+                            <div class="tactic-option" onclick="selectTactic(this, 'Defensive')">
+                                <div class="tactic-name">Defensive</div>
+                                <div class="tactic-desc">Defensive focus</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="margin-top:20px; width: 100%;" onclick="closeTacticsPopup()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POST-MATCH SCREEN -->
+        <div id="post-match" class="screen">
+            <div class="post-match-header">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 10px 0;">
+                    <div>
+                        <div style="font-size: 24px; margin-bottom: 10px;">Benfica</div>
+                        <div class="final-score">3</div>
+                        <div style="font-size: 14px; color: #8c5e42; margin-top: 10px; line-height: 1.6;">
+                            <div>⚽ Pedro 12'</div>
+                            <div>⚽ Silva 23'</div>
+                            <div>⚽ Pedro 35'</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 48px; color: #666;">-</div>
+                    <div>
+                        <div style="font-size: 24px; margin-bottom: 10px;">Barcelona</div>
+                        <div class="final-score">2</div>
+                        <div style="font-size: 14px; color: #8c5e42; margin-top: 10px; line-height: 1.6;">
+                            <div>⚽ Lewandowski 18'</div>
+                            <div>⚽ Raphinha 38'</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="color: #aaa; margin-top: 10px;">UEFA Champions League - Quarter Finals</div>
+            </div>
+
+            <div class="post-match-stats">
+                <!-- Final Statistics -->
+                <div class="stat-card">
+                    <div class="stat-card-title">📊 Final Statistics</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Shots</span>
+                                <span class="stat-values">18 - 14</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 56.25%;"></div>
+                                    <div class="stat-bar-away" style="width: 43.75%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">On Target</span>
+                                <span class="stat-values">11 - 9</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 55%;"></div>
+                                    <div class="stat-bar-away" style="width: 45%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Possession</span>
+                                <span class="stat-values">56% - 44%</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 56%;"></div>
+                                    <div class="stat-bar-away" style="width: 44%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Pass Accuracy</span>
+                                <span class="stat-values">88% - 86%</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 50.6%;"></div>
+                                    <div class="stat-bar-away" style="width: 49.4%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Fouls</span>
+                                <span class="stat-values">7 - 9</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 43.75%;"></div>
+                                    <div class="stat-bar-away" style="width: 56.25%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-row-header">
+                                <span class="stat-label">Yellow Cards</span>
+                                <span class="stat-values">2 - 3</span>
+                            </div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar">
+                                    <div class="stat-bar-home" style="width: 40%;"></div>
+                                    <div class="stat-bar-away" style="width: 60%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player Ratings -->
+                <div class="stat-card">
+                    <div class="stat-card-title">⭐ Player Ratings - Benfica</div>
+                    <div class="player-ratings">
+                        <div class="player-rating-row">
+                            <div class="player-info">
+                                <div class="player-position">GK</div>
+                                <div>
+                                    <div class="player-name">Oblak</div>
+                                    <div style="font-size: 12px; color: #aaa;">5 saves</div>
+                                </div>
+                            </div>
+                            <div class="rating-badge rating-excellent">8.5</div>
+                        </div>
+
+                        <div class="player-rating-row">
+                            <div class="player-info">
+                                <div class="player-position">DEF</div>
+                                <div>
+                                    <div class="player-name">Silva</div>
+                                    <div style="font-size: 12px; color: #aaa;">1 goal, 3 tackles</div>
+                                </div>
+                            </div>
+                            <div class="rating-badge rating-excellent">9.0</div>
+                        </div>
+
+                        <div class="player-rating-row">
+                            <div class="player-info">
+                                <div class="player-position">MID</div>
+                                <div>
+                                    <div class="player-name">Fernandes</div>
+                                    <div style="font-size: 12px; color: #aaa;">2 assists, 1 yellow</div>
+                                </div>
+                            </div>
+                            <div class="rating-badge rating-good">7.5</div>
+                        </div>
+
+                        <div class="player-rating-row">
+                            <div class="player-info">
+                                <div class="player-position">FWD</div>
+                                <div>
+                                    <div class="player-name">Pedro</div>
+                                    <div style="font-size: 12px; color: #aaa;">2 goals, 4 shots</div>
+                                </div>
+                            </div>
+                            <div class="rating-badge rating-excellent">8.8</div>
+                        </div>
+
+                        <div class="player-rating-row">
+                            <div class="player-info">
+                                <div class="player-position">MID</div>
+                                <div>
+                                    <div class="player-name">Santos</div>
+                                    <div style="font-size: 12px; color: #aaa;">Key passes: 3</div>
+                                </div>
+                            </div>
+                            <div class="rating-badge rating-average">7.0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Competition Standing -->
+                <div class="stat-card">
+                    <div class="stat-card-title">🏆 Competition Standing</div>
+                    <div class="competition-standings">
+                        <table class="standings-table">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Team</th>
+                                    <th>P</th>
+                                    <th>W</th>
+                                    <th>D</th>
+                                    <th>L</th>
+                                    <th>Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="player-team">
+                                    <td class="table-pos">1</td>
+                                    <td>Benfica</td>
+                                    <td>9</td>
+                                    <td>7</td>
+                                    <td>1</td>
+                                    <td>1</td>
+                                    <td><strong>22</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="table-pos">2</td>
+                                    <td>Barcelona</td>
+                                    <td>9</td>
+                                    <td>7</td>
+                                    <td>0</td>
+                                    <td>2</td>
+                                    <td><strong>21</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="table-pos">3</td>
+                                    <td>Inter Milan</td>
+                                    <td>9</td>
+                                    <td>5</td>
+                                    <td>3</td>
+                                    <td>1</td>
+                                    <td><strong>18</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="table-pos">4</td>
+                                    <td>Sporting CP</td>
+                                    <td>9</td>
+                                    <td>4</td>
+                                    <td>2</td>
+                                    <td>3</td>
+                                    <td><strong>14</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border-left: 4px solid #22c55e;">
+                            <div style="font-weight: 700; margin-bottom: 5px;">📈 Position Change</div>
+                            <div style="font-size: 14px; color: #aaa;">You moved up from 2nd to 1st place!</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="showScreen('pre-match')">🔄 New Match</button>
+                <button class="btn btn-primary" onclick="alert('Continue to next match')">➡️ Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected screen
+            document.getElementById(screenId).classList.add('active');
+            
+            // Highlight active tab
+            event.target.classList.add('active');
+        }
+
+        // Simulate live match updates (for demo purposes)
+        let matchMinute = 23;
+        let homeScore = 2;
+        let awayScore = 1;
+
+        function simulateMatchUpdate() {
+            if (document.getElementById('match').classList.contains('active')) {
+                // Update time occasionally
+                if (Math.random() > 0.7) {
+                    matchMinute++;
+                    document.querySelector('.time-value').textContent = matchMinute + "'";
+                }
+            }
+        }
+
+        // Run simulation every 2 seconds
+        setInterval(simulateMatchUpdate, 2000);
+
+        // Tactics popup functions
+        function openTacticsPopup() {
+            document.getElementById('tactics-popup').classList.add('active');
+        }
+
+        function closeTacticsPopup() {
+            document.getElementById('tactics-popup').classList.remove('active');
+        }
+
+        function selectTactic(element, tacticName) {
+            // Remove active class from all tactics
+            document.querySelectorAll('#tactics-popup .tactic-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            // Add active class to selected tactic
+            element.classList.add('active');
+            console.log('Tactic changed to:', tacticName);
+        }
+
+        // Substitution function
+        function substitutePlayer(outPlayer, inPlayer) {
+            alert(`Substitution: ${outPlayer} OFF, ${inPlayer} ON`);
+            // In a real implementation, this would update the lineup
+            console.log(`Substitution: ${outPlayer} -> ${inPlayer}`);
+        }
+    </script>
+</body>
+</html>

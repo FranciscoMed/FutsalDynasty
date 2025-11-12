@@ -35,7 +35,7 @@ export class SeedEngine {
       isPlayerTeam: true,
     });
 
-    await this.competitionEngine.generateAISquad(playerTeam.id, 55, saveGameId, userId);
+    await this.competitionEngine.generateAISquad(playerTeam.id, 155, saveGameId, userId);
 
     console.log(`Creating competitions for saveGameId: ${saveGameId}`);
 

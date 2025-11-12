@@ -691,36 +691,452 @@ function calculateSaveProbability(
 
 ---
 
-## Match State & Momentum
+## Match State, Possession & Momentum
+
+### Overview
+Futsal is a **high-tempo sport** with **3-4 possession changes per minute**. The engine simulates this through 15-second intervals and a dynamic momentum system that affects possession probability, shot quality, and event frequency.
+
+### Time Resolution: 15-Second Intervals
+
+```typescript
+// Match broken into 15-second intervals for realistic possession flow
+const MATCH_DURATION = 40 * 60; // 2400 seconds
+const INTERVAL_LENGTH = 15; // seconds
+const TOTAL_INTERVALS = MATCH_DURATION / INTERVAL_LENGTH; // 160 intervals
+
+// This allows 3-4 possession changes per minute (realistic for futsal)
+```
+
+### Possession System
+
+#### Possession Determination (Per 15s Interval)
+
+```typescript
+function calculatePossessionForInterval(
+  homeTeam: Team,
+  awayTeam: Team,
+  currentPossession: 'home' | 'away',
+  matchState: MatchState,
+  intervalNumber: number
+): 'home' | 'away' {
+  
+  // Base possession chance (50/50 neutral)
+  let homePossessionChance = 0.5;
+  
+  // 1. Team Quality Factor (±15%)
+  const homeQuality = calculateTeamQuality(homeTeam);
+  const awayQuality = calculateTeamQuality(awayTeam);
+  const qualityDiff = (homeQuality - awayQuality) / (homeQuality + awayQuality);
+  homePossessionChance += qualityDiff * 0.15;
+  
+  // 2. Tactical Style (±10%)
+  const tacticalMod = calculateTacticalModifier(
+    homeTeam.tacticalPreset,
+    awayTeam.tacticalPreset
+  );
+  homePossessionChance += tacticalMod;
+  
+  // 3. Momentum (±10%)
+  const momentumMod = matchState.momentum.value / 1000; // Scale 0-100 to ±10%
+  homePossessionChance += momentumMod;
+  
+  // 4. Score Situation (±5%)
+  if (matchState.homeScore < matchState.awayScore) {
+    homePossessionChance += 0.05; // Losing team more aggressive
+  } else if (matchState.homeScore > matchState.awayScore) {
+    homePossessionChance -= 0.03; // Winning team more conservative
+  }
+  
+  // 5. Player Fatigue (±8%)
+  const homeFatigue = calculateTeamFatigue(homeTeam.lineup);
+  const awayFatigue = calculateTeamFatigue(awayTeam.lineup);
+  const fatigueImpact = (awayFatigue - homeFatigue) / 1000; // Scale to ±8%
+  homePossessionChance += fatigueImpact;
+  
+  // 6. Home Advantage (±2%)
+  homePossessionChance += 0.02;
+  
+  // Clamp between 10% and 90%
+  homePossessionChance = Math.max(0.1, Math.min(0.9, homePossessionChance));
+  
+  // Roll for possession
+  return Math.random() < homePossessionChance ? 'home' : 'away';
+}
+```
+
+#### Team Quality Calculation
+
+```typescript
+function calculateTeamQuality(team: Team): number {
+  // Calculate from players actually on court
+  const lineup = team.lineup; // 5 players
+  
+  const avgTechnical = lineup.reduce((sum, p) => sum + p.attributes.technical, 0) / 5;
+  const avgTactical = lineup.reduce((sum, p) => sum + p.attributes.tactical, 0) / 5;
+  const avgPhysical = lineup.reduce((sum, p) => sum + p.attributes.physical, 0) / 5;
+  
+  // Factor in energy/fatigue
+  const avgEnergy = lineup.reduce((sum, p) => sum + p.energy, 0) / 5;
+  const energyMultiplier = avgEnergy / 100; // 0.0-1.0
+  
+  return ((avgTechnical + avgTactical + avgPhysical) / 3) * energyMultiplier;
+}
+```
 
 ### Momentum System
+
+#### Momentum Data Structure
+
 ```typescript
 interface MatchState {
   minute: number;
+  currentInterval: number; // 0-159 (15s intervals)
   score: { home: number; away: number };
-  momentum: number; // -1 (away) to +1 (home)
-  energy: { home: number; away: number }; // 0-100
+  currentPossession: 'home' | 'away';
+  
+  // Momentum: 0-100 scale (50 = neutral, >50 = home advantage, <50 = away advantage)
+  momentum: {
+    value: number;        // 0-100
+    lastChanged: number;  // Minute of last significant change
+    trend: 'home' | 'away' | 'neutral';
+  };
+  
+  homeLineup: Player[];   // 5 players on court
+  awayLineup: Player[];   // 5 players on court
+  homeBench: Player[];
+  awayBench: Player[];
+  matchIntensity: number; // 0-100, varies per minute
 }
+```
 
-function updateMomentum(event: MatchEvent, state: MatchState): void {
-  switch (event.type) {
-    case 'GOAL':
-      state.momentum = event.team === 'home' ? 0.7 : -0.7;
-      break;
-    case 'MISS_OPEN_GOAL':
-      state.momentum *= -0.5; // Swing to opponent
-      break;
-    case 'GREAT_SAVE':
-      state.momentum += event.team === 'home' ? 0.3 : -0.3;
-      break;
+#### Momentum Calculation
+
+```typescript
+// Event-based momentum changes (instant)
+const EVENT_MOMENTUM_CHANGES = {
+  goal: 25,                    // Scoring gives huge boost
+  concededGoal: -20,           // Conceding drops momentum
+  shotOnTarget: 5,             // Good chance created
+  shotSaved: -3,               // Chance denied
+  missedChance: -8,            // Big miss hurts momentum
+  turnover: -4,                // Losing ball carelessly
+  tackle: 3,                   // Winning ball back
+  foul: -2,                    // Committing foul
+  savedPenalty: 15,            // Goalkeeper heroics
+  missedPenalty: -18,          // Crushing blow
+  yellowCard: -5,              // Discipline issues
+  redCard: -20,                // Devastating impact
+};
+
+function calculateMomentum(state: MatchState, minute: number): number {
+  let momentum = state.momentum.value;
+  
+  // 1. Natural decay toward 50 (equilibrium)
+  const decayRate = 1.5; // Returns 1.5 points toward 50 each minute
+  if (momentum > 50) {
+    momentum = Math.max(50, momentum - decayRate);
+  } else if (momentum < 50) {
+    momentum = Math.min(50, momentum + decayRate);
   }
   
-  // Decay momentum over time
-  state.momentum *= 0.95;
+  // 2. Apply score differential modifier
+  const scoreDiff = state.homeScore - state.awayScore;
+  if (scoreDiff > 0) {
+    // Home winning
+    momentum += scoreDiff === 1 ? 1 : scoreDiff === 2 ? 0 : -2;
+  } else if (scoreDiff < 0) {
+    // Away winning (home momentum decreases)
+    momentum += scoreDiff === -1 ? -1 : scoreDiff === -2 ? 0 : 2;
+  }
+  
+  // 3. Calculate team fatigue from actual players on court
+  const homeFatigue = calculateTeamFatigue(state.homeLineup);
+  const awayFatigue = calculateTeamFatigue(state.awayLineup);
+  
+  // Fatigue differential affects momentum
+  // More tired team loses momentum
+  const fatigueImpact = (awayFatigue - homeFatigue) / 10; // ±10 max impact
+  momentum += fatigueImpact;
+  
+  // Example:
+  // Home fatigue = 60%, Away fatigue = 40%
+  // fatigueImpact = (40 - 60) / 10 = -2 (home loses momentum)
+  
+  // 4. Home advantage (constant small boost)
+  momentum += 0.5;
+  
+  // 5. Clamp between 0-100
+  momentum = Math.max(0, Math.min(100, momentum));
+  
+  return momentum;
+}
+
+function applyEventMomentum(
+  event: MatchEvent, 
+  state: MatchState
+): void {
+  const team = event.team; // 'home' or 'away'
+  const modifier = EVENT_MOMENTUM_CHANGES[event.type];
+  
+  // Apply modifier in correct direction
+  if (team === 'home') {
+    state.momentum.value += modifier;
+  } else {
+    state.momentum.value -= modifier; // Away event reduces home momentum
+  }
+  
+  // Track when momentum changed
+  state.momentum.lastChanged = state.currentMinute;
+  
+  // Determine trend
+  if (state.momentum.value > 60) {
+    state.momentum.trend = 'home';
+  } else if (state.momentum.value < 40) {
+    state.momentum.trend = 'away';
+  } else {
+    state.momentum.trend = 'neutral';
+  }
+  
+  // Clamp
+  state.momentum.value = Math.max(0, Math.min(100, state.momentum.value));
+}
+```
+
+#### How Momentum Affects Gameplay
+
+```typescript
+// 1. Possession Probability (covered above in calculatePossessionForInterval)
+
+// 2. Shot Quality
+function calculateShotQuality(shooter: Player, momentum: number, team: 'home' | 'away'): number {
+  const baseQuality = shooter.attributes.technical / 200;
+  
+  // Momentum boost to shot quality (±15%)
+  const teamMomentum = team === 'home' ? momentum : (100 - momentum);
+  const momentumBoost = (teamMomentum - 50) / 200 * 0.30; // Scale to ±15%
+  
+  return Math.max(0.1, Math.min(1.0, baseQuality + momentumBoost));
+}
+
+// 3. Event Generation Frequency
+function getEventChance(momentum: number, team: 'home' | 'away'): number {
+  const baseChance = 0.25; // 25% per possession
+  
+  // Team with momentum creates more chances
+  if (team === 'home' && momentum > 60) {
+    return baseChance * 1.3; // +30% more events
+  } else if (team === 'away' && momentum < 40) {
+    return baseChance * 1.3;
+  }
+  
+  return baseChance;
+}
+```
+
+### Player Fatigue System
+
+#### Individual Player Energy
+
+```typescript
+interface Player {
+  // ...existing attributes
+  energy: number;        // 0-100, starts at 100
+  fitness: number;       // 0-100, base fitness level (attribute)
+  minutesPlayed: number; // Tracks time on court this match
+}
+
+// Fatigue accumulation per minute on court
+function updatePlayerFatigue(player: Player, matchIntensity: number): void {
+  // Base fatigue rate: 1-2 energy per minute depending on intensity
+  const baseFatigueRate = 1.5;
+  const intensityMultiplier = matchIntensity / 100; // 0.0-1.0
+  
+  // Fitness affects how fast they tire
+  const fitnessModifier = (100 - player.fitness) / 100; // 0.0-1.0
+  
+  const fatigueThisMinute = baseFatigueRate * (1 + intensityMultiplier) * (1 + fitnessModifier);
+  
+  player.energy = Math.max(0, player.energy - fatigueThisMinute);
+  player.minutesPlayed++;
+}
+```
+
+#### Team Fatigue Calculation
+
+```typescript
+function calculateTeamFatigue(lineup: Player[]): number {
+  // Calculate average energy of players on court
+  const totalEnergy = lineup.reduce((sum, player) => sum + player.energy, 0);
+  const avgEnergy = totalEnergy / lineup.length;
+  
+  // Convert to fatigue (inverse of energy)
+  // 100 energy = 0% fatigue
+  // 0 energy = 100% fatigue
+  return 100 - avgEnergy;
+}
+```
+
+#### Match Intensity Impact
+
+```typescript
+// Match intensity varies based on game state and affects fatigue rate
+function calculateMatchIntensity(state: MatchState, minute: number): number {
+  let intensity = 50; // Base intensity
+  
+  // Close games increase intensity
+  const scoreDiff = Math.abs(state.homeScore - state.awayScore);
+  if (scoreDiff === 0) intensity += 20; // Tied game
+  else if (scoreDiff === 1) intensity += 10; // One goal game
+  
+  // Final minutes increase intensity
+  if (minute >= 35) intensity += 15;
+  else if (minute >= 30) intensity += 10;
+  
+  // Momentum swings increase intensity
+  if (Math.abs(state.momentum.value - 50) > 30) intensity += 10;
+  
+  return Math.min(100, intensity);
+}
+```
+
+#### Fatigue Effects on Performance
+
+```typescript
+function getEffectiveAttribute(player: Player, baseAttribute: number): number {
+  // Energy affects performance (0-100 scale)
+  const energyMultiplier = player.energy / 100; // 0.0-1.0
+  
+  // Attributes degrade as energy drops
+  // At 50% energy: ~75% attribute effectiveness
+  // At 0% energy: ~50% attribute effectiveness
+  const degradation = 0.5 + (energyMultiplier * 0.5);
+  
+  return baseAttribute * degradation;
+}
+
+function applyFatigueToPerformance(player: Player): void {
+  // Store original attributes if not already stored
+  if (!player.originalAttributes) {
+    player.originalAttributes = { ...player.attributes };
+  }
+  
+  // Apply energy-based degradation
+  player.effectivePace = getEffectiveAttribute(player, player.originalAttributes.pace);
+  player.effectiveDribbling = getEffectiveAttribute(player, player.originalAttributes.dribbling);
+  player.effectivePositioning = getEffectiveAttribute(player, player.originalAttributes.positioning);
+  player.effectiveTackling = getEffectiveAttribute(player, player.originalAttributes.tackling);
+  
+  // Mental attributes degrade less
+  player.effectiveDecisions = player.originalAttributes.decisions * (0.8 + player.energy / 500);
+}
+```
+
+#### Substitution Strategy
+
+```typescript
+// Coaches should substitute tired players to maintain momentum
+function shouldSubstitute(player: Player): boolean {
+  // Substitute if energy drops below 30%
+  return player.energy < 30;
+}
+
+function makeSubstitution(
+  state: MatchState, 
+  team: 'home' | 'away',
+  tiredPlayer: Player
+): void {
+  const lineup = team === 'home' ? state.homeLineup : state.awayLineup;
+  const bench = team === 'home' ? state.homeBench : state.awayBench;
+  
+  // Find freshest player on bench in same position
+  const freshPlayer = bench
+    .filter(p => p.position === tiredPlayer.position)
+    .sort((a, b) => b.energy - a.energy)[0];
+  
+  if (freshPlayer) {
+    // Swap players
+    const index = lineup.indexOf(tiredPlayer);
+    lineup[index] = freshPlayer;
+    bench.push(tiredPlayer);
+    bench.splice(bench.indexOf(freshPlayer), 1);
+    
+    console.log(`Substitution: ${freshPlayer.firstName} replaces ${tiredPlayer.firstName} (Energy: ${tiredPlayer.energy}%)`);
+  }
+}
+
+// Auto-substitution logic during match
+function checkSubstitutions(state: MatchState, minute: number): void {
+  // Only allow substitutions after minute 10 and not in final 2 minutes
+  if (minute < 10 || minute > 38) return;
+  
+  // Check home team
+  state.homeLineup.forEach(player => {
+    if (shouldSubstitute(player)) {
+      makeSubstitution(state, 'home', player);
+    }
+  });
+  
+  // Check away team
+  state.awayLineup.forEach(player => {
+    if (shouldSubstitute(player)) {
+      makeSubstitution(state, 'away', player);
+    }
+  });
+}
+```
+
+### Match Simulation with Possession & Fatigue
+
+```typescript
+function simulateMinute(minute: number, state: MatchState): MatchState {
+  // Calculate current match intensity
+  state.matchIntensity = calculateMatchIntensity(state, minute);
+  
+  // Update fatigue for all players on court
+  state.homeLineup.forEach(player => {
+    updatePlayerFatigue(player, state.matchIntensity);
+    applyFatigueToPerformance(player);
+  });
+  
+  state.awayLineup.forEach(player => {
+    updatePlayerFatigue(player, state.matchIntensity);
+    applyFatigueToPerformance(player);
+  });
+  
+  // Calculate momentum with real player fatigue
+  state.momentum.value = calculateMomentum(state, minute);
+  
+  // Check for substitutions
+  checkSubstitutions(state, minute);
+  
+  // Simulate 4x 15-second intervals for this minute
+  for (let i = 0; i < 4; i++) {
+    state.currentInterval = (minute * 4) + i;
+    
+    // Determine possession for this interval
+    state.currentPossession = calculatePossessionForInterval(
+      { lineup: state.homeLineup, ...state.homeTeam },
+      { lineup: state.awayLineup, ...state.awayTeam },
+      state.currentPossession,
+      state,
+      state.currentInterval
+    );
+    
+    // Check if event occurs (25% base chance per possession)
+    const eventChance = getEventChance(state.momentum.value, state.currentPossession);
+    if (Math.random() < eventChance) {
+      const event = generateEvent(state);
+      processEvent(event, state);
+      applyEventMomentum(event, state);
+    }
+  }
+  
+  return state;
 }
 ```
 
 ### Match State Modifiers
+
 ```typescript
 function adjustForMatchState(state: MatchState, team: 'home' | 'away'): number {
   const scoreDiff = state.score.home - state.score.away;
@@ -737,39 +1153,21 @@ function adjustForMatchState(state: MatchState, team: 'home' | 'away'): number {
   ) ? 0.85 : 1.0;
   
   // Momentum effect (±15%)
-  const momentumMod = isHome 
-    ? 1.0 + (state.momentum * 0.15)
-    : 1.0 - (state.momentum * 0.15);
+  const teamMomentum = isHome ? state.momentum.value : (100 - state.momentum.value);
+  const momentumMod = 1.0 + ((teamMomentum - 50) / 100 * 0.30); // ±15%
   
   return desperationBoost * comfortMalus * momentumMod;
 }
 ```
 
-### Fatigue System
-```typescript
-function applyFatigue(team: Team, minute: number): void {
-  if (minute < 20) return; // No fatigue early
-  
-  const fatigueStart = 20;
-  const fatigueEnd = 40;
-  const fatigueProgress = (minute - fatigueStart) / (fatigueEnd - fatigueStart);
-  
-  team.outfieldPlayers.forEach(player => {
-    const staminaResistance = player.stamina / 20; // 0.05 to 1.0
-    const fatiguePenalty = fatigueProgress * (1 - staminaResistance);
-    
-    // Reduce effective attributes
-    player.effectivePace = player.pace * (1 - fatiguePenalty * 0.3);
-    player.effectiveDribbling = player.dribbling * (1 - fatiguePenalty * 0.2);
-    player.effectivePositioning = player.positioning * (1 - fatiguePenalty * 0.15);
-    
-    // High work-rate players tire faster
-    if (player.workRate > 15) {
-      fatiguePenalty *= 1.2;
-    }
-  });
-}
-```
+### Key Design Principles
+
+1. **High-Frequency Possession**: 15-second intervals create 3-4 possession changes per minute
+2. **Player-Based Fatigue**: Momentum considers actual player energy, not just time-based penalties
+3. **Elastic Momentum**: Naturally decays toward 50 (equilibrium) to prevent runaway dominance
+4. **Cascading Effects**: High momentum → better possession → more chances → maintain momentum
+5. **Tactical Substitutions**: Fresh legs provide real advantage, squad depth matters
+6. **Match Intensity**: Close games and late stages increase fatigue accumulation rate
 
 ---
 

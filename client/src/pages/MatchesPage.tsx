@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useFutsalManager } from "@/lib/stores/useFutsalManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ interface UpcomingFixture {
 export function MatchesPage() {
   const { gameState, loadGameData, loading } = useFutsalManager();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Fetch upcoming fixtures with caching
   const { data: upcomingFixtures = [], isLoading: loadingUpcoming } = useQuery<UpcomingFixture[]>({
@@ -76,8 +78,9 @@ export function MatchesPage() {
     },
   });
 
-  const handleSimulateMatch = (matchId: number) => {
-    simulateMatchMutation.mutate(matchId);
+  const handlePlayMatch = (matchId: number) => {
+    // Navigate to the match page to start the simulation flow
+    setLocation(`/match/${matchId}`);
   };
 
   // Group fixtures by competition with memoization
@@ -182,12 +185,11 @@ export function MatchesPage() {
                         </div>
                         {canSimulate && (
                           <Button
-                            onClick={() => handleSimulateMatch(match.id)}
-                            disabled={simulateMatchMutation.isPending}
+                            onClick={() => handlePlayMatch(match.id)}
                             className="flex items-center gap-2 ml-4 bg-[#2D6A4F] hover:bg-[#1B4332]"
                           >
                             <Play className="w-4 h-4" />
-                            {simulateMatchMutation.isPending ? "Simulating..." : "Play Match"}
+                            Play Match
                           </Button>
                         )}
                       </div>

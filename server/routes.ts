@@ -21,10 +21,11 @@ function requireSaveGame(req: any, res: any): number | null {
   return req.session.activeSaveGameId;
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, competitionEngine?: CompetitionEngine): Promise<Server> {
   setupAuthRoutes(app, storage);
   
-  const competitionEngine = new CompetitionEngine(storage);
+  // Use provided competitionEngine or create a new one
+  const compEngine = competitionEngine || new CompetitionEngine(storage);
 
   // Deprecated: Game initialization now handled by /api/savegames POST endpoint
   // This route is no longer used and should not be called
@@ -145,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const { formation, assignments, substitutes } = req.body;
+      const { formation, assignments, substitutes, instructions } = req.body;
 
       // Validate tactics data
       if (!formation || !assignments || !substitutes) {
@@ -158,7 +159,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tactics: {
           formation,
           assignments,
-          substitutes
+          substitutes,
+          instructions: instructions || {
+            mentality: 'Balanced',
+            pressingIntensity: 'Medium',
+            flyGoalkeeper: 'Never'
+          }
         }
       });
 
@@ -509,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get competition info
       const competition = await storage.getCompetition(validatedSaveId, validatedUserId, match.competitionId);
 
-      res.json({
+      const responseData = {
         match: {
           ...match,
           homeTeamName: homeTeam?.name || 'Unknown',
@@ -518,6 +524,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         playerTeam: {
           ...playerTeam,
+          // Prefer tactics.formation over team.formation (tactics.formation is source of truth)
+          formation: playerTeam?.tactics?.formation,
           squad: playerSquad,
         },
         opponent: {
@@ -528,7 +536,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         isHome,
         venue: isHome ? homeTeam?.stadium : awayTeam?.stadium,
+      };
+
+      // Debug: Log what's being sent to client
+      console.log('[Routes] Match Preparation Response:', {
+        matchId,
+        isHome,
+        playerTeamId: playerTeam?.id,
+        playerTeamName: playerTeam?.name,
+        playerTeamFormation:  playerTeam?.tactics?.formation,
+        playerTeamTactics: playerTeam?.tactics
       });
+
+      res.json(responseData);
     } catch (error) {
       console.error("Error fetching match preparation data:", error);
       res.status(500).json({ error: "Failed to get match preparation data" });
@@ -541,10 +561,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const matchId = parseInt(req.params.id);
-      const { formation, assignments, substitutes }: { 
+      const { formation, assignments, substitutes, instructions }: { 
         formation?: string; 
         assignments?: Record<string, number | null>; 
-        substitutes?: (number | null)[] 
+        substitutes?: (number | null)[];
+        instructions?: {
+          mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+          pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+          flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+        };
       } = req.body;
 
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
@@ -587,7 +612,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             formation,
             assignments,
             substitutes,
+            instructions: instructions || {
+              mentality: 'Balanced',
+              pressingIntensity: 'Medium',
+              flyGoalkeeper: 'Never'
+            }
           };
+
+          // Also update the team's formation field for display
+          updateData.formation = formation;
 
           // Also populate startingLineup for backward compatibility with match engine
           const startingLineup = Object.values(assignments).filter((id: number | null): id is number => id !== null);
@@ -596,6 +629,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Populate substitutes array for backward compatibility
           const subs = substitutes.filter((id: number | null): id is number => id !== null);
           updateData.substitutes = subs;
+          
+          // Debug: Log what's being saved
+          console.log('[Routes] Confirming tactics:', {
+            matchId,
+            teamId: gameState.playerTeamId,
+            formation,
+            instructions,
+            updateData
+          });
         }
 
         await storage.updateTeam(validatedSaveId, validatedUserId, gameState.playerTeamId, updateData);
@@ -638,7 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const matchId = parseInt(req.params.id);
       const match = await matchEngine.simulateMatch(validatedSaveId, validatedUserId, matchId);
       
-      await competitionEngine.updateStandings(match.competitionId, match, validatedSaveId, validatedUserId);
+      await compEngine.updateStandings(match.competitionId, match, validatedSaveId, validatedUserId);
       
       await storage.createInboxMessage(validatedSaveId, validatedUserId, {
         category: "match",
@@ -656,6 +698,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error simulating match:", error);
       res.status(500).json({ error: "Failed to simulate match" });
+    }
+  });
+
+  app.get("/api/matches/:id/post-match", validateActiveSave, async (req, res) => {
+    const { validatedSaveId, validatedUserId } = res.locals;
+
+    try {
+      const matchId = parseInt(req.params.id);
+      
+      // Get match details
+      const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
+      if (!match) {
+        return res.status(404).json({ error: "Match not found" });
+      }
+
+      // Get game state to find player's team
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const playerTeamId = gameState.playerTeamId;
+
+      // Get team details
+      const playerTeam = await storage.getTeam(validatedSaveId, validatedUserId, playerTeamId);
+      const opponentTeamId = match.homeTeamId === playerTeamId ? match.awayTeamId : match.homeTeamId;
+      const opponentTeam = await storage.getTeam(validatedSaveId, validatedUserId, opponentTeamId);
+
+      if (!playerTeam) {
+        return res.status(404).json({ error: "Player team not found" });
+      }
+
+      const isHome = match.homeTeamId === playerTeamId;
+
+      // Get competition with standings
+      const competition = await storage.getCompetition(validatedSaveId, validatedUserId, match.competitionId);
+      if (!competition) {
+        return res.status(404).json({ error: "Competition not found" });
+      }
+
+      // Get team names for standings
+      const standingsWithNames = await Promise.all(
+        competition.standings.map(async (standing, index) => {
+          const team = await storage.getTeam(validatedSaveId, validatedUserId, standing.teamId);
+          return {
+            position: index + 1,
+            teamName: team?.name || 'Unknown Team',
+            played: standing.played,
+            won: standing.won,
+            drawn: standing.drawn,
+            lost: standing.lost,
+            goalsFor: standing.goalsFor,
+            goalsAgainst: standing.goalsAgainst,
+            goalDifference: standing.goalDifference,
+            points: standing.points,
+            isPlayerTeam: standing.teamId === playerTeamId
+          };
+        })
+      );
+
+      // Get next match for player's team
+      const allMatches = await storage.getMatchesByCompetition(validatedSaveId, validatedUserId, match.competitionId);
+      const playerMatches = allMatches.filter(m => 
+        m.homeTeamId === playerTeamId || m.awayTeamId === playerTeamId
+      );
+      const nextMatch = playerMatches
+        .filter(m => !m.played && new Date(m.date) > new Date(match.date))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+      let nextMatchData = null;
+      if (nextMatch) {
+        const nextOpponentId = nextMatch.homeTeamId === playerTeamId ? nextMatch.awayTeamId : nextMatch.homeTeamId;
+        const nextOpponent = await storage.getTeam(validatedSaveId, validatedUserId, nextOpponentId);
+        nextMatchData = {
+          id: nextMatch.id,
+          opponent: nextOpponent?.name || 'Unknown',
+          date: nextMatch.date,
+          isHome: nextMatch.homeTeamId === playerTeamId
+        };
+      }
+
+      // TODO: Get player performance stats (top scorer, top rated)
+      // This would require tracking player stats in the match
+
+      res.json({
+        match: {
+          id: match.id,
+          homeTeamName: isHome ? playerTeam.name : opponentTeam?.name || 'Unknown',
+          awayTeamName: isHome ? opponentTeam?.name || 'Unknown' : playerTeam.name,
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          isHome
+        },
+        standings: standingsWithNames,
+        nextMatch: nextMatchData
+      });
+    } catch (error) {
+      console.error("Error fetching post-match data:", error);
+      res.status(500).json({ error: "Failed to fetch post-match data" });
     }
   });
 

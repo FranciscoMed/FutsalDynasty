@@ -1,16 +1,20 @@
 import type { IStorage } from "./storage";
 import type { Match, SimulationSummary, SimulationResult } from "@shared/schema";
-import { simulateQuick } from "./lightweightMatchEngine";
+import { MatchEngine } from "./matchEngine";
 
 /**
  * Match Simulator
- * Handles background simulation of AI matches
+ * Handles background simulation of AI matches using the full MatchEngine
  */
 export class MatchSimulator {
-  constructor(private storage: IStorage) {}
+  private matchEngine: MatchEngine;
+
+  constructor(private storage: IStorage) {
+    this.matchEngine = new MatchEngine(storage);
+  }
 
   /**
-   * Simulate a single match in the background without detailed events
+   * Simulate a single match in the background using the full match engine
    */
   async simulateMatchInBackground(
     saveGameId: number,
@@ -29,60 +33,25 @@ export class MatchSimulator {
         return null;
       }
 
-      // Get teams and players
-      const homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
-      const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
-
-      if (homePlayers.length === 0 || awayPlayers.length === 0) {
-        console.error(`Missing players for match ${matchId}`);
-        return null;
-      }
-
-      // Simulate match quickly
-      const result = simulateQuick(homePlayers, awayPlayers);
-
-      // Update match in database
-      await this.storage.updateMatch(saveGameId, userId, matchId, {
-        homeScore: result.homeScore,
-        awayScore: result.awayScore,
-        played: true,
-        events: [], // No events for background matches
-        homeStats: {
-          possession: 50,
-          shots: result.homeScore * 3 + Math.floor(Math.random() * 5),
-          shotsOnTarget: result.homeScore * 2 + Math.floor(Math.random() * 3),
-          passes: 200 + Math.floor(Math.random() * 100),
-          passAccuracy: 70 + Math.floor(Math.random() * 20),
-          tackles: 10 + Math.floor(Math.random() * 10),
-          corners: Math.floor(Math.random() * 8),
-          fouls: Math.floor(Math.random() * 15) + 5,
-          saves: result.awayScore + Math.floor(Math.random() * 3),
-        },
-        awayStats: {
-          possession: 50,
-          shots: result.awayScore * 3 + Math.floor(Math.random() * 5),
-          shotsOnTarget: result.awayScore * 2 + Math.floor(Math.random() * 3),
-          passes: 200 + Math.floor(Math.random() * 100),
-          passAccuracy: 70 + Math.floor(Math.random() * 20),
-          tackles: 10 + Math.floor(Math.random() * 10),
-          corners: Math.floor(Math.random() * 8),
-          fouls: Math.floor(Math.random() * 15) + 5,
-          saves: result.homeScore + Math.floor(Math.random() * 3),
-        },
-        playerRatings: {}, // No individual ratings for background matches
-      });
+      // Simulate the match using the full match engine
+      const simulatedMatch = await this.matchEngine.simulateMatch(
+        saveGameId,
+        userId,
+        matchId,
+        false // Not real-time
+      );
 
       console.log(
-        `✓ Simulated match ${matchId}: ${match.homeTeamId} ${result.homeScore}-${result.awayScore} ${match.awayTeamId}`
+        `✓ Simulated match ${matchId}: Team ${simulatedMatch.homeTeamId} ${simulatedMatch.homeScore}-${simulatedMatch.awayScore} Team ${simulatedMatch.awayTeamId}`
       );
 
       return {
         matchId,
-        homeTeamId: match.homeTeamId,
-        awayTeamId: match.awayTeamId,
-        homeScore: result.homeScore,
-        awayScore: result.awayScore,
-        competitionId: match.competitionId,
+        homeTeamId: simulatedMatch.homeTeamId,
+        awayTeamId: simulatedMatch.awayTeamId,
+        homeScore: simulatedMatch.homeScore!,
+        awayScore: simulatedMatch.awayScore!,
+        competitionId: simulatedMatch.competitionId,
       };
     } catch (error) {
       console.error(`Error simulating match ${matchId}:`, error);

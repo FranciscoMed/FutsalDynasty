@@ -1,7 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { RealtimeMatchSimulator } from "./realtimeMatchSimulator";
+import { CompetitionEngine } from "./competitionEngine";
+import { storage } from "./dbStorage";
 
 const app = express();
 app.use(express.json());
@@ -49,7 +53,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Initialize competition engine
+  const competitionEngine = new CompetitionEngine(storage);
+  
+  const server = await registerRoutes(app, competitionEngine);
+
+  // Setup Socket.IO for real-time match streaming
+  const io = new SocketIOServer(server, {
+    cors: {
+      origin: process.env.NODE_ENV === "production" 
+        ? false 
+        : "http://localhost:5173",
+      credentials: true
+    }
+  });
+
+  // Initialize real-time match simulator with competition engine
+  const realtimeMatchSimulator = new RealtimeMatchSimulator(io, storage, competitionEngine);
+  log(`Real-time match simulator initialized (active matches: ${realtimeMatchSimulator.getActiveMatchCount()})`);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

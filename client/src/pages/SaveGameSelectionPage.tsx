@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "../lib/stores/useAuth";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -19,7 +20,8 @@ interface SaveGame {
 }
 
 export default function SaveGameSelectionPage() {
-  const { user, logout, setActiveSaveGame } = useAuth();
+  const { user, logout, setActiveSaveGame, activeSaveGame } = useAuth();
+  const [, setLocation] = useLocation();
   const [saveGames, setSaveGames] = useState<SaveGame[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -29,6 +31,13 @@ export default function SaveGameSelectionPage() {
   const [teamName, setTeamName] = useState("");
   const [teamAbbr, setTeamAbbr] = useState("");
   const [error, setError] = useState("");
+
+  // Redirect to home when a save game is loaded
+  useEffect(() => {
+    if (activeSaveGame) {
+      setLocation("/");
+    }
+  }, [activeSaveGame, setLocation]);
 
   useEffect(() => {
     loadSaveGames();
@@ -97,6 +106,13 @@ export default function SaveGameSelectionPage() {
       setCreationProgress("Loading game...");
       await new Promise(resolve => setTimeout(resolve, 200));
 
+      // Reset form and state
+      setNewGameName("");
+      setTeamName("");
+      setTeamAbbr("");
+      setIsCreating(false);
+      
+      // This will trigger the useEffect above to redirect
       setActiveSaveGame(saveGame);
     } catch (err: any) {
       setIsCreating(false);
@@ -116,9 +132,11 @@ export default function SaveGameSelectionPage() {
       }
 
       const data = await response.json();
+      // This will trigger the useEffect above to redirect
       setActiveSaveGame(data.saveGame);
     } catch (err) {
       console.error("Failed to load save game:", err);
+      setError("Failed to load save game. Please try again.");
     }
   };
 
@@ -142,7 +160,7 @@ export default function SaveGameSelectionPage() {
 
   if (isCreating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6efe3] flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl text-center">Creating Your Game</CardTitle>
