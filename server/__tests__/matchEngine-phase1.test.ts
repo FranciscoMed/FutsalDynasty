@@ -8,6 +8,7 @@ class MockStorage implements Partial<IStorage> {
   private matches: Map<string, Match> = new Map();
   private teams: Map<string, Team> = new Map();
   private players: Map<string, Player[]> = new Map();
+  private competitions: Map<string, any> = new Map();
 
   async getMatch(saveGameId: number, userId: number, matchId: number): Promise<Match | null> {
     return this.matches.get(`${saveGameId}-${userId}-${matchId}`) || null;
@@ -15,6 +16,31 @@ class MockStorage implements Partial<IStorage> {
 
   async getTeam(saveGameId: number, userId: number, teamId: number): Promise<Team | null> {
     return this.teams.get(`${saveGameId}-${userId}-${teamId}`) || null;
+  }
+
+  async getCompetition(saveGameId: number, userId: number, competitionId: number): Promise<any> {
+    const key = `${saveGameId}-${userId}-${competitionId}`;
+    return this.competitions.get(key) || {
+      id: competitionId,
+      name: 'Test Competition',
+      type: 'league',
+      season: 2024,
+      standings: [],
+      topScorers: [],
+    };
+  }
+
+  async getGameState(saveGameId: number, userId: number): Promise<any> {
+    return {
+      currentDate: new Date(),
+      season: 2024,
+      currentMonth: 1,
+      playerTeamId: 1,
+      competitions: [],
+      nextMatchId: null,
+      monthlyTrainingInProgress: false,
+      lastTrainingReportMonth: 0,
+    };
   }
 
   async getPlayersByTeam(saveGameId: number, userId: number, teamId: number): Promise<Player[]> {
@@ -34,6 +60,25 @@ class MockStorage implements Partial<IStorage> {
     const updated = { ...match, ...updates };
     this.matches.set(key, updated);
     return updated;
+  }
+
+  async updatePlayer(
+    saveGameId: number,
+    userId: number,
+    playerId: number,
+    updates: Partial<Player>
+  ): Promise<Player | null> {
+    // Find the player in the players map
+    for (const [key, playersList] of this.players.entries()) {
+      const playerIndex = playersList.findIndex(p => p.id === playerId);
+      if (playerIndex !== -1) {
+        const updated = { ...playersList[playerIndex], ...updates };
+        playersList[playerIndex] = updated;
+        this.players.set(key, playersList);
+        return updated;
+      }
+    }
+    return null;
   }
 
   // Helper methods for tests
@@ -1615,7 +1660,7 @@ describe('MatchEngine - Phase 1', () => {
       console.log(`FlyGK FC (Sometimes) vs High Press FC (VeryHigh Press)`);
       console.log(`========================================\n`);
 
-      const results: Array<{ homeScore: number; awayScore: number; homePossession: number; homeShots: number }> = [];
+      const results: Array<{ homeScore: number; awayScore: number; homePossession: number; awayPossession: number; homeShots: number }> = [];
 
       // Run 10 matches to see if fly-GK activates randomly
       for (let i = 0; i < 10; i++) {
@@ -1632,11 +1677,14 @@ describe('MatchEngine - Phase 1', () => {
           homeScore: result.homeScore,
           awayScore: result.awayScore,
           homePossession: result.homeStats!.possession,
+          awayPossession: result.awayStats!.possession,
           homeShots: result.homeStats!.shots
         });
       }
 
-      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + (160 - r.homePossession), 0);
+      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + r.awayPossession, 0);
+      console.log(`Total Possession Ticks: ${totalPoss}`);
+      console.log(`Total Home Possession Ticks: ${results.reduce((sum, r) => sum + r.homePossession, 0)}`);
       const homePossPct = (results.reduce((sum, r) => sum + r.homePossession, 0) / totalPoss * 100);
       
       console.log(`\n========================================`);
@@ -1881,6 +1929,7 @@ describe('MatchEngine - Phase 1', () => {
         homeShots: number; 
         awayShots: number;
         homePossession: number;
+        awayPossession: number;
         counterGoals: number;
       }> = [];
 
@@ -1904,13 +1953,14 @@ describe('MatchEngine - Phase 1', () => {
           homeShots: result.homeStats!.shots,
           awayShots: result.awayStats!.shots,
           homePossession: result.homeStats!.possession,
+          awayPossession: result.awayStats!.possession,
           counterGoals: counterVsFlyGK
         });
       }
 
       const avgHomeShots = results.reduce((sum, r) => sum + r.homeShots, 0) / results.length;
       const avgAwayShots = results.reduce((sum, r) => sum + r.awayShots, 0) / results.length;
-      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + (160 - r.homePossession), 0);
+      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + r.awayPossession, 0);
       const homePossPct = (results.reduce((sum, r) => sum + r.homePossession, 0) / totalPoss * 100);
       const totalCounterGoals = results.reduce((sum, r) => sum + r.counterGoals, 0);
       const avgHomeGoals = results.reduce((sum, r) => sum + r.homeScore, 0) / results.length;
@@ -1987,6 +2037,7 @@ describe('MatchEngine - Phase 1', () => {
         totalGoals: number;
         counterGoals: number;
         homePossession: number;
+        awayPossession: number;
       }> = [];
 
       for (let i = 0; i < 15; i++) {
@@ -2009,13 +2060,14 @@ describe('MatchEngine - Phase 1', () => {
           awayScore: result.awayScore,
           totalGoals,
           counterGoals: counterVsFlyGK,
-          homePossession: result.homeStats!.possession
+          homePossession: result.homeStats!.possession,
+          awayPossession: result.awayStats!.possession
         });
       }
 
       const avgTotalGoals = results.reduce((sum, r) => sum + r.totalGoals, 0) / results.length;
       const totalCounterGoals = results.reduce((sum, r) => sum + r.counterGoals, 0);
-      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + (160 - r.homePossession), 0);
+      const totalPoss = results.reduce((sum, r) => sum + r.homePossession, 0) + results.reduce((sum, r) => sum + r.awayPossession, 0);
       const homePossPct = (results.reduce((sum, r) => sum + r.homePossession, 0) / totalPoss * 100);
 
       console.log(`\n========================================`);

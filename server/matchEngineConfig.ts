@@ -73,12 +73,12 @@ export const MatchEngineConfig = {
   // ============================================================================
   possession: {
     /** Chance of possession change per tick */
-    changeChance: 0.30,
+    changeChance: 0.40,
     /** Momentum impact range on possession (±0.25) */
     momentumImpactDivisor: 200,
     /** Min/max possession chance (to prevent extremes) */
     minChance: 0.1,
-    maxChance: 0.9,
+    maxChance: 0.95,
   },
 
   // ============================================================================
@@ -352,7 +352,9 @@ export const MatchEngineConfig = {
       assists: 0.7,
       shots: 0.05,
       shotsOnTarget: 0.15,
+      missedShots: -0.1,
       saves: 0.15,
+      goalsConceded: -0.2,
       tackles: 0.1,
       interceptions: 0.1,
       dribblesSuccessful: 0.1,
@@ -398,10 +400,10 @@ export const MatchEngineConfig = {
 
     /** Performance modifiers */
     modifiers: {
-      possession: 0.30,              // +30% possession
-      shotFrequency: 0.25,           // +25% shot frequency
-      counterVulnerability: 0.50,    // +50% opponent counter goal probability
-      defensiveWeakness: -0.40,      // -40% defensive resistance
+      possession: 0.5,              // +50% possession
+      shotFrequency: 0.20,           // +20% shot frequency
+      counterVulnerability: 0.40,    // +40% opponent counter goal probability
+      defensiveWeakness: 0.10,      // -10% defensive resistance
     },
   },
 
@@ -437,6 +439,40 @@ export const MatchEngineConfig = {
     durationTicks: 2,
     /** Shot probability during counter */
     shotProbability: 0.70, // High chance of shot
+  },
+
+  // ============================================================================
+  // TACTICAL MODIFIERS
+  // ============================================================================
+  tacticalModifiers: {
+    /** Mentality modifiers affect timing, shot frequency, and defense */
+    mentality: {
+      VeryDefensive: { earlyGame: -0.08, lateGame: 0.05, shotFreq: -0.15, defense: 0.15 },
+      Defensive: { earlyGame: -0.04, lateGame: 0.05, shotFreq: -0.12, defense: 0.08 },
+      Balanced: { earlyGame: 0, lateGame: 0, shotFreq: 0, defense: 0 },
+      Attacking: { earlyGame: 0.04, lateGame: -0.03, shotFreq: 0.15, defense: -0.08 },
+      VeryAttacking: { earlyGame: 0.08, lateGame: -0.05, shotFreq: 0.2, defense: -0.25 }
+    },
+    /** Pressing intensity affects fouls, turnovers, and fatigue */
+    pressing: {
+      Low: { fouls: -0.15, turnovers: -0.10, fatigue: -0.08 },
+      Medium: { fouls: 0, turnovers: 0, fatigue: 0 },
+      High: { fouls: 0.20, turnovers: 0.15, fatigue: 0.15 },
+      VeryHigh: { fouls: 0.4, turnovers: 0.30, fatigue: 0.35 }
+    },
+    /** Width affects wing play, central play, and compactness */
+    width: {
+      Narrow: { wings: -0.25, central: 0.25, compactness: 0.15 },
+      Balanced: { wings: 0, central: 0, compactness: 0 },
+      Wide: { wings: 0.30, central: -0.20, compactness: -0.15 }
+    },
+    /** Formation affects offensive and defensive capabilities */
+    formation: {
+      '4-0': { offensive: 0.70, defensive: 1.30 },
+      '3-1': { offensive: 0.85, defensive: 1.15 },
+      '2-2': { offensive: 1.00, defensive: 1.00 },
+      '1-3': { offensive: 1.15, defensive: 0.85 }
+    }
   },
 } as const;
 

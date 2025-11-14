@@ -238,7 +238,7 @@ export class DbStorage implements IStorage {
       homeScore: row.homeScore,
       awayScore: row.awayScore,
       events: row.events,
-      preparationStatus: row.preparationStatus,
+      preparationStatus: row.preparationStatus ?? undefined,
       homeStats: row.homeStats,
       awayStats: row.awayStats,
       playerRatings: row.playerRatings,
