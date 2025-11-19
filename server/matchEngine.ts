@@ -15,14 +15,29 @@ import { TraitEngine } from "./traitsEngine";
 import { StatisticsEngine } from "./statisticsEngine";
 
 // ============================================================================
-// ENHANCED MATCH ENGINE - Phase 1-5 Implementation
+// ENHANCED MATCH ENGINE
 // ============================================================================
 
 import { MatchEngineConfig as CONFIG } from './matchEngineConfig';
+import { config } from "process";
+
+/**
+ * Context for shot resolution
+ */
+interface ShotContext {
+  shotType: 'open_play' | 'counter_attack' | 'free_kick' | 'penalty_10m' | 'corner';
+  isCounter?: boolean;
+  onTargetProb: number;
+  saveProb: number;
+  assistProb?: number;
+  quality: number;
+  shooter: OnCourtPlayer;
+  attackingTeam: 'home' | 'away';
+}
 
 export class MatchEngine {
   private storage: IStorage;
-  private traitEngine: TraitEngine; // Phase 5: Trait-based player selection
+  private traitEngine: TraitEngine; // Trait-based player selection
   private statisticsEngine: StatisticsEngine; // Statistics tracking
 
   // Match state
@@ -31,7 +46,7 @@ export class MatchEngine {
   private homeExpectedGoals: number = 0;
   private awayExpectedGoals: number = 0;
 
-  // Real-time match state (Phase 6)
+  // Real-time match state
   private currentState: LiveMatchState | null = null;
   private isRealTimeMatch: boolean = false;
 
@@ -41,12 +56,12 @@ export class MatchEngine {
 
   constructor(storage: IStorage) {
     this.storage = storage;
-    this.traitEngine = new TraitEngine(); // Phase 5: Initialize trait engine
+    this.traitEngine = new TraitEngine(); // Initialize trait engine
     this.statisticsEngine = new StatisticsEngine(storage); // Initialize statistics engine
   }
 
   // ============================================================================
-  // PHASE 6: REAL-TIME MATCH SUPPORT
+  // REAL-TIME MATCH SUPPORT
   // ============================================================================
 
   /**
@@ -301,7 +316,7 @@ export class MatchEngine {
   }
 
   // ============================================================================
-  // END PHASE 6: REAL-TIME MATCH SUPPORT
+  // END REAL-TIME MATCH SUPPORT
   // ============================================================================
 
   /**
@@ -456,16 +471,17 @@ export class MatchEngine {
     const homeLineup = this.createLineup(homePlayers.slice(0, 5));
     const awayLineup = this.createLineup(awayPlayers.slice(0, 5));
 
-    // Phase 4: Create bench players (all remaining players)
-    const homeBench = homePlayers.slice(5).map(p => ({
+    // Create bench players (all remaining players)
+    // Create bench rosters (substitute players)
+    const homeBench: PlayerWithTraits[] = homePlayers.slice(5).map(p => ({
       ...p,
-      traits: [] as any,
+      traits: p.traits || [],
       energy: 100,
       minutesPlayedThisMatch: 0
     }));
-    const awayBench = awayPlayers.slice(5).map(p => ({
+    const awayBench: PlayerWithTraits[] = awayPlayers.slice(5).map(p => ({
       ...p,
-      traits: [] as any,
+      traits: p.traits || [],
       energy: 100,
       minutesPlayedThisMatch: 0
     }));
@@ -493,7 +509,7 @@ export class MatchEngine {
         ticksRemaining: 0
       },
       lastEvent: null,
-      // Phase 4: Substitution tracking
+      // Substitution tracking
       substitutions: {
         used: { home: 0, away: 0 },
         homeBench,
@@ -521,7 +537,7 @@ export class MatchEngine {
       events: [],
       homeLineup,
       awayLineup,
-      // Phase 3: Load tactical setups from team data, default to balanced if not set
+      // Load tactical setups from team data, default to balanced if not set
       // Support both new format (tactics.instructions) and old format (tactics.mentality)
       homeTactics: {
         mentality: homeTeam.tactics?.instructions?.mentality || homeTeam.tactics?.mentality || 'Balanced',
@@ -583,7 +599,7 @@ export class MatchEngine {
 
   /**
    * Apply mental trait team modifiers (leader, comeback boost)
-   * Phase 5.3: Mental traits can boost entire team performance
+   * Mental traits can boost entire team performance
    */
   private applyTeamMentalModifiers(lineup: OnCourtPlayer[], team: 'home' | 'away', state: LiveMatchState): number {
     let modifier = 1.0;
@@ -626,35 +642,63 @@ export class MatchEngine {
    * Create lineup with match-ready player state
    */
   private createLineup(players: Player[]): OnCourtPlayer[] {
-    return players.map(player => {
-      const playerWithTraits: PlayerWithTraits = {
-        ...player,
-        traits: [], // TODO: Load from player data in future
-        energy: 100,
-        minutesPlayedThisMatch: 0
-      };
+    return players.map(player => this.createOnCourtPlayer(player));
+  }
 
-      return {
-        player: playerWithTraits,
-        effectiveAttributes: {
-          shooting: player.attributes.shooting,
-          passing: player.attributes.passing,
-          dribbling: player.attributes.dribbling,
-          pace: player.attributes.pace,
-          tackling: player.attributes.tackling,
-          positioning: player.attributes.positioning,
-          marking: player.attributes.marking
-        },
-        performance: {
-          shots: 0,
-          passes: 0,
-          tackles: 0,
-          interceptions: 0,
-          fouls: 0,
-          rating: 6.0
-        }
-      };
-    });
+  /**
+   * Helper: Create OnCourtPlayer from Player with all attributes initialized
+   */
+  private createOnCourtPlayer(player: Player, energy: number = 100): OnCourtPlayer {
+    const playerWithTraits: PlayerWithTraits = {
+      ...player,
+      traits: player.traits || [], // Load traits from player data
+      energy,
+      minutesPlayedThisMatch: 0
+    };
+
+    return {
+      player: playerWithTraits,
+      effectiveAttributes: {
+        // Technical attributes
+        shooting: player.attributes.shooting,
+        passing: player.attributes.passing,
+        dribbling: player.attributes.dribbling,
+        ballControl: player.attributes.ballControl,
+        firstTouch: player.attributes.firstTouch,
+
+        // Physical attributes
+        pace: player.attributes.pace,
+        stamina: player.attributes.stamina,
+        strength: player.attributes.strength,
+        agility: player.attributes.agility,
+
+        // Defensive attributes
+        tackling: player.attributes.tackling,
+        positioning: player.attributes.positioning,
+        marking: player.attributes.marking,
+        interceptions: player.attributes.interceptions,
+
+        // Mental attributes
+        vision: player.attributes.vision,
+        decisionMaking: player.attributes.decisionMaking,
+        composure: player.attributes.composure,
+        workRate: player.attributes.workRate,
+
+        // Goalkeeper attributes (optional)
+        reflexes: player.attributes.reflexes,
+        handling: player.attributes.handling,
+        gkPositioning: player.attributes.gkPositioning,
+        distribution: player.attributes.distribution
+      },
+      performance: {
+        shots: 0,
+        passes: 0,
+        tackles: 0,
+        interceptions: 0,
+        fouls: 0,
+        rating: 6.0
+      }
+    };
   }
 
   /**
@@ -670,7 +714,7 @@ export class MatchEngine {
       state.accumulatedFouls = { home: 0, away: 0 };
     }
 
-    // Phase 4: Update momentum with natural decay
+    // Update momentum with natural decay
     state.momentum.value = this.calculateMomentum(state, state.currentMinute);
 
     // Update possession distribution
@@ -698,11 +742,11 @@ export class MatchEngine {
     // Generate events
     this.generateTickEvents(state);
 
-    // Phase 4: Check for auto-substitutions (after fatigue update)
-    this.checkSubstitutions(state);
-
     // Update player fatigue
     this.updatePlayerFatigue(state);
+
+    //Check for auto-substitutions
+    this.checkSubstitutions(state);
   }
 
   /**
@@ -713,8 +757,8 @@ export class MatchEngine {
     // Check both teams
     for (const team of ['home', 'away'] as const) {
       const redCards = state.redCards[team];
-      const lineup = team === 'home' ? state.homeLineup : state.awayLineup;
-      const bench = team === 'home' ? state.substitutions.homeBench : state.substitutions.awayBench;
+      const lineup = this.getLineup(state, team);
+      const bench = this.getBench(state, team);
       const suspendedPlayers = state.suspendedPlayers[team];
 
       // Check each active red card
@@ -730,26 +774,8 @@ export class MatchEngine {
 
           if (availableSubstitute && lineup.length < 5) {
             // Bring substitute on court
-            const onCourtPlayer: OnCourtPlayer = {
-              player: availableSubstitute,
-              effectiveAttributes: {
-                shooting: availableSubstitute.attributes.shooting,
-                passing: availableSubstitute.attributes.passing,
-                dribbling: availableSubstitute.attributes.dribbling,
-                pace: availableSubstitute.attributes.pace,
-                tackling: availableSubstitute.attributes.tackling,
-                positioning: availableSubstitute.attributes.positioning,
-                marking: availableSubstitute.attributes.marking,
-              },
-              performance: {
-                shots: 0,
-                passes: 0,
-                tackles: 0,
-                interceptions: 0,
-                fouls: 0,
-                rating: 7.0,
-              }
-            };
+            // PlayerWithTraits extends Player, so it has all attributes
+            const onCourtPlayer = this.createOnCourtPlayer(availableSubstitute, availableSubstitute.energy);
 
             lineup.push(onCourtPlayer);
 
@@ -800,26 +826,8 @@ export class MatchEngine {
 
       if (availableSubstitute && lineup.length < 5) {
         // Bring substitute on court
-        const onCourtPlayer: OnCourtPlayer = {
-          player: availableSubstitute,
-          effectiveAttributes: {
-            shooting: availableSubstitute.attributes.shooting,
-            passing: availableSubstitute.attributes.passing,
-            dribbling: availableSubstitute.attributes.dribbling,
-            pace: availableSubstitute.attributes.pace,
-            tackling: availableSubstitute.attributes.tackling,
-            positioning: availableSubstitute.attributes.positioning,
-            marking: availableSubstitute.attributes.marking,
-          },
-          performance: {
-            shots: 0,
-            passes: 0,
-            tackles: 0,
-            interceptions: 0,
-            fouls: 0,
-            rating: 7.0,
-          }
-        };
+        // PlayerWithTraits extends Player, so it has all attributes
+        const onCourtPlayer = this.createOnCourtPlayer(availableSubstitute, availableSubstitute.energy);
 
         lineup.push(onCourtPlayer);
 
@@ -852,8 +860,9 @@ export class MatchEngine {
    * Based on usage setting and match context (score, time remaining)
    */
   private isFlyGoalkeeperActive(team: 'home' | 'away', state: LiveMatchState): boolean {
-    const tactics = team === 'home' ? state.homeTactics : state.awayTactics;
-    const opposingTactics = team === 'home' ? state.awayTactics : state.homeTactics;
+    const tactics = this.getTeamTactics(state, team);
+    const opposingTeam = this.getOpposingTeam(team);
+    const opposingTactics = this.getTeamTactics(state, opposingTeam);
 
     if (!tactics.flyGoalkeeper || tactics.flyGoalkeeper.usage === 'Never') {
       return false;
@@ -905,19 +914,15 @@ export class MatchEngine {
 
     if (homeFlyGK) {
       adjustedChance += CONFIG.flyGoalkeeper.modifiers.possession;
-      console.log(`[MatchEngine] Home team fly-goalkeeper active: ${adjustedChance.toFixed(2)}`);
     }
     if (awayFlyGK) {
       adjustedChance -= CONFIG.flyGoalkeeper.modifiers.possession;
-      console.log(`[MatchEngine] Away team fly-goalkeeper active: ${adjustedChance.toFixed(2)}`);
     }
 
     adjustedChance = Math.max(CONFIG.possession.minChance, Math.min(CONFIG.possession.maxChance, adjustedChance));
 
     if (Math.random() < CONFIG.possession.changeChance) {
       state.possession = Math.random() < adjustedChance ? 'home' : 'away';
-
-      console.log(`[MatchEngine] Possession changed to ${state.possession} (Chance: ${adjustedChance.toFixed(2)})`);
     }
   }
 
@@ -932,8 +937,6 @@ export class MatchEngine {
     } else {
       this.awayPossCounter++;
     }
-    console.log(`[MatchEngine] Tick ${state.currentTick} - Possession: ${state.possession} (Home Poss Count: ${this.homePossCounter}, Away Poss Count: ${this.awayPossCounter})`);
-
     // Priority: Counter-attack shot
     if (state.counterAttack.active && state.counterAttack.team === attackingTeam) {
       this.generateShotEvent(state, true);
@@ -946,7 +949,7 @@ export class MatchEngine {
     const rand = Math.random();
     const timingMultiplier = this.getTimingMultiplier(state.currentMinute);
 
-    // Phase 3: Get tactical modifiers for attacking team
+    // Get tactical modifiers for attacking team
     const attackingModifiers = this.getTacticalModifiers(attackingTeam, state, state.currentMinute);
     const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
     const defendingModifiers = this.getTacticalModifiers(defendingTeam, state, state.currentMinute);
@@ -967,12 +970,12 @@ export class MatchEngine {
       qualityRatio * (CONFIG.events.qualityImpact.maxMultiplier - CONFIG.events.qualityImpact.minMultiplier);
     shotProb *= qualityMultiplier;
 
-    // Phase 5.3: Apply team mental modifiers (leader, comeback boost)
-    const attackingLineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Apply team mental modifiers (leader, comeback boost)
+    const attackingLineup = this.getLineup(state, attackingTeam);
     const teamMentalModifier = this.applyTeamMentalModifiers(attackingLineup, attackingTeam, state);
     shotProb *= teamMentalModifier;
 
-    // Phase 3: Apply tactical modifiers
+    // Apply tactical modifiers
     shotProb *= attackingModifiers.shotFrequency;  // Mentality affects shot frequency
     foulProb *= defendingModifiers.foulRate;      // Pressing affects foul rate
 
@@ -1005,7 +1008,7 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 3: Calculate tactical modifiers based on team tactics
+   * Calculate tactical modifiers based on team tactics
    * Returns multiplier for shot frequency and defensive resistance
    */
   private getTacticalModifiers(
@@ -1013,7 +1016,7 @@ export class MatchEngine {
     state: LiveMatchState,
     minute: number
   ): { shotFrequency: number; defense: number; foulRate: number; fatigueRate: number } {
-    const tactics = team === 'home' ? state.homeTactics : state.awayTactics;
+    const tactics = this.getTeamTactics(state, team);
 
     // Default to balanced if no tactics specified
     const mentality = tactics?.mentality || 'Balanced';
@@ -1058,7 +1061,7 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 3: Get formation modifiers for offensive/defensive balance
+   * Get formation modifiers for offensive/defensive balance
    */
   private getFormationModifiers(formation: string): { offensive: number; defensive: number } {
     const formationKey = formation as keyof typeof CONFIG.tacticalModifiers.formation;
@@ -1070,10 +1073,10 @@ export class MatchEngine {
    */
   private generateShotEvent(state: LiveMatchState, isCounter: boolean): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
     // Calculate defensive resistance
-    const defendingLineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    const defendingLineup = this.getLineup(state, defendingTeam);
     const defensiveResistance = this.calculateDefensiveResistance(defendingLineup, state, defendingTeam);
 
     // Check if defense prevents shot (10-20% prevention rate based on resistance)
@@ -1084,199 +1087,82 @@ export class MatchEngine {
 
     if (Math.random() < adjustedPrevention) {
       // Shot blocked/prevented by defense
-      // Phase 5: Select defender (trait-based: anticipates, staysBackAtAllTimes)
       const defender = this.selectDefender(defendingLineup, 'intercept', defendingTeam, state);
-      defender.performance.rating += 0.05; // Small bonus for preventing shot
+      defender.performance.rating += CONFIG.performanceRatings.blockBonus;
 
       // Track block statistic
       state.statistics.blocks[defendingTeam]++;
 
-      state.events.push({
-        minute: state.currentMinute,
-        type: 'block',
-        playerId: defender.player.id,
-        playerName: defender.player.name,
-        teamId: state[`${defendingTeam}TeamId`],
-        description: `${defender.player.name} blocks the shot attempt!`
-      });
+      const event = this.createEvent(
+        state,
+        'block',
+        defender,
+        defendingTeam,
+        `${defender.player.name} blocks the shot attempt!`
+      );
+      this.addEvent(state, event);
       return; // Shot prevented, exit
     }
 
-    // Phase 5: Select shooter (trait-based: finisher, playsWithFlair, attemptsLongShots)
-    const lineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select shooter
+    const lineup = this.getLineup(state, attackingTeam);
     const shooter = this.selectShooter(lineup, 'finish', attackingTeam, state);
 
     // Calculate shot quality
     let quality = this.calculateShotQuality(shooter, state);
     if (isCounter) {
-      quality += 0.20; // Counter-attack bonus
+      quality += CONFIG.shooting.counterAttackBonus; // Counter-attack bonus
     }
 
     // Reduce shot quality based on defensive resistance (8-15% reduction)
-    const qualityReduction = (defensiveResistance / 100) * 0.15; // Up to 15% reduction
+    const qualityReduction = (defensiveResistance / 200) * CONFIG.defense.qualityReduction; // Up to 15% reduction
     quality *= (1 - qualityReduction);
 
-    quality = Math.max(0.3, Math.min(1.0, quality)); // Ensure reasonable range
+    quality = Math.max(0.3, Math.min(1.2, quality)); // Ensure reasonable range
 
-    // Update statistics
-    state.statistics.shots[attackingTeam]++;
-    shooter.performance.shots++;
-
-    // Check if on target (higher base rate for futsal)
+    // Calculate shot probabilities
     const onTargetProb = CONFIG.shooting.onTargetBase * quality;
-    const isOnTarget = Math.random() < onTargetProb;
+    let saveProb = CONFIG.goalkeeper.baseSaveChance;
 
-    if (isOnTarget) {
-      state.statistics.shotsOnTarget[attackingTeam]++;
-
-      // Check goalkeeper save
-      const goalkeeper = defendingTeam === 'home'
-        ? state.homeLineup.find(p => p.player.position === 'Goalkeeper')
-        : state.awayLineup.find(p => p.player.position === 'Goalkeeper');
-
-      if (goalkeeper) {
-        const saveProb = CONFIG.goalkeeper.minSaveChance * (goalkeeper.player.attributes.reflexes || 20) / 20;  // Further reduced from 0.25
-        if (Math.random() < saveProb) {
-          // Saved!
-          state.statistics.saves[defendingTeam]++;
-          goalkeeper.performance.rating += CONFIG.ratings.weights.saves; // Small bonus for save
-          shooter.performance.rating += CONFIG.ratings.weights.shotsOnTarget; // Small penalty for not scoring
-          state.events.push({
-            minute: state.currentMinute,
-            type: 'shot',
-            playerId: shooter.player.id,
-            playerName: shooter.player.name,
-            teamId: state[`${attackingTeam}TeamId`],
-            description: `${shooter.player.name}'s shot is saved!`,
-            shotQuality: quality,
-            isCounter
-          });
-          return;
-        } else {
-          // Failed to save
-          goalkeeper.performance.rating += CONFIG.ratings.weights.goalsConceded; // Penalty for conceding
-        }
-      }
-
-      // Check for goal
-      let goalProb = 0.7 * quality;  // Increased to 0.70 for better conversion
-
-      // Fly-goalkeeper vulnerability: counter-attacks are much more dangerous
-      if (isCounter && this.isFlyGoalkeeperActive(defendingTeam, state)) {
-        goalProb *= (1 + CONFIG.flyGoalkeeper.modifiers.counterVulnerability);
-      }
-
-      if (Math.random() < goalProb) {
-        // GOAL!
-        state.score[attackingTeam]++;
-        shooter.performance.rating += CONFIG.ratings.weights.goals;
-
-        // Check for red card player returns (opponent scored)
-        this.checkRedCardReturnAfterGoal(state, defendingTeam);
-
-        // Penalty for defending team - all players lose rating for conceding
-        const defendingLineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
-        defendingLineup.forEach(p => {
-          p.performance.rating -= CONFIG.ratings.weights.goalsConceded; // Team penalty for goal conceded
-        });
-
-        // Determine if there's an assist
-        let assisterId: number | undefined;
-        let assisterName: string | undefined;
-        const assistProb = 0.80;
-
-        if (Math.random() < assistProb) {
-          // Select a random teammate
-          // Goalkeepers can assist but with reduced weight
-          const lineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
-          const potentialAssisters = lineup.filter(
-            p => p.player.id !== shooter.player.id
-          );
-
-          if (potentialAssisters.length > 0) {
-            // Weight selection by passing and positioning attributes
-            // Goalkeepers get 25% weight to reflect their reduced involvement in assists
-            const weights = potentialAssisters.map(p => {
-              const passing = p.effectiveAttributes.passing || 10;
-              const positioning = p.effectiveAttributes.positioning || 10;
-              const baseWeight = (passing + positioning) / 2;
-
-              // Reduce weight for goalkeepers
-              return p.player.position === 'Goalkeeper' ? baseWeight * 0.25 : baseWeight;
-            });
-
-            const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-            let random = Math.random() * totalWeight;
-
-            for (let i = 0; i < potentialAssisters.length; i++) {
-              random -= weights[i];
-              if (random <= 0) {
-                const assister = potentialAssisters[i];
-                assisterId = assister.player.id;
-                assisterName = assister.player.name;
-                assister.performance.rating += 0.3; // Assist bonus
-                break;
-              }
-            }
-          }
-        }
-
-        // Check if goal was scored against fly-goalkeeper
-        const isFlyGKGoal = isCounter && this.isFlyGoalkeeperActive(defendingTeam, state);
-        const goalDescription = `GOAL! ${shooter.player.name} scores!${assisterName ? ` (Assist: ${assisterName})` : ''}${isCounter ? ' (Counter-attack)' : ''}${isFlyGKGoal ? ' - GK out of position!' : ''}`;
-
-        state.events.push({
-          minute: state.currentMinute,
-          type: 'goal',
-          playerId: shooter.player.id,
-          playerName: shooter.player.name,
-          teamId: state[`${attackingTeam}TeamId`],
-          assistId: assisterId,
-          assistName: assisterName,
-          description: goalDescription,
-          shotQuality: quality,
-          isCounter,
-          goalContext: isFlyGKGoal ? 'counter_vs_flyGK' : (isCounter ? 'counter_attack' : 'open_play')
-        });
-
-        // Update momentum
-        this.updateMomentum(state, attackingTeam, 15);
-        return;
-      }
+    // Fly-goalkeeper vulnerability: counter-attacks are much more dangerous
+    if (isCounter && this.isFlyGoalkeeperActive(defendingTeam, state)) {
+      saveProb *= (1 - CONFIG.flyGoalkeeper.modifiers.counterVulnerability);
     }
 
-    // Miss or woodwork - small penalty for not scoring
-    shooter.performance.rating -= 0.03;
-    state.events.push({
-      minute: state.currentMinute,
-      type: 'shot',
-      playerId: shooter.player.id,
-      playerName: shooter.player.name,
-      teamId: state[`${attackingTeam}TeamId`],
-      description: `${shooter.player.name} shoots ${isOnTarget ? 'wide' : 'off target'}!`,
-      shotQuality: quality,
-      isCounter
-    });
+    // Resolve the shot
+    const context: ShotContext = {
+      shotType: isCounter ? 'counter_attack' : 'open_play',
+      isCounter,
+      onTargetProb,
+      saveProb,
+      assistProb: CONFIG.shooting.assistProbability,
+      quality,
+      shooter,
+      attackingTeam
+    };
+
+    this.resolveShotAttempt(state, context);
   }
 
   /**
    * Calculate shot quality (0-1 scale)
    */
   private calculateShotQuality(player: OnCourtPlayer, state: LiveMatchState): number {
-    let quality = 0.5; // Base
+    let quality = CONFIG.shooting.baseQuality; // Base
 
     // Player attributes (using fatigue-modified effective attributes)
-    quality += (player.effectiveAttributes.shooting / 100) * 0.3;
-    quality += (player.effectiveAttributes.positioning / 100) * 0.2;
-
-    // Phase 4: Momentum effect on shot quality (±15%)
+    quality += (player.effectiveAttributes.shooting / 200) * CONFIG.shooting.attributeWeights.shooting;
+    quality += (player.effectiveAttributes.positioning / 200) * CONFIG.shooting.attributeWeights.positioning;
+    quality += (player.effectiveAttributes.composure / 200) * CONFIG.shooting.attributeWeights.composure;
+    quality += (player.effectiveAttributes.strength / 200) * CONFIG.shooting.attributeWeights.strength;
+    // Momentum effect on shot quality (±15%)
     // Determine which team the player belongs to
     const isHomePlayer = state.homeLineup.some(p => p.player.id === player.player.id);
     const teamMomentum = isHomePlayer ? state.momentum.value : (100 - state.momentum.value);
-    const momentumModifier = ((teamMomentum - 50) / 100) * 0.30; // ±0.15 (±15%)
+    const momentumModifier = ((teamMomentum - 50) / 100) * CONFIG.shooting.momentumImpact; // ±0.15 (±15%)
     quality *= (1 + momentumModifier);
 
-    // Phase 5.3: Mental trait performance modifiers
+    // Mental trait performance modifiers
     const mentalModifier = this.traitEngine.getMentalTraitModifier(player.player, {
       minute: state.currentMinute,
       score: state.score,
@@ -1286,7 +1172,7 @@ export class MatchEngine {
     });
     quality *= mentalModifier;
 
-    // Phase 5.3: Apply variance modifier for consistent/inconsistent players
+    // Apply variance modifier for consistent/inconsistent players
     const baseVariance = (Math.random() - 0.5) * 0.16; // -0.08 to +0.08
     const varianceMultiplier = this.traitEngine.getVarianceModifier(player.player);
     const variance = baseVariance * varianceMultiplier;
@@ -1300,10 +1186,10 @@ export class MatchEngine {
    */
   private generateTackleEvent(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
-    // Phase 5: Select attacker attempting the dribble (trait-based: attemptsToDribble, playsWithFlair, beatPlayerRepeatedly)
-    const attackingLineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select attacker attempting the dribble (trait-based: attemptsToDribble, playsWithFlair, beatPlayerRepeatedly)
+    const attackingLineup = this.getLineup(state, attackingTeam);
     const attacker = this.selectPlayerForAction(
       '1v1',
       attackingLineup,
@@ -1311,8 +1197,8 @@ export class MatchEngine {
       state
     );
 
-    // Phase 5: Select defender attempting the tackle (trait-based: hardTackler, anticipates)
-    const defendingLineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select defender attempting the tackle (trait-based: hardTackler, anticipates)
+    const defendingLineup = this.getLineup(state, defendingTeam);
     const defender = this.selectDefender(
       defendingLineup,
       'tackle',
@@ -1321,16 +1207,16 @@ export class MatchEngine {
     );
 
     // Calculate 1v1 success based on attacker's dribbling vs defender's tackling
-    const attackerSkill = attacker.effectiveAttributes.dribbling / 100;
-    const defenderSkill = defender.effectiveAttributes.tackling / 100;
+    const attackerSkill = attacker.effectiveAttributes.dribbling / 200;
+    const defenderSkill = defender.effectiveAttributes.tackling / 200;
 
     // 50% base + skill differential (attacker favored slightly in futsal)
     const attackerWinProb = 0.45 + (attackerSkill * 0.35) - (defenderSkill * 0.25);
 
     if (Math.random() < attackerWinProb) {
       // Attacker wins 1v1 - beats defender
-      attacker.performance.rating += 0.1; // Reward for winning dribble
-      defender.performance.rating -= 0.15; // Penalty for losing defensive duel
+      attacker.performance.rating += CONFIG.performanceRatings.dribbleSuccessBonus;
+      defender.performance.rating += CONFIG.performanceRatings.dribbleDefensePenalty;
 
       // Attacker keeps possession and might create a chance
       // No explicit event, but momentum shift
@@ -1338,8 +1224,8 @@ export class MatchEngine {
     } else {
       // Defender wins 1v1 - successful tackle or interception
       state.possession = defendingTeam;
-      defender.performance.rating += 0.1; // Reward for winning defensive duel
-      attacker.performance.rating -= 0.15; // Penalty for losing dribble attempt
+      defender.performance.rating += CONFIG.performanceRatings.dribbleDefenseBonus;
+      attacker.performance.rating += CONFIG.performanceRatings.dribbleFailPenalty;
 
       // 40% chance it's an interception (reading the pass) vs tackle (winning 1v1)
       const isInterception = Math.random() < 0.4;
@@ -1382,16 +1268,213 @@ export class MatchEngine {
     }
   }
 
+  // ============================================================================
+  // FOUL EVENT HELPERS
+  // ============================================================================
+
+  /**
+   * Determine foul severity based on timing and game context
+   */
+  private determineFoulSeverity(state: LiveMatchState): {
+    severity: 'light' | 'moderate' | 'severe';
+    isDangerous: boolean;
+    cardProbability: number;
+  } {
+    const isCriticalMoment = state.currentMinute > 35;
+    const isDesperateDefense = Math.abs(state.score.home - state.score.away) <= 1;
+
+    // Determine if dangerous position
+    const isDangerous = Math.random() < (0.30 + (isCriticalMoment ? CONFIG.fouls.lateGameDangerousBonus : 0));
+
+    // Calculate card probability
+    let cardProb = CONFIG.fouls.cards.baseCardChance;
+    if (isCriticalMoment) cardProb += CONFIG.fouls.cards.lateGameBonus;
+    if (isDesperateDefense) cardProb += CONFIG.fouls.cards.closeGameBonus;
+
+    // Determine severity
+    const severityRand = Math.random();
+    let severity: 'light' | 'moderate' | 'severe';
+    if (severityRand < CONFIG.fouls.severity.light) {
+      severity = 'light';
+    } else if (severityRand < CONFIG.fouls.severity.moderate + CONFIG.fouls.severity.light) {
+      severity = 'moderate';
+    } else {
+      severity = 'severe';
+    }
+
+    return { severity, isDangerous, cardProbability: cardProb };
+  }
+
+  /**
+   * Process card issuance for a foul
+   * Returns true if a card was issued, false otherwise
+   */
+  private processFoulCard(
+    state: LiveMatchState,
+    fouler: OnCourtPlayer,
+    defendingTeam: 'home' | 'away',
+    attackingTeam: 'home' | 'away',
+    severity: 'light' | 'moderate' | 'severe',
+    cardProbability: number
+  ): boolean {
+    if (Math.random() >= cardProbability) {
+      // No card issued
+      return false;
+    }
+
+    let cardType: 'yellow' | 'red';
+    let isSecondYellow = false;
+
+    // Check if player already has a yellow card
+    const yellowCards = state.yellowCards[defendingTeam];
+    const hasYellowCard = yellowCards.includes(fouler.player.id);
+
+    // Determine card type based on severity
+    if (severity === 'severe') {
+      cardType = 'red';
+    } else if (severity === 'moderate') {
+      cardType = Math.random() < CONFIG.fouls.cards.redCardChance ? 'red' : 'yellow';
+    } else {
+      cardType = Math.random() < 0.99 ? 'yellow' : 'red';
+    }
+
+    // Second yellow = red card
+    if (cardType === 'yellow' && hasYellowCard) {
+      cardType = 'red';
+      isSecondYellow = true;
+    }
+
+    // Create card event
+    const cardEmoji = cardType === 'yellow' ? '🟨' : '🟥';
+    const severityDesc = severity === 'severe' ? ' (serious foul play)' : '';
+    const secondYellowDesc = isSecondYellow ? ' (second yellow)' : '';
+
+    const event = this.createEvent(
+      state,
+      `${cardType}_card` as any,
+      fouler,
+      defendingTeam,
+      `${cardEmoji} ${cardType.toUpperCase()} CARD for ${fouler.player.name}${severityDesc}${secondYellowDesc}!`
+    );
+    this.addEvent(state, event);
+
+    // Process card consequences
+    if (cardType === 'red') {
+      this.processRedCard(state, fouler, defendingTeam, attackingTeam);
+    } else {
+      this.processYellowCard(state, fouler, defendingTeam);
+    }
+
+    return true; // Card was issued
+  }
+
+  /**
+   * Process red card consequences
+   */
+  private processRedCard(
+    state: LiveMatchState,
+    fouler: OnCourtPlayer,
+    defendingTeam: 'home' | 'away',
+    attackingTeam: 'home' | 'away'
+  ): void {
+    const lineup = this.getLineup(state, defendingTeam);
+    const bench = this.getBench(state, defendingTeam);
+    const index = lineup.findIndex(p => p.player.id === fouler.player.id);
+
+    if (index !== -1) {
+      // Remove player from lineup
+      const expelledPlayer = lineup.splice(index, 1)[0];
+
+      // Add to red card tracking
+      const redCardRecord = {
+        playerId: fouler.player.id,
+        playerName: fouler.player.name,
+        tickIssued: state.currentTick,
+        canReturnAt: state.currentTick + CONFIG.redCard.returnAfterTicks,
+        returnCondition: 'time' as const
+      };
+
+      state.redCards[defendingTeam].push(redCardRecord);
+
+      // Add to suspended players list
+      state.suspendedPlayers[defendingTeam].push(fouler.player.id);
+
+      // Move expelled player to bench
+      bench.push(expelledPlayer.player);
+
+      // Red card rating penalty
+      fouler.performance.rating += CONFIG.ratings.weights.redCard;
+    }
+
+    // Significant momentum swing
+    this.updateMomentum(state, attackingTeam, 20);
+  }
+
+  /**
+   * Process yellow card consequences
+   */
+  private processYellowCard(
+    state: LiveMatchState,
+    fouler: OnCourtPlayer,
+    defendingTeam: 'home' | 'away'
+  ): void {
+    const yellowCards = state.yellowCards[defendingTeam];
+    if (!yellowCards.includes(fouler.player.id)) {
+      yellowCards.push(fouler.player.id);
+    }
+    fouler.performance.rating += CONFIG.ratings.weights.yellowCard;
+  }
+
+  /**
+   * Handle accumulated fouls and 10m penalty
+   */
+  private handleAccumulatedFouls(state: LiveMatchState, defendingTeam: 'home' | 'away', fouler: OnCourtPlayer): boolean {
+    const accumulatedFouls = state.statistics.fouls[defendingTeam];
+    
+    if (accumulatedFouls >= CONFIG.fouls.accumulatedFoulPenaltyThreshold) {
+      // 10m penalty kick awarded
+      state.events.push({
+        minute: state.currentMinute,
+        type: 'foul',
+        playerId: fouler.player.id,
+        playerName: fouler.player.name,
+        teamId: this.getTeamId(state, defendingTeam),
+        description: `🚨 10m PENALTY AWARDED! ${fouler.player.name} commits ${accumulatedFouls}th team foul`
+      });
+
+      // Generate penalty kick immediately
+      this.generatePenaltyKick(state);
+      return true; // Foul handling complete
+    }
+    
+    return false; // Continue with normal foul processing
+  }
+
+  /**
+   * Handle dangerous foul consequences (free kick chance)
+   */
+  private processDangerousFoul(
+    state: LiveMatchState,
+    isDangerous: boolean,
+    attackingTeam: 'home' | 'away'
+  ): void {
+    if (isDangerous && Math.random() < 0.5) {
+      this.generateFreeKickShot(state);
+    } else {
+      this.updateMomentum(state, attackingTeam, 5);
+    }
+  }
+
   /**
    * Generate a foul event
    */
   private generateFoulEvent(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
-    // Phase 5: Select fouler (trait-based: hardTackler, aggressive)
+    // Select fouler (trait-based: hardTackler, aggressive)
     const fouler = this.selectDefender(
-      defendingTeam === 'home' ? state.homeLineup : state.awayLineup,
+      this.getLineup(state, defendingTeam),
       'tackle',
       defendingTeam,
       state
@@ -1403,147 +1486,33 @@ export class MatchEngine {
     fouler.performance.fouls++;
     fouler.performance.rating -= CONFIG.ratings.weights.fouls;
 
-    // Check if this is the 6th+ accumulated foul (triggers 10m penalty)
-    if (state.accumulatedFouls[defendingTeam] >= CONFIG.fouls.accumulatedFoulPenaltyThreshold) {
-      // Trigger penalty kick from 10m (no wall)
-      state.events.push({
-        minute: state.currentMinute,
-        type: 'foul',
-        playerId: fouler.player.id,
-        playerName: fouler.player.name,
-        teamId: state[`${defendingTeam}TeamId`],
-        description: `⚠️ Foul by ${fouler.player.name} - 10m PENALTY AWARDED (${state.accumulatedFouls[defendingTeam]} fouls)`
-      });
-
-      // Immediately execute the penalty kick
-      this.generatePenaltyKick(state);
-      return;
+    // Check if this triggers 10m penalty (6th+ accumulated foul)
+    if (this.handleAccumulatedFouls(state, defendingTeam, fouler)) {
+      return; // Penalty generated, foul handling complete
     }
 
-    // Regular foul (under 6 accumulated fouls)
-    // Determine foul severity based on timing and situation
-    const isCriticalMoment = state.currentMinute > 35; // Late game fouls
-    const isDesperateDefense = Math.abs(state.score.home - state.score.away) <= 1; // Close game
+    // Regular foul - determine severity and context
+    const { severity, isDangerous, cardProbability } = this.determineFoulSeverity(state);
 
-    // Determine if this foul is in a dangerous position (30% chance)
-    // Dangerous fouls have a chance to generate a direct free-kick shot
-    const isDangerousFoul = Math.random() < (0.30 + (isCriticalMoment ? CONFIG.fouls.lateGameDangerousBonus : 0));
+    // Process card if warranted (returns true if card was issued)
+    const cardIssued = this.processFoulCard(state, fouler, defendingTeam, attackingTeam, severity, cardProbability);
 
-    // Calculate card probability
-    let cardProb = CONFIG.fouls.cards.baseCardChance; // Base %
-    if (isCriticalMoment) cardProb += CONFIG.fouls.cards.lateGameBonus; // +% late in game
-    if (isDesperateDefense) cardProb += CONFIG.fouls.cards.closeGameBonus; // +% in close games
-
-    // Determine severity: light, moderate, or severe
-    const severityRand = Math.random();
-    let severity: 'light' | 'moderate' | 'severe';
-    if (severityRand < CONFIG.fouls.severity.light) {
-      severity = 'light'; // % light fouls
-    } else if (severityRand < CONFIG.fouls.severity.moderate + CONFIG.fouls.severity.light) {
-      severity = 'moderate'; // % moderate fouls
-    } else {
-      severity = 'severe'; // % severe fouls
+    // If no card was issued, create simple foul event
+    if (!cardIssued) {
+      const event = this.createEvent(
+        state,
+        'foul' as any,
+        fouler,
+        defendingTeam,
+        `Foul by ${fouler.player.name}`
+      );
+      this.addEvent(state, event);
     }
 
-    // Determine card type based on severity
-    if (Math.random() < cardProb) {
-      let cardType: 'yellow' | 'red';
-      let isSecondYellow = false;
-
-      // Check if player already has a yellow card
-      const yellowCards = state.yellowCards[defendingTeam];
-      const hasYellowCard = yellowCards.includes(fouler.player.id);
-
-      if (severity === 'severe') {
-        cardType = 'red'; // Severe fouls always get red
-      } else if (severity === 'moderate') {
-        cardType = Math.random() < CONFIG.fouls.cards.redCardChance ? 'red' : 'yellow'; // % yellow, % red
-      } else {
-        cardType = Math.random() < 0.99 ? 'yellow' : 'red'; // 95% yellow, 5% red (rare)
-      }
-
-      // Second yellow = red card
-      if (cardType === 'yellow' && hasYellowCard) {
-        cardType = 'red';
-        isSecondYellow = true;
-        //console.log(`[MatchEngine] Second yellow card for ${fouler.player.name}, upgraded to RED CARD.`);
-      }
-
-      const cardEmoji = cardType === 'yellow' ? '🟨' : '🟥';
-      const severityDesc = severity === 'severe' ? ' (serious foul play)' : '';
-      const secondYellowDesc = isSecondYellow ? ' (second yellow)' : '';
-
-      state.events.push({
-        minute: state.currentMinute,
-        type: `${cardType}_card` as any,
-        playerId: fouler.player.id,
-        playerName: fouler.player.name,
-        teamId: state[`${defendingTeam}TeamId`],
-        description: `${cardEmoji} ${cardType.toUpperCase()} CARD for ${fouler.player.name}${severityDesc}${secondYellowDesc}!`
-      });
-
-      if (cardType === 'red') {
-        // Red card: remove player from lineup temporarily (plays with 4 players)
-        const lineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
-        const bench = defendingTeam === 'home' ? state.substitutions.homeBench : state.substitutions.awayBench;
-        const index = lineup.findIndex(p => p.player.id === fouler.player.id);
-
-        if (index !== -1) {
-          // Remove player from lineup
-          const expelledPlayer = lineup.splice(index, 1)[0];
-
-          // Add to red card tracking (can return after 2 minutes OR when opponent scores)
-          const redCardRecord = {
-            playerId: fouler.player.id,
-            playerName: fouler.player.name,
-            tickIssued: state.currentTick,
-            canReturnAt: state.currentTick + 8, // 2 minutes = 8 ticks (4 ticks per minute)
-            returnCondition: 'time' as const
-          };
-
-          state.redCards[defendingTeam].push(redCardRecord);
-
-          // Add to suspended players list (cannot be selected for substitution)
-          state.suspendedPlayers[defendingTeam].push(fouler.player.id);
-
-          // Move expelled player to bench (keeps their energy level)
-          bench.push(expelledPlayer.player);
-
-          // Red card rating penalty
-          fouler.performance.rating += CONFIG.ratings.weights.redCard;
-
-          //console.log(`[MatchEngine] RED CARD: ${fouler.player.name} sent off. Team ${defendingTeam} plays with ${lineup.length} players. Can return at ${redCardRecord.canReturnAt}`);
-        }
-
-        // Significant momentum swing for red card
-        this.updateMomentum(state, attackingTeam, 20);
-      } else {
-        // Yellow card: track player and apply rating penalty
-        if (!yellowCards.includes(fouler.player.id)) {
-          yellowCards.push(fouler.player.id);
-        }
-        fouler.performance.rating += CONFIG.ratings.weights.yellowCard;
-      }
-    } else {
-      // No card, just foul
-      state.events.push({
-        minute: state.currentMinute,
-        type: 'foul',
-        playerId: fouler.player.id,
-        playerName: fouler.player.name,
-        teamId: state[`${defendingTeam}TeamId`],
-        description: `Foul by ${fouler.player.name}`
-      });
-    }
-
-    // Check if dangerous foul warrants a direct free-kick attempt
-    if (isDangerousFoul) {
-      // 50% chance the attacking team attempts a direct shot from the free-kick
-      if (Math.random() < 0.50) {
-        this.generateFreeKickShot(state);
-      }
-    }
+    // Handle dangerous foul consequences
+    this.processDangerousFoul(state, isDangerous, attackingTeam);
   }
+
 
   /**
    * Generate a direct free-kick shot (from dangerous foul position)
@@ -1551,21 +1520,16 @@ export class MatchEngine {
    */
   private generateFreeKickShot(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
-    // Phase 5: Select shooter (trait-based: finisher, nerveless, attemptsLongShots)
-    const attackers = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select shooter
+    const attackers = this.getLineup(state, attackingTeam);
     const shooter = this.selectShooter(attackers, 'finish', attackingTeam, state);
 
-    // Select goalkeeper
-    const defenders = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
-    const goalkeeper = defenders.find(p => p.player.position === 'Goalkeeper') || defenders[0];
+    // Calculate shot quality
+    const shooterSkill = this.calculateShotQuality(shooter, state);
 
-    // Lower probability than 10m penalty (wall is present, angle may be worse)
-    const shooterSkill = shooter.effectiveAttributes.shooting / 100;
-    const gkSkill = (goalkeeper.effectiveAttributes.positioning / 100);
-
-    // Phase 5.3: Apply mental trait modifier for free kicks
+    // Apply mental trait modifier for free kicks
     const isHomePlayer = attackingTeam === 'home';
     const mentalModifier = this.traitEngine.getMentalTraitModifier(shooter.player, {
       minute: state.currentMinute,
@@ -1574,6 +1538,9 @@ export class MatchEngine {
       actionType: 'freeKick',
       team: isHomePlayer ? 'home' : 'away'
     });
+
+    const goalkeeper = this.getGoalkeeper(state, defendingTeam);
+    const gkSkill = this.calculateGKEffectiveness(goalkeeper);
 
     let shotQuality = CONFIG.setPieces.freeKick.baseGoalChance +
       (shooterSkill * CONFIG.setPieces.freeKick.shooterSkillWeight) -
@@ -1584,80 +1551,22 @@ export class MatchEngine {
       Math.min(CONFIG.setPieces.freeKick.maxGoalChance, shotQuality)
     );
 
-    // Update statistics
-    state.statistics.shots[attackingTeam]++;
-    shooter.performance.shots++;
-
-    // Check if on target (70% chance for free kicks)
+    // Calculate shot probabilities
     const onTargetProb = CONFIG.setPieces.freeKick.onTargetChance;
-    const isOnTarget = Math.random() < onTargetProb;
+    const saveProb = CONFIG.goalkeeper.baseSaveChance * (goalkeeper.player.attributes.reflexes || 20) / 200;
 
-    if (isOnTarget) {
-      state.statistics.shotsOnTarget[attackingTeam]++;
+    // Resolve the shot
+    const context: ShotContext = {
+      shotType: 'free_kick',
+      onTargetProb,
+      saveProb,
+      assistProb: 0, // No assists from direct free kicks
+      quality: shotQuality,
+      shooter,
+      attackingTeam
+    };
 
-      // Check goalkeeper save (higher save rate than 10m penalties)
-      const saveProb = 0.30 * (goalkeeper.player.attributes.reflexes || 20) / 20;
-
-      if (Math.random() < saveProb) {
-        // Saved!
-        state.statistics.saves[defendingTeam]++;
-        goalkeeper.performance.rating += 0.15;
-        shooter.performance.rating -= 0.05;
-
-        state.events.push({
-          minute: state.currentMinute,
-          type: 'shot',
-          playerId: shooter.player.id,
-          playerName: shooter.player.name,
-          teamId: state[`${attackingTeam}TeamId`],
-          description: `${shooter.player.name}'s free-kick is saved by ${goalkeeper.player.name}!`,
-          shotQuality
-        });
-        return;
-      }
-
-      // Check for goal
-      const goalProb = 0.55 * shotQuality;
-      if (Math.random() < goalProb) {
-        // GOAL from free-kick!
-        state.score[attackingTeam]++;
-        shooter.performance.rating += 0.7; // Bonus for free-kick goal
-
-        // Check for red card player returns (opponent scored)
-        this.checkRedCardReturnAfterGoal(state, defendingTeam);
-
-        defenders.forEach(p => p.performance.rating -= 0.15);
-        if (goalkeeper) goalkeeper.performance.rating -= 0.25;
-
-        state.events.push({
-          minute: state.currentMinute,
-          type: 'goal',
-          playerId: shooter.player.id,
-          playerName: shooter.player.name,
-          teamId: state[`${attackingTeam}TeamId`],
-          description: `⚽ FREE-KICK GOAL! ${shooter.player.name} scores from the free-kick!`,
-          shotQuality,
-          goalContext: 'free_kick',
-          assistId: undefined,
-          assistName: undefined
-        });
-
-        this.updateMomentum(state, attackingTeam, 20);
-        return;
-      }
-    }
-
-    // Miss or off target
-    shooter.performance.rating -= 0.03;
-    state.events.push({
-      minute: state.currentMinute,
-      type: 'shot',
-      playerId: shooter.player.id,
-      playerName: shooter.player.name,
-      teamId: state[`${attackingTeam}TeamId`],
-      description: `${shooter.player.name}'s free-kick ${isOnTarget ? 'goes wide' : 'misses the target'}`,
-      shotQuality
-    });
+    this.resolveShotAttempt(state, context);
   }
 
   /**
@@ -1666,21 +1575,18 @@ export class MatchEngine {
    */
   private generatePenaltyKick(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
-    // Phase 5: Select shooter (trait-based: finisher, nerveless, consistentPerformer)
-    const attackers = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select shooter
+    const attackers = this.getLineup(state, attackingTeam);
     const shooter = this.selectShooter(attackers, 'finish', attackingTeam, state);
 
-    // Select goalkeeper
-    const defenders = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
-    const goalkeeper = defenders.find(p => p.player.position === 'Goalkeeper') || defenders[0];
+    // Calculate shot quality
+    const shooterSkill = this.calculateShotQuality(shooter, state);
+    const goalkeeper = this.getGoalkeeper(state, defendingTeam);
+    const gkSkill = this.calculateGKEffectiveness(goalkeeper);
 
-    // High probability shot - 10m penalty with no wall
-    const shooterSkill = shooter.effectiveAttributes.shooting / 100;
-    const gkSkill = goalkeeper.effectiveAttributes.positioning / 100;
-
-    // Phase 5.3: Apply mental trait modifier for penalty kicks
+    // Apply mental trait modifier for penalty kicks
     const isHomePlayer = attackingTeam === 'home';
     const mentalModifier = this.traitEngine.getMentalTraitModifier(shooter.player, {
       minute: state.currentMinute,
@@ -1699,61 +1605,22 @@ export class MatchEngine {
       Math.min(CONFIG.setPieces.penalty.maxGoalChance, goalProbability)
     );
 
-    const isGoal = Math.random() < goalProbability;
+    // Calculate shot probabilities
+    const onTargetProb = 0.9; // 90% chance penalty is on target
+    const saveProb = 1.0 - goalProbability; // Save probability is inverse of goal probability
 
-    // Update statistics
-    state.statistics.shots[attackingTeam]++;
-    state.statistics.shotsOnTarget[attackingTeam]++;
-    shooter.performance.shots++;
+    // Resolve the shot
+    const context: ShotContext = {
+      shotType: 'penalty_10m',
+      onTargetProb,
+      saveProb,
+      assistProb: 0, // No assists from penalties
+      quality: goalProbability,
+      shooter,
+      attackingTeam
+    };
 
-    if (isGoal) {
-      // GOAL!
-      state.score[attackingTeam]++;
-      shooter.performance.rating += 0.5;
-
-      // Check for red card player returns (opponent scored)
-      this.checkRedCardReturnAfterGoal(state, defendingTeam);
-
-      // Penalty for all defending players (goal conceded)
-      defenders.forEach(p => {
-        p.performance.rating -= 0.15;
-      });
-
-      // Additional penalty for goalkeeper
-      goalkeeper.performance.rating -= 0.2;
-
-      state.events.push({
-        minute: state.currentMinute,
-        type: 'goal',
-        playerId: shooter.player.id,
-        playerName: shooter.player.name,
-        teamId: state[`${attackingTeam}TeamId`],
-        description: `⚽ 10m free-kick GOAL! ${shooter.player.name} scores from 10m penalty!`,
-        assistId: undefined,
-        assistName: undefined,
-        shotQuality: goalProbability,
-        isCounter: false,
-        goalContext: 'penalty_10m'
-      });
-
-      this.updateMomentum(state, attackingTeam, 15);
-    } else {
-      // Save or miss
-      state.statistics.saves[defendingTeam]++;
-      shooter.performance.rating -= 0.05;
-      goalkeeper.performance.rating += 0.1;
-
-      state.events.push({
-        minute: state.currentMinute,
-        type: 'shot',
-        playerId: shooter.player.id,
-        playerName: shooter.player.name,
-        teamId: state[`${attackingTeam}TeamId`],
-        description: `10m penalty saved by ${goalkeeper.player.name}!`
-      });
-
-      this.updateMomentum(state, defendingTeam, 5);
-    }
+    this.resolveShotAttempt(state, context);
   }
 
   /**
@@ -1761,124 +1628,54 @@ export class MatchEngine {
    */
   private generateCornerEvent(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
     state.statistics.corners[attackingTeam]++;
 
-    state.events.push({
-      minute: state.currentMinute,
-      type: 'corner',
-      playerId: 0,
-      playerName: '',
-      teamId: state[`${attackingTeam}TeamId`],
-      description: `Corner for ${attackingTeam === 'home' ? 'home' : 'away'} team`
-    });
+    const event = this.createEvent(
+      state,
+      'corner',
+      null,
+      attackingTeam,
+      `Corner for ${attackingTeam === 'home' ? 'home' : 'away'} team`
+    );
+    this.addEvent(state, event);
 
     // 60% chance corner leads to a shot attempt (set piece)
-    if (Math.random() < 0.60) {
-      const attackingLineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
-      // Phase 5: Select shooter (trait-based: finisher, attemptsLongShots)
+    if (Math.random() < CONFIG.setPieces.corner.shotChance) {
+      const attackingLineup = this.getLineup(state, attackingTeam);
       const shooter = this.selectShooter(attackingLineup, 'finish', attackingTeam, state);
-
+      
       // Calculate defensive resistance (corners face organized defense)
-      const defendingLineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
+      const defendingLineup = this.getLineup(state, defendingTeam);
       const defensiveResistance = this.calculateDefensiveResistance(defendingLineup, state, defendingTeam);
 
       // Set piece shot quality (base + attributes - defense)
-      let quality = 0.55; // Base set piece quality
-      quality += (shooter.effectiveAttributes.shooting / 100) * 0.25;
+      let quality: number = CONFIG.setPieces.corner.baseQuality;
+      quality *= this.calculateShotQuality(shooter, state);
 
       // Defensive resistance impact (set pieces face organized defense)
-      const qualityReduction = (defensiveResistance / 100) * 0.40; // Up to 40% reduction for set pieces
+      const qualityReduction = (defensiveResistance / 200) * CONFIG.setPieces.corner.qualityReduction;
       quality *= (1 - qualityReduction);
 
-      quality = Math.max(0.3, Math.min(0.85, quality));
+      quality = Math.max(CONFIG.setPieces.corner.minQuality, Math.min(CONFIG.setPieces.corner.maxQuality, quality));
 
-      // Update statistics
-      state.statistics.shots[attackingTeam]++;
-      shooter.performance.shots++;
+      // Calculate shot probabilities
+      const onTargetProb = CONFIG.setPieces.corner.onTargetChance * quality;
+      const saveProb = CONFIG.goalkeeper.baseSaveChance;
 
-      // Check if on target
-      const onTargetProb = 0.70 * quality; // Set pieces slightly less accurate
-      const isOnTarget = Math.random() < onTargetProb;
+      // Resolve the shot
+      const context: ShotContext = {
+        shotType: 'corner',
+        onTargetProb,
+        saveProb,
+        assistProb: 0, // No assists from corner kicks
+        quality,
+        shooter,
+        attackingTeam
+      };
 
-      if (isOnTarget) {
-        state.statistics.shotsOnTarget[attackingTeam]++;
-
-        // Check goalkeeper save
-        const goalkeeper = defendingTeam === 'home'
-          ? state.homeLineup.find(p => p.player.position === 'Goalkeeper')
-          : state.awayLineup.find(p => p.player.position === 'Goalkeeper');
-
-        if (goalkeeper) {
-          const saveProb = 0.22 * (goalkeeper.player.attributes.reflexes || 20) / 20;
-          if (Math.random() < saveProb) {
-            // Saved!
-            state.statistics.saves[defendingTeam]++;
-            goalkeeper.performance.rating += 0.10;
-            shooter.performance.rating -= 0.05;
-            state.events.push({
-              minute: state.currentMinute,
-              type: 'shot',
-              playerId: shooter.player.id,
-              playerName: shooter.player.name,
-              teamId: state[`${attackingTeam}TeamId`],
-              description: `${shooter.player.name}'s corner kick shot is saved!`,
-              shotQuality: quality
-            });
-            return;
-          }
-        }
-
-        // Check for goal
-        const goalProb = 0.65 * quality;
-        if (Math.random() < goalProb) {
-          // GOAL from corner!
-          state.score[attackingTeam]++;
-          shooter.performance.rating += 0.6; // Bonus for set piece goal
-
-          // Check for red card player returns (opponent scored)
-          this.checkRedCardReturnAfterGoal(state, defendingTeam);
-
-          defendingLineup.forEach(p => p.performance.rating -= 0.15);
-          if (goalkeeper) goalkeeper.performance.rating -= 0.20;
-
-          state.events.push({
-            minute: state.currentMinute,
-            type: 'goal',
-            playerId: shooter.player.id,
-            playerName: shooter.player.name,
-            teamId: state[`${attackingTeam}TeamId`],
-            description: `⚽ GOAL! ${shooter.player.name} scores from the corner!`,
-            shotQuality: quality,
-            goalContext: 'corner'
-          });
-
-          this.updateMomentum(state, attackingTeam, 25);
-        } else {
-          // On target but no goal
-          state.events.push({
-            minute: state.currentMinute,
-            type: 'shot',
-            playerId: shooter.player.id,
-            playerName: shooter.player.name,
-            teamId: state[`${attackingTeam}TeamId`],
-            description: `${shooter.player.name}'s corner kick shot goes wide`,
-            shotQuality: quality
-          });
-        }
-      } else {
-        // Off target
-        state.events.push({
-          minute: state.currentMinute,
-          type: 'shot',
-          playerId: shooter.player.id,
-          playerName: shooter.player.name,
-          teamId: state[`${attackingTeam}TeamId`],
-          description: `${shooter.player.name}'s corner kick misses`,
-          shotQuality: quality
-        });
-      }
+      this.resolveShotAttempt(state, context);
     }
   }
 
@@ -1887,14 +1684,14 @@ export class MatchEngine {
    */
   private generateDribbleEvent(state: LiveMatchState): void {
     const attackingTeam = state.possession;
-    const defendingTeam = attackingTeam === 'home' ? 'away' : 'home';
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
 
-    // Phase 5: Select attacker attempting dribble (trait-based: attemptsToDribble, playsWithFlair)
-    const attackingLineup = attackingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select attacker attempting dribble (trait-based: attemptsToDribble, playsWithFlair)
+    const attackingLineup = this.getLineup(state, attackingTeam);
     const attacker = this.selectPlayerForAction('1v1', attackingLineup, attackingTeam, state);
 
-    // Phase 5: Select defender (trait-based: hardTackler, anticipates, marksOpponentTightly)
-    const defendingLineup = defendingTeam === 'home' ? state.homeLineup : state.awayLineup;
+    // Select defender (trait-based: hardTackler, anticipates, marksOpponentTightly)
+    const defendingLineup = this.getLineup(state, defendingTeam);
     const defender = this.selectDefender(defendingLineup, 'tackle', defendingTeam, state);
 
     // Calculate dribble success probability
@@ -1906,8 +1703,8 @@ export class MatchEngine {
 
     if (Math.random() < successProb) {
       // Successful dribble
-      attacker.performance.rating += 0.08; // Small reward
-      defender.performance.rating -= 0.05; // Small penalty
+      attacker.performance.rating += CONFIG.performanceRatings.oneVsOneWinBonus;
+      defender.performance.rating += CONFIG.performanceRatings.oneVsOneLosePenalty;
 
       // Track successful dribble statistic
       state.statistics.dribblesSuccessful[attackingTeam]++;
@@ -1933,8 +1730,8 @@ export class MatchEngine {
       // Also track as a tackle for defender
       state.statistics.tackles[defendingTeam]++;
       defender.performance.tackles++;
-      defender.performance.rating += 0.10;
-      attacker.performance.rating -= 0.08;
+      defender.performance.rating += CONFIG.performanceRatings.oneVsOneDefenseBonus;
+      attacker.performance.rating += CONFIG.performanceRatings.oneVsOneDefensePenalty;
 
       // Trigger counter-attack
       state.counterAttack = {
@@ -1966,7 +1763,7 @@ export class MatchEngine {
       state.momentum.value = Math.max(0, Math.min(100, state.momentum.value - change));
     }
 
-    // Phase 4: Update last momentum change time
+    // Update last momentum change time
     state.momentum.lastUpdate = state.currentMinute;
 
     // Update momentum trend
@@ -1980,11 +1777,11 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 4: Update player fatigue each tick with intensity-based decay
+   * Update player fatigue each tick with intensity-based decay
    * Also recover stamina for bench players
    */
   private updatePlayerFatigue(state: LiveMatchState): void {
-    // Phase 4: Calculate match intensity (affects fatigue rate)
+    // Calculate match intensity (affects fatigue rate)
     const intensity = this.calculateMatchIntensity(state, state.currentMinute);
     const intensityMultiplier = intensity / 100; // 0-1 scale
 
@@ -1995,12 +1792,12 @@ export class MatchEngine {
     // Bench recovery: 0.4% per tick = 1.6% per minute (slower than decay, but allows rotation)
     const baseRecoveryPerTick = 0.4;
 
-    // Phase 3: Get tactical fatigue modifiers
+    // Get tactical fatigue modifiers
     const homeFatigueModifier = this.getTacticalModifiers('home', state, state.currentMinute).fatigueRate;
     const awayFatigueModifier = this.getTacticalModifiers('away', state, state.currentMinute).fatigueRate;
 
     state.homeLineup.forEach(player => {
-      // Phase 4: Fatigue = base * intensity * tactics * fitness * stamina
+      // Fatigue = base * intensity * tactics * fitness * stamina
       // Stamina attribute (1-200): High stamina = less fatigue
       const staminaAttribute = player.player.attributes.stamina || 100;
       const staminaMultiplier = 1.5 - (staminaAttribute / 400); // Range: 1.0 (200 stamina) to 1.5 (1 stamina)
@@ -2011,12 +1808,12 @@ export class MatchEngine {
       player.player.energy = Math.max(0, player.player.energy - fatiguePerTick);
       player.player.minutesPlayedThisMatch = state.currentMinute;
 
-      // Phase 4: Apply fatigue to effective attributes (50%-100% effectiveness)
+      // Apply fatigue to effective attributes (50%-100% effectiveness)
       this.applyFatigueToAttributes(player);
     });
 
     state.awayLineup.forEach(player => {
-      // Phase 4: Fatigue = base * intensity * tactics * fitness * stamina
+      // Fatigue = base * intensity * tactics * fitness * stamina
 
       const staminaAttribute = player.player.attributes.stamina || 100;
       const staminaMultiplier = 1.5 - (staminaAttribute / 400); // Range: 1.0 (200 stamina) to 1.5 (1 stamina)
@@ -2033,11 +1830,11 @@ export class MatchEngine {
       player.player.energy = Math.max(0, player.player.energy - fatiguePerTick);
       player.player.minutesPlayedThisMatch = state.currentMinute;
 
-      // Phase 4: Apply fatigue to effective attributes (50%-100% effectiveness)
+      // Apply fatigue to effective attributes (50%-100% effectiveness)
       this.applyFatigueToAttributes(player);
     });
 
-    // Phase 4: Bench players recover stamina based on their stamina attribute
+    // Bench players recover stamina based on their stamina attribute
     // High stamina players recover faster
     state.substitutions.homeBench.forEach(player => {
       const staminaAttribute = player.attributes.stamina || 100;
@@ -2055,7 +1852,7 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 4: Apply fatigue penalty to player's effective attributes
+   * Apply fatigue penalty to player's effective attributes
    * At 100% energy: 100% effectiveness
    * At 0% energy: 50% effectiveness (severe degradation)
    */
@@ -2071,19 +1868,39 @@ export class MatchEngine {
       shooting: baseAttrs.shooting * (0.7 + energyRatio * 0.3),
       passing: baseAttrs.passing * (0.7 + energyRatio * 0.3),
       dribbling: baseAttrs.dribbling * (0.7 + energyRatio * 0.3),
+      ballControl: baseAttrs.ballControl * (0.7 + energyRatio * 0.3),
+      firstTouch: baseAttrs.firstTouch * (0.7 + energyRatio * 0.3),
       tackling: baseAttrs.tackling * (0.7 + energyRatio * 0.3),
 
-      // Pace: 50% max degradation (most affected by fatigue)
-      pace: baseAttrs.pace * (0.5 + energyRatio * 0.5),
+      // Physical attributes: pace most affected, stamina affects recovery rate
+      pace: baseAttrs.pace * (0.5 + energyRatio * 0.5), // 50% max degradation
+      stamina: baseAttrs.stamina * (0.8 + energyRatio * 0.2), // 20% degradation
+      strength: baseAttrs.strength * (0.6 + energyRatio * 0.4), // 40% degradation
+      agility: baseAttrs.agility * (0.6 + energyRatio * 0.4), // 40% degradation
+
+      // Defensive attributes: 25% max degradation
+      interceptions: baseAttrs.interceptions * (0.75 + energyRatio * 0.25),
 
       // Positioning/Marking: 20% max degradation (least affected, more mental)
       positioning: baseAttrs.positioning * (0.8 + energyRatio * 0.2),
-      marking: baseAttrs.marking * (0.8 + energyRatio * 0.2)
+      marking: baseAttrs.marking * (0.8 + energyRatio * 0.2),
+
+      // Mental attributes: 15% max degradation (most resistant to fatigue)
+      vision: baseAttrs.vision * (0.85 + energyRatio * 0.15),
+      decisionMaking: baseAttrs.decisionMaking * (0.85 + energyRatio * 0.15),
+      composure: baseAttrs.composure * (0.85 + energyRatio * 0.15),
+      workRate: baseAttrs.workRate * (0.85 + energyRatio * 0.15),
+
+      // Goalkeeper attributes: less affected by fatigue (mostly positioning/mental)
+      reflexes: baseAttrs.reflexes ? baseAttrs.reflexes * (0.75 + energyRatio * 0.25) : undefined,
+      handling: baseAttrs.handling ? baseAttrs.handling * (0.8 + energyRatio * 0.2) : undefined,
+      gkPositioning: baseAttrs.gkPositioning ? baseAttrs.gkPositioning * (0.85 + energyRatio * 0.15) : undefined,
+      distribution: baseAttrs.distribution ? baseAttrs.distribution * (0.8 + energyRatio * 0.2) : undefined
     };
   }
 
   /**
-   * Phase 4: Calculate match intensity (0-100)
+   * Calculate match intensity (0-100)
    * Higher intensity = faster fatigue accumulation
    * Factors: score differential, time period, momentum swings
    */
@@ -2132,10 +1949,10 @@ export class MatchEngine {
     const avgPositioning = defendingLineup.reduce((sum, p) => sum + p.effectiveAttributes.positioning, 0) / defendingLineup.length;
     const avgMarking = defendingLineup.reduce((sum, p) => sum + p.effectiveAttributes.marking, 0) / defendingLineup.length;
 
-    // Base resistance (0-100 scale)
+    // Base resistance (0-200 scale)
     let resistance = (avgTackling + avgPositioning + avgMarking) / 3;
 
-    // Phase 3: Apply tactical defensive modifier
+    // Apply tactical defensive modifier
     const defenseModifiers = this.getTacticalModifiers(defendingTeam, state, state.currentMinute);
     resistance *= defenseModifiers.defense;
 
@@ -2205,11 +2022,11 @@ export class MatchEngine {
   }
 
   // ============================================================================
-  // PHASE 5: TRAIT-BASED PLAYER SELECTION
+  // TRAIT-BASED PLAYER SELECTION
   // ============================================================================
 
   /**
-   * Phase 5: Select player for action based on traits
+   * Select player for action based on traits
    * Uses trait engine to weight selection by trait relevance
    * 
    * @param action - Action type (e.g., 'finish', '1v1', 'tackle')
@@ -2245,7 +2062,7 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 5: Select shooter with trait-based weighting
+   * Select shooter with trait-based weighting
    * Combines attribute weighting with trait-based selection
    */
   private selectShooter(
@@ -2265,7 +2082,7 @@ export class MatchEngine {
   }
 
   /**
-   * Phase 5: Select defender with trait-based weighting
+   * Select defender with trait-based weighting
    */
   private selectDefender(
     lineup: OnCourtPlayer[],
@@ -2277,7 +2094,7 @@ export class MatchEngine {
   }
 
   // ============================================================================
-  // PHASE 4: SUBSTITUTION SYSTEM
+  // SUBSTITUTION SYSTEM
   // ============================================================================
 
   /**
@@ -2335,8 +2152,8 @@ export class MatchEngine {
    * Position matching: try to replace with same position, fallback to any
    */
   private makeSubstitution(state: LiveMatchState, team: 'home' | 'away', tiredPlayer: OnCourtPlayer): void {
-    const bench = team === 'home' ? state.substitutions.homeBench : state.substitutions.awayBench;
-    const lineup = team === 'home' ? state.homeLineup : state.awayLineup;
+    const bench = this.getBench(state, team);
+    const lineup = this.getLineup(state, team);
     const suspendedPlayers = state.suspendedPlayers[team];
 
     if (bench.length === 0) return; // No substitutes available
@@ -2372,32 +2189,8 @@ export class MatchEngine {
     const lineupIdx = lineup.findIndex(p => p.player.id === tiredPlayer.player.id);
     if (lineupIdx === -1) return; // Should never happen
 
-    // Convert substitute to OnCourtPlayer
-    const freshPlayer: OnCourtPlayer = {
-      player: {
-        ...substitute,
-        traits: [],
-        energy: 100, // Fresh player
-        minutesPlayedThisMatch: 0
-      },
-      effectiveAttributes: {
-        shooting: substitute.attributes.shooting,
-        passing: substitute.attributes.passing,
-        dribbling: substitute.attributes.dribbling,
-        pace: substitute.attributes.pace,
-        tackling: substitute.attributes.tackling,
-        positioning: substitute.attributes.positioning,
-        marking: substitute.attributes.marking
-      },
-      performance: {
-        shots: 0,
-        passes: 0,
-        tackles: 0,
-        interceptions: 0,
-        fouls: 0,
-        rating: 6.0
-      }
-    };
+    // Convert substitute to OnCourtPlayer using helper
+    const freshPlayer = this.createOnCourtPlayer(substitute, 100); // Fresh player with 100% energy
 
     // Replace tired player with fresh player
     lineup[lineupIdx] = freshPlayer;
@@ -2413,7 +2206,7 @@ export class MatchEngine {
     }
 
     // Generate substitution event
-    const teamId = team === 'home' ? state.homeTeamId : state.awayTeamId;
+    const teamId = this.getTeamId(state, team);
     state.events.push({
       minute: state.currentMinute,
       type: 'substitution',
@@ -2423,12 +2216,12 @@ export class MatchEngine {
       description: `${tiredPlayer.player.name} OFF, ${freshPlayer.player.name} ON (${Math.round(tiredPlayer.player.energy)}% energy)`
     });
 
-    // Phase 4: Momentum boost from fresh legs (+5)
+    // Momentum boost from fresh legs (+5)
     this.updateMomentum(state, team, 5);
   }
 
   // ============================================================================
-  // PHASE 4: MOMENTUM SYSTEM
+  // MOMENTUM SYSTEM
   // ============================================================================
 
   /**
@@ -2524,14 +2317,343 @@ export class MatchEngine {
     return totalEnergyLoss / lineup.length;
   }
 
+  /**
+   * Calculate goalkeeper effectiveness multiplier (0.7-1.3 scale)
+   * Based on GK-specific attributes: reflexes, handling, positioning, composure
+   */
+  private calculateGKEffectiveness(goalkeeper: OnCourtPlayer): number {
+    const attrs = goalkeeper.effectiveAttributes;
+
+    // Use GK-specific attributes if available, otherwise use field player attributes as fallback
+    const reflexes = attrs.reflexes ?? 60; // Fallback to agility
+    const handling = attrs.handling ?? 40; // Fallback to ball control
+    const gkPositioning = attrs.gkPositioning ?? 30; // Fallback to positioning
+    const composure = attrs.composure;
+
+    // Calculate average GK skill (0-200 scale)
+    const avgGKSkill = (reflexes * CONFIG.goalkeeper.skillWeight.reflexes + handling * CONFIG.goalkeeper.skillWeight.handling + gkPositioning * CONFIG.goalkeeper.skillWeight.positioning + composure * CONFIG.goalkeeper.skillWeight.composure) / (CONFIG.goalkeeper.skillWeight.reflexes + CONFIG.goalkeeper.skillWeight.handling + CONFIG.goalkeeper.skillWeight.positioning + CONFIG.goalkeeper.skillWeight.composure);
+    const effectiveness = avgGKSkill / 200 * 0.6 + 0.6; // Scale to 0.6-1.2 range
+
+    return Math.max(0.6, Math.min(1.2, effectiveness));
+  }
+
   // ============================================================================
-  // LEGACY METHODS (for backward compatibility)
+  // SHOT RESOLUTION SYSTEM
   // ============================================================================
 
   /**
-   * @deprecated Use calculateTeamQuality instead
+   * Resolve shot attempt outcome
+   * Common logic for all shot types
    */
-  private calculateTeamRating(players: Player[]): number {
-    return this.calculateTeamQuality(players);
+  private resolveShotAttempt(state: LiveMatchState, context: ShotContext): void {
+    const { shooter, attackingTeam, quality, onTargetProb, saveProb } = context;
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
+    
+    // Update statistics
+    state.statistics.shots[attackingTeam]++;
+    shooter.performance.shots++;
+    
+    // Check if shot is on target
+    const isOnTarget = Math.random() < onTargetProb;
+    
+    if (!isOnTarget) {
+      this.handleMissedShot(state, context);
+      return;
+    }
+    
+    state.statistics.shotsOnTarget[attackingTeam]++;
+    
+    // Check if goalkeeper saves
+    const goalkeeper = this.getGoalkeeper(state, defendingTeam);
+    const gkEffectiveness = this.calculateGKEffectiveness(goalkeeper);
+    
+    if (Math.random() < saveProb * gkEffectiveness) {
+      this.handleSave(state, goalkeeper, context);
+      return;
+    }
+    
+    // Goal scored!
+    this.handleGoal(state, context);
   }
+
+  /**
+   * Handle missed shot
+   */
+  private handleMissedShot(state: LiveMatchState, context: ShotContext): void {
+    const { shooter, attackingTeam, quality, isCounter } = context;
+    
+    shooter.performance.rating += CONFIG.ratings.weights.missedShots;
+    
+    const missType = Math.random() < 0.5 ? 'wide' : 'off target';
+    const event = this.createEvent(
+      state,
+      'shot',
+      shooter,
+      attackingTeam,
+      `${shooter.player.name} shoots ${missType}!`,
+      { shotQuality: quality, isCounter }
+    );
+    
+    this.addEvent(state, event);
+  }
+
+  /**
+   * Handle save by goalkeeper
+   */
+  private handleSave(
+    state: LiveMatchState,
+    goalkeeper: OnCourtPlayer,
+    context: ShotContext
+  ): void {
+    const { shooter, attackingTeam, quality, isCounter, shotType } = context;
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
+    
+    // Update statistics
+    state.statistics.saves[defendingTeam]++;
+    
+    // Update ratings
+    const saveBonus = shotType === 'penalty_10m' 
+      ? CONFIG.ratings.weights.penaltySaves 
+      : CONFIG.ratings.weights.saves;
+    
+    goalkeeper.performance.rating += saveBonus;
+    shooter.performance.rating += CONFIG.ratings.weights.shotsOnTarget;
+    
+    // Create event
+    const event = this.createEvent(
+      state,
+      'shot',
+      shooter,
+      attackingTeam,
+      `${shooter.player.name}'s shot is saved by ${goalkeeper.player.name}!`,
+      { shotQuality: quality, isCounter }
+    );
+    
+    this.addEvent(state, event);
+  }
+
+  /**
+   * Handle goal scored
+   */
+  private handleGoal(state: LiveMatchState, context: ShotContext): void {
+    const { shooter, attackingTeam, quality, isCounter, shotType, assistProb } = context;
+    const defendingTeam = this.getOpposingTeam(attackingTeam);
+    
+    // Update score
+    state.score[attackingTeam]++;
+    
+    // Update shooter rating
+    const goalBonus = this.getGoalRatingBonus(shotType);
+    shooter.performance.rating += goalBonus;
+    
+    // Check for assist
+    let assisterId: number | undefined;
+    let assisterName: string | undefined;
+    
+    if (assistProb && Math.random() < assistProb) {
+      const assister = this.selectAssister(state, attackingTeam, shooter);
+      if (assister) {
+        assisterId = assister.player.id;
+        assisterName = assister.player.name;
+        assister.performance.rating += CONFIG.ratings.weights.assists;
+      }
+    }
+    
+    // Check for red card returns (futsal rule)
+    this.checkRedCardReturnAfterGoal(state, defendingTeam);
+    
+    // Penalty for defending team
+    const defendingLineup = this.getLineup(state, defendingTeam);
+    defendingLineup.forEach(p => {
+      p.performance.rating += CONFIG.ratings.weights.goalsConceded;
+    });
+    
+    // Format description
+    const description = this.formatGoalDescription(
+      shooter.player.name,
+      assisterName,
+      shotType,
+      isCounter
+    );
+    
+    // Create goal event
+    const event = this.createEvent(
+      state,
+      'goal',
+      shooter,
+      attackingTeam,
+      description,
+      {
+        assistId: assisterId,
+        assistName: assisterName,
+        shotQuality: quality,
+        isCounter,
+        goalContext: shotType
+      }
+    );
+    
+    this.addEvent(state, event);
+    
+    // Update momentum
+    this.updateMomentum(state, attackingTeam, CONFIG.momentum.events.goal);
+  }
+
+  /**
+   * Get goal rating bonus based on shot type
+   */
+  private getGoalRatingBonus(shotType: string): number {
+    switch (shotType) {
+      case 'penalty_10m':
+        return CONFIG.ratings.weights.goals * 0.5; // Penalty worth less
+      case 'free_kick':
+      case 'corner':
+        return CONFIG.ratings.weights.goals * 1.2; // Set piece worth more
+      default:
+        return CONFIG.ratings.weights.goals;
+    }
+  }
+
+  /**
+   * Select assist provider
+   */
+  private selectAssister(
+    state: LiveMatchState,
+    attackingTeam: 'home' | 'away',
+    shooter: OnCourtPlayer
+  ): OnCourtPlayer | null {
+    const lineup = this.getLineup(state, attackingTeam);
+    const potentialAssisters = lineup.filter(p => p.player.id !== shooter.player.id);
+    
+    if (potentialAssisters.length === 0) return null;
+    
+    // Weight by passing and positioning attributes
+    const weights = potentialAssisters.map(p => {
+      const passing = p.effectiveAttributes.passing || 10;
+      const positioning = p.effectiveAttributes.positioning || 10;
+      const baseWeight = (passing + positioning) / 2;
+      
+      // Goalkeepers less likely to assist
+      return p.player.position === 'Goalkeeper' ? baseWeight * 0.25 : baseWeight;
+    });
+    
+    // Weighted random selection
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (let i = 0; i < potentialAssisters.length; i++) {
+      random -= weights[i];
+      if (random <= 0) return potentialAssisters[i];
+    }
+    
+    return potentialAssisters[potentialAssisters.length - 1];
+  }
+
+  /**
+   * Format goal description with context
+   */
+  private formatGoalDescription(
+    shooterName: string,
+    assisterName: string | undefined,
+    shotType: string,
+    isCounter?: boolean
+  ): string {
+    const assist = assisterName ? ` (Assist: ${assisterName})` : '';
+    const counter = isCounter ? ' (Counter-attack)' : '';
+    
+    let typePrefix = '';
+    switch (shotType) {
+      case 'penalty_10m':
+        typePrefix = '10m PENALTY ';
+        break;
+      case 'free_kick':
+        typePrefix = 'FREE-KICK ';
+        break;
+      case 'corner':
+        typePrefix = 'CORNER ';
+        break;
+    }
+    
+    return `⚽ ${typePrefix}GOAL! ${shooterName} scores!${assist}${counter}`;
+  }
+
+  // ============================================================================
+  // HELPER METHODS
+  // ============================================================================
+
+  /**
+   * Get lineup for specified team
+   */
+  private getLineup(state: LiveMatchState, team: 'home' | 'away'): OnCourtPlayer[] {
+    return team === 'home' ? state.homeLineup : state.awayLineup;
+  }
+
+  /**
+   * Get bench players for specified team
+   */
+  private getBench(state: LiveMatchState, team: 'home' | 'away'): PlayerWithTraits[] {
+    return team === 'home' 
+      ? state.substitutions.homeBench 
+      : state.substitutions.awayBench;
+  }
+
+  /**
+   * Get team ID for specified team
+   */
+  private getTeamId(state: LiveMatchState, team: 'home' | 'away'): number {
+    return team === 'home' ? state.homeTeamId : state.awayTeamId;
+  }
+
+  /**
+   * Get opposing team
+   */
+  private getOpposingTeam(team: 'home' | 'away'): 'home' | 'away' {
+    return team === 'home' ? 'away' : 'home';
+  }
+
+  /**
+   * Get tactics for specified team
+   */
+  private getTeamTactics(state: LiveMatchState, team: 'home' | 'away'): TacticalSetup {
+    return team === 'home' ? state.homeTactics : state.awayTactics;
+  }
+
+  /**
+   * Get goalkeeper for specified team
+   * Falls back to first player if no goalkeeper found
+   */
+  private getGoalkeeper(state: LiveMatchState, team: 'home' | 'away'): OnCourtPlayer {
+    const lineup = this.getLineup(state, team);
+    return lineup.find(p => p.player.position === 'Goalkeeper') || lineup[0];
+  }
+
+  /**
+   * Create a match event with consistent structure
+   */
+  private createEvent(
+    state: LiveMatchState,
+    type: MatchEvent['type'],
+    player: OnCourtPlayer | null,
+    team: 'home' | 'away',
+    description: string,
+    metadata?: Partial<MatchEvent>
+  ): MatchEvent {
+    return {
+      minute: state.currentMinute,
+      type,
+      playerId: player?.player.id || 0,
+      playerName: player?.player.name || '',
+      teamId: this.getTeamId(state, team),
+      description,
+      ...metadata
+    };
+  }
+
+  /**
+   * Add event to match state
+   */
+  private addEvent(state: LiveMatchState, event: MatchEvent): void {
+    state.events.push(event);
+  }
+
 }
+

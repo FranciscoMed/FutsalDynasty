@@ -5,6 +5,10 @@
  * Modify these values to adjust match behavior, difficulty, and realism.
  */
 
+import { min } from "drizzle-orm";
+import { on } from "events";
+import { AsteriskSquare } from "lucide-react";
+
 export const MatchEngineConfig = {
   // ============================================================================
   // MATCH TIMING & STRUCTURE
@@ -86,20 +90,23 @@ export const MatchEngineConfig = {
   // ============================================================================
   shooting: {
     /** Base shot quality */
-    baseQuality: 0.5,
+    baseQuality: 0.3,
     /** Attribute weights for shot quality */
     attributeWeights: {
       shooting: 0.30,
-      positioning: 0.20,
+      positioning: 0.10,
+      composure: 0.10,
+      strength: 0.25,
     },
     /** Counter-attack bonus */
-    counterAttackBonus: 0.20,
+    counterAttackBonus: 0.15,
     /** Momentum impact on shot quality (±15%) */
     momentumImpact: 0.30,
     /** Base variance range (±8%) */
     baseVariance: 0.16,
     /** On-target probability (quality-adjusted) */
-    onTargetBase: 0.75,
+    onTargetBase: 0.4,
+    assistProbability: 0.8,
     /** Min/max shot quality bounds */
     minQuality: 0.1,
     maxQuality: 1.0,
@@ -111,8 +118,8 @@ export const MatchEngineConfig = {
   defense: {
     /** Shot prevention base rate (up to 15% based on resistance) */
     preventionRate: 0.15,
-    /** Shot quality reduction (up to 15% based on resistance) */
-    qualityReduction: 0.15,
+    /** Shot quality reduction (up to 25% based on resistance) */
+    qualityReduction: 0.25,
     /** Counter-attack prevention difficulty (30% of normal) */
     counterPreventionMultiplier: 0.3,
     /** Attribute weights for defensive resistance */
@@ -131,9 +138,13 @@ export const MatchEngineConfig = {
     /** Save probability calculation */
     baseSaveChance: 0.40,
     /** GK skill weight in save calculation */
-    skillWeight: 0.35,
-    /** Shot quality impact on save difficulty */
-    qualityImpact: 0.30,
+    skillWeight: {
+      reflexes: 0.35,
+      handling: 0.15,
+      positioning: 0.25,
+      composure: 0.25,
+    },
+
     /** Min/max save probability */
     minSaveChance: 0.20,
     maxSaveChance: 0.80,
@@ -149,6 +160,13 @@ export const MatchEngineConfig = {
       shotChance: 0.60,
       /** Base goal probability from corner */
       goalChance: 0.20,
+      // Base shot quality from corner
+      baseQuality: 0.3,
+      //Quality Reduction from corner
+      qualityReduction: 0.2,
+      minQuality: 0.1,
+      maxQuality: 0.8,
+      onTargetChance: 0.35,
     },
 
     /** Free kick (dangerous foul) */
@@ -169,11 +187,11 @@ export const MatchEngineConfig = {
     /** Penalty kick (10m - 6th+ foul) */
     penalty: {
       /** Base goal chance (high probability) */
-      baseGoalChance: 0.75,
+      baseGoalChance: 0.5,
       /** Shooter skill weight */
       shooterSkillWeight: 0.15,
       /** GK skill weight */
-      gkSkillWeight: 0.10,
+      gkSkillWeight: 0.25,
       /** Min/max goal probability */
       minGoalChance: 0.20,
       maxGoalChance: 0.95,
@@ -354,6 +372,7 @@ export const MatchEngineConfig = {
       shotsOnTarget: 0.15,
       missedShots: -0.1,
       saves: 0.15,
+      penaltySaves: 0.4,
       goalsConceded: -0.2,
       tackles: 0.1,
       interceptions: 0.1,
@@ -474,6 +493,49 @@ export const MatchEngineConfig = {
       '1-3': { offensive: 1.15, defensive: 0.85 }
     }
   },
+
+  // ============================================================================
+  // PERFORMANCE RATINGS (Additional bonuses/penalties not in main ratings)
+  // ============================================================================
+  performanceRatings: {
+    // Defensive actions
+    blockBonus: 0.05,
+    tackleWonBonus: 0.10,
+    tackleLostPenalty: -0.08,
+    
+    // Dribbling
+    dribbleSuccessBonus: 0.10,
+    dribbleFailPenalty: -0.15,
+    dribbleDefenseBonus: 0.10,
+    dribbleDefensePenalty: -0.15,
+    
+    // 1v1 situations
+    oneVsOneWinBonus: 0.08,
+    oneVsOneLosePenalty: -0.05,
+    oneVsOneDefenseBonus: 0.10,
+    oneVsOneDefensePenalty: -0.08,
+  },
+
+  // ============================================================================
+  // ATTRIBUTE THRESHOLDS
+  // ============================================================================
+  attributeThresholds: {
+    low: 10,
+    medium: 50,
+    high: 70,
+    elite: 85,
+  },
+
+  // ============================================================================
+  // PROBABILITY CLAMPS
+  // ============================================================================
+  probabilityClamps: {
+    min: 0.0,
+    max: 1.0,
+    minGoalChance: 0.05,
+    maxGoalChance: 0.95,
+  },
+
 } as const;
 
 /**

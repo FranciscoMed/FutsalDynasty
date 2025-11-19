@@ -255,19 +255,19 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
       ];
 
       const awayPlayers = [
-        createMockPlayer(6, 'Goalkeeper', 70),
-        createMockPlayer(7, 'Defender', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Winger', 70),
-        createMockPlayer(10, 'Pivot', 70),
+        createMockPlayer(6, 'Goalkeeper', 150),
+        createMockPlayer(7, 'Defender', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Winger', 150),
+        createMockPlayer(10, 'Pivot', 150),
       ];
 
       const match: Match = {
@@ -461,11 +461,11 @@ describe('MatchEngine - Phase 1', () => {
         const awayTeam = createMockTeam(2, 'Away Team');
 
         const homePlayers = Array.from({ length: 5 }, (_, j) =>
-          createMockPlayer(j + 1, j === 0 ? 'Goalkeeper' : 'Defender', 70)
+          createMockPlayer(j + 1, j === 0 ? 'Goalkeeper' : 'Defender', 150)
         );
 
         const awayPlayers = Array.from({ length: 5 }, (_, j) =>
-          createMockPlayer(j + 6, j === 0 ? 'Goalkeeper' : 'Defender', 70)
+          createMockPlayer(j + 6, j === 0 ? 'Goalkeeper' : 'Defender', 150)
         );
 
         const match: Match = {
@@ -914,19 +914,19 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
       ];
 
       const awayPlayers = [
-        createMockPlayer(6, 'Goalkeeper', 70),
-        createMockPlayer(7, 'Defender', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Winger', 70),
-        createMockPlayer(10, 'Pivot', 70),
+        createMockPlayer(6, 'Goalkeeper', 150),
+        createMockPlayer(7, 'Defender', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Winger', 150),
+        createMockPlayer(10, 'Pivot', 150),
       ];
 
       const match: Match = {
@@ -1018,25 +1018,25 @@ describe('MatchEngine - Phase 1', () => {
       // Create a STRONG team (ability 85, elite level)
       const strongTeam = createMockTeam(1, 'Elite FC');
       const strongPlayers = [
-        createMockPlayer(1, 'Goalkeeper', 85),
-        createMockPlayer(2, 'Defender', 85),
-        createMockPlayer(3, 'Winger', 85),
-        createMockPlayer(4, 'Pivot', 85),
-        createMockPlayer(5, 'Winger', 85),
-        createMockPlayer(6, 'Defender', 85), // Sub
-        createMockPlayer(7, 'Winger', 85),   // Sub
+        createMockPlayer(1, 'Goalkeeper', 170),
+        createMockPlayer(2, 'Defender', 170),
+        createMockPlayer(3, 'Winger', 170),
+        createMockPlayer(4, 'Pivot', 170),
+        createMockPlayer(5, 'Winger', 170),
+        createMockPlayer(6, 'Defender', 170), // Sub
+        createMockPlayer(7, 'Winger', 170),   // Sub
       ];
 
       // Create a WEAK team (ability 55, weak level)
       const weakTeam = createMockTeam(2, 'Weak FC');
       const weakPlayers = [
-        createMockPlayer(8, 'Goalkeeper', 55),
-        createMockPlayer(9, 'Defender', 55),
-        createMockPlayer(10, 'Winger', 55),
-        createMockPlayer(11, 'Pivot', 55),
-        createMockPlayer(12, 'Winger', 55),
-        createMockPlayer(13, 'Defender', 55), // Sub
-        createMockPlayer(14, 'Winger', 55),   // Sub
+        createMockPlayer(8, 'Goalkeeper', 110),
+        createMockPlayer(9, 'Defender', 110),
+        createMockPlayer(10, 'Winger', 110),
+        createMockPlayer(11, 'Pivot', 110),
+        createMockPlayer(12, 'Winger', 110),
+        createMockPlayer(13, 'Defender', 110), // Sub
+        createMockPlayer(14, 'Winger', 110),   // Sub
       ];
 
       const match: Match = {
@@ -1101,8 +1101,8 @@ describe('MatchEngine - Phase 1', () => {
 
       console.log(`\n========================================`);
       console.log(`LARGE SKILL GAP TEST`);
-      console.log(`Elite FC: Ability 85 (elite level)`);
-      console.log(`Weak FC: Ability 55 (weak level)`);
+      console.log(`Elite FC: Ability 170 (elite level)`);
+      console.log(`Weak FC: Ability 110 (weak level)`);
       console.log(`Expected: Elite FC should win 75-85% of matches`);
       console.log(`========================================\n`);
 
@@ -1196,10 +1196,10 @@ describe('MatchEngine - Phase 1', () => {
       console.log(`    Weak FC: ${avgWeakPossession.toFixed(1)} ticks`);
       console.log(`========================================\n`);
 
-      // Assertions: Large skill gap (85 vs 55) should result in strong advantage
+      // Assertions: Large skill gap (85 vs 110) should result in strong advantage
       expect(avgStrongScore).toBeGreaterThan(avgWeakScore); // More goals
       expect(avgStrongShots).toBeGreaterThan(avgWeakShots); // More shots
-      expect(strongWins).toBeGreaterThanOrEqual(7); // Should win at least 70%
+      expect(strongWins).toBeGreaterThanOrEqual(7); // Should win at least 150%
       // Note: 100% win rate is acceptable for such extreme skill gap (professional vs amateur)
     });
 
@@ -1360,19 +1360,19 @@ describe('MatchEngine - Phase 1', () => {
       };
 
       const attackingPlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
       ];
 
       const defensivePlayers = [
-        createMockPlayer(6, 'Goalkeeper', 70),
-        createMockPlayer(7, 'Defender', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Winger', 70),
-        createMockPlayer(10, 'Pivot', 70),
+        createMockPlayer(6, 'Goalkeeper', 150),
+        createMockPlayer(7, 'Defender', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Winger', 150),
+        createMockPlayer(10, 'Pivot', 150),
       ];
 
       storage.setTeam(saveGameId, userId, attackingTeam);
@@ -1382,7 +1382,7 @@ describe('MatchEngine - Phase 1', () => {
 
       console.log('\n========================================');
       console.log('PHASE 3: MENTALITY TEST');
-      console.log('Very Attacking vs Very Defensive (both 70)');
+      console.log('Very Attacking vs Very Defensive (both 150)');
       console.log('========================================\n');
 
       const results: Array<{ attackShots: number; defShots: number; attackGoals: number; defGoals: number }> = [];
@@ -1452,19 +1452,19 @@ describe('MatchEngine - Phase 1', () => {
       };
 
       const highPressPlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
       ];
 
       const lowPressPlayers = [
-        createMockPlayer(6, 'Goalkeeper', 70),
-        createMockPlayer(7, 'Defender', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Winger', 70),
-        createMockPlayer(10, 'Pivot', 70),
+        createMockPlayer(6, 'Goalkeeper', 150),
+        createMockPlayer(7, 'Defender', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Winger', 150),
+        createMockPlayer(10, 'Pivot', 150),
       ];
 
       storage.setTeam(saveGameId, userId, highPressTeam);
@@ -1474,7 +1474,7 @@ describe('MatchEngine - Phase 1', () => {
 
       console.log('\n========================================');
       console.log('PHASE 3: PRESSING INTENSITY TEST');
-      console.log('Very High vs Low Press (both 70)');
+      console.log('Very High vs Low Press (both 150)');
       console.log('========================================\n');
 
       const results: Array<{ highFouls: number; lowFouls: number }> = [];
@@ -1537,19 +1537,19 @@ describe('MatchEngine - Phase 1', () => {
       };
 
       const defensivePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
       ];
 
       const balancedPlayers = [
-        createMockPlayer(6, 'Goalkeeper', 70),
-        createMockPlayer(7, 'Defender', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Winger', 70),
-        createMockPlayer(10, 'Pivot', 70),
+        createMockPlayer(6, 'Goalkeeper', 150),
+        createMockPlayer(7, 'Defender', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Winger', 150),
+        createMockPlayer(10, 'Pivot', 150),
       ];
 
       storage.setTeam(saveGameId, userId, defensiveTeam);
@@ -1607,7 +1607,7 @@ describe('MatchEngine - Phase 1', () => {
       const saveGameId = 1;
       const userId = 1;
 
-      // Create teams with balanced abilities (70)
+      // Create teams with balanced abilities (150)
       const homeTeam = createMockTeam(1, 'FlyGK FC');
       const awayTeam = createMockTeam(2, 'High Press FC');
       
@@ -1637,19 +1637,19 @@ describe('MatchEngine - Phase 1', () => {
       storage.setTeam(saveGameId, userId, awayTeam);
 
       const homePlayers = [
-        createMockPlayer(100, 'Goalkeeper', 70),
-        createMockPlayer(101, 'Defender', 70),
-        createMockPlayer(102, 'Defender', 70),
-        createMockPlayer(103, 'Winger', 70),
-        createMockPlayer(104, 'Pivot', 70),
+        createMockPlayer(100, 'Goalkeeper', 150),
+        createMockPlayer(101, 'Defender', 150),
+        createMockPlayer(102, 'Defender', 150),
+        createMockPlayer(103, 'Winger', 150),
+        createMockPlayer(104, 'Pivot', 150),
       ];
       
       const awayPlayers = [
-        createMockPlayer(200, 'Goalkeeper', 70),
-        createMockPlayer(201, 'Defender', 70),
-        createMockPlayer(202, 'Defender', 70),
-        createMockPlayer(203, 'Winger', 70),
-        createMockPlayer(204, 'Pivot', 70),
+        createMockPlayer(200, 'Goalkeeper', 150),
+        createMockPlayer(201, 'Defender', 150),
+        createMockPlayer(202, 'Defender', 150),
+        createMockPlayer(203, 'Winger', 150),
+        createMockPlayer(204, 'Pivot', 150),
       ];
 
       storage.setPlayers(saveGameId, userId, 1, homePlayers);
@@ -1724,19 +1724,19 @@ describe('MatchEngine - Phase 1', () => {
       storage.setTeam(saveGameId, userId, awayTeam);
 
       const homePlayers = [
-        createMockPlayer(100, 'Goalkeeper', 70),
-        createMockPlayer(101, 'Defender', 70),
-        createMockPlayer(102, 'Defender', 70),
-        createMockPlayer(103, 'Winger', 70),
-        createMockPlayer(104, 'Pivot', 70),
+        createMockPlayer(100, 'Goalkeeper', 150),
+        createMockPlayer(101, 'Defender', 150),
+        createMockPlayer(102, 'Defender', 150),
+        createMockPlayer(103, 'Winger', 150),
+        createMockPlayer(104, 'Pivot', 150),
       ];
       
       const awayPlayers = [
-        createMockPlayer(200, 'Goalkeeper', 70),
-        createMockPlayer(201, 'Defender', 70),
-        createMockPlayer(202, 'Defender', 70),
-        createMockPlayer(203, 'Winger', 70),
-        createMockPlayer(204, 'Pivot', 70),
+        createMockPlayer(200, 'Goalkeeper', 150),
+        createMockPlayer(201, 'Defender', 150),
+        createMockPlayer(202, 'Defender', 150),
+        createMockPlayer(203, 'Winger', 150),
+        createMockPlayer(204, 'Pivot', 150),
       ];
 
       storage.setPlayers(saveGameId, userId, 1, homePlayers);
@@ -1807,19 +1807,19 @@ describe('MatchEngine - Phase 1', () => {
       storage.setTeam(saveGameId, userId, awayTeam);
 
       const homePlayers = [
-        createMockPlayer(100, 'Goalkeeper', 70),
-        createMockPlayer(101, 'Defender', 70),
-        createMockPlayer(102, 'Defender', 70),
-        createMockPlayer(103, 'Winger', 70),
-        createMockPlayer(104, 'Pivot', 70),
+        createMockPlayer(100, 'Goalkeeper', 150),
+        createMockPlayer(101, 'Defender', 150),
+        createMockPlayer(102, 'Defender', 150),
+        createMockPlayer(103, 'Winger', 150),
+        createMockPlayer(104, 'Pivot', 150),
       ];
       
       const awayPlayers = [
-        createMockPlayer(200, 'Goalkeeper', 70),
-        createMockPlayer(201, 'Defender', 70),
-        createMockPlayer(202, 'Defender', 70),
-        createMockPlayer(203, 'Winger', 70),
-        createMockPlayer(204, 'Pivot', 70),
+        createMockPlayer(200, 'Goalkeeper', 150),
+        createMockPlayer(201, 'Defender', 150),
+        createMockPlayer(202, 'Defender', 150),
+        createMockPlayer(203, 'Winger', 150),
+        createMockPlayer(204, 'Pivot', 150),
       ];
 
       storage.setPlayers(saveGameId, userId, 1, homePlayers);
@@ -1900,19 +1900,19 @@ describe('MatchEngine - Phase 1', () => {
       storage.setTeam(saveGameId, userId, awayTeam);
 
       const homePlayers = [
-        createMockPlayer(100, 'Goalkeeper', 70),
-        createMockPlayer(101, 'Defender', 70),
-        createMockPlayer(102, 'Defender', 70),
-        createMockPlayer(103, 'Winger', 70),
-        createMockPlayer(104, 'Pivot', 70),
+        createMockPlayer(100, 'Goalkeeper', 150),
+        createMockPlayer(101, 'Defender', 150),
+        createMockPlayer(102, 'Defender', 150),
+        createMockPlayer(103, 'Winger', 150),
+        createMockPlayer(104, 'Pivot', 150),
       ];
       
       const awayPlayers = [
-        createMockPlayer(200, 'Goalkeeper', 70),
-        createMockPlayer(201, 'Defender', 70),
-        createMockPlayer(202, 'Defender', 70),
-        createMockPlayer(203, 'Winger', 70),
-        createMockPlayer(204, 'Pivot', 70),
+        createMockPlayer(200, 'Goalkeeper', 150),
+        createMockPlayer(201, 'Defender', 150),
+        createMockPlayer(202, 'Defender', 150),
+        createMockPlayer(203, 'Winger', 150),
+        createMockPlayer(204, 'Pivot', 150),
       ];
 
       storage.setPlayers(saveGameId, userId, 1, homePlayers);
@@ -2008,19 +2008,19 @@ describe('MatchEngine - Phase 1', () => {
       storage.setTeam(saveGameId, userId, awayTeam);
 
       const homePlayers = [
-        createMockPlayer(100, 'Goalkeeper', 70),
-        createMockPlayer(101, 'Defender', 70),
-        createMockPlayer(102, 'Defender', 70),
-        createMockPlayer(103, 'Winger', 70),
-        createMockPlayer(104, 'Pivot', 70),
+        createMockPlayer(100, 'Goalkeeper', 150),
+        createMockPlayer(101, 'Defender', 150),
+        createMockPlayer(102, 'Defender', 150),
+        createMockPlayer(103, 'Winger', 150),
+        createMockPlayer(104, 'Pivot', 150),
       ];
       
       const awayPlayers = [
-        createMockPlayer(200, 'Goalkeeper', 70),
-        createMockPlayer(201, 'Defender', 70),
-        createMockPlayer(202, 'Defender', 70),
-        createMockPlayer(203, 'Winger', 70),
-        createMockPlayer(204, 'Pivot', 70),
+        createMockPlayer(200, 'Goalkeeper', 150),
+        createMockPlayer(201, 'Defender', 150),
+        createMockPlayer(202, 'Defender', 150),
+        createMockPlayer(203, 'Winger', 150),
+        createMockPlayer(204, 'Pivot', 150),
       ];
 
       storage.setPlayers(saveGameId, userId, 1, homePlayers);
@@ -2102,23 +2102,23 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Neutral FC');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
-        createMockPlayer(6, 'Winger', 70),
-        createMockPlayer(7, 'Winger', 70),
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Winger', 150),
+        createMockPlayer(7, 'Winger', 150),
       ];
 
       const awayPlayers = [
-        createMockPlayer(11, 'Goalkeeper', 70),
-        createMockPlayer(12, 'Defender', 70),
-        createMockPlayer(13, 'Defender', 70),
-        createMockPlayer(14, 'Winger', 70),
-        createMockPlayer(15, 'Pivot', 70),
-        createMockPlayer(16, 'Winger', 70),
-        createMockPlayer(17, 'Winger', 70),
+        createMockPlayer(11, 'Goalkeeper', 150),
+        createMockPlayer(12, 'Defender', 150),
+        createMockPlayer(13, 'Defender', 150),
+        createMockPlayer(14, 'Winger', 150),
+        createMockPlayer(15, 'Pivot', 150),
+        createMockPlayer(16, 'Winger', 150),
+        createMockPlayer(17, 'Winger', 150),
       ];
 
       const match = createMockMatch(1, homeTeam.id, awayTeam.id);
@@ -2161,23 +2161,23 @@ describe('MatchEngine - Phase 1', () => {
         const awayTeam = createMockTeam(2, 'Balance FC');
 
         const homePlayers = [
-          createMockPlayer(1, 'Goalkeeper', 70),
-          createMockPlayer(2, 'Defender', 70),
-          createMockPlayer(3, 'Defender', 70),
-          createMockPlayer(4, 'Winger', 70),
-          createMockPlayer(5, 'Pivot', 70),
-          createMockPlayer(6, 'Winger', 70),
-          createMockPlayer(7, 'Pivot', 70),
+          createMockPlayer(1, 'Goalkeeper', 150),
+          createMockPlayer(2, 'Defender', 150),
+          createMockPlayer(3, 'Defender', 150),
+          createMockPlayer(4, 'Winger', 150),
+          createMockPlayer(5, 'Pivot', 150),
+          createMockPlayer(6, 'Winger', 150),
+          createMockPlayer(7, 'Pivot', 150),
         ];
 
         const awayPlayers = [
-          createMockPlayer(11, 'Goalkeeper', 70),
-          createMockPlayer(12, 'Defender', 70),
-          createMockPlayer(13, 'Defender', 70),
-          createMockPlayer(14, 'Winger', 70),
-          createMockPlayer(15, 'Pivot', 70),
-          createMockPlayer(16, 'Defender', 70),
-          createMockPlayer(17, 'Winger', 70),
+          createMockPlayer(11, 'Goalkeeper', 150),
+          createMockPlayer(12, 'Defender', 150),
+          createMockPlayer(13, 'Defender', 150),
+          createMockPlayer(14, 'Winger', 150),
+          createMockPlayer(15, 'Pivot', 150),
+          createMockPlayer(16, 'Defender', 150),
+          createMockPlayer(17, 'Winger', 150),
         ];
 
         const match = createMockMatch(i + 1, homeTeam.id, awayTeam.id);
@@ -2223,25 +2223,25 @@ describe('MatchEngine - Phase 1', () => {
 
         // Create extra players for substitutions (7+ players = 2+ bench)
         const homePlayers = [
-          createMockPlayer(1, 'Goalkeeper', 70),
-          createMockPlayer(2, 'Defender', 70),
-          createMockPlayer(3, 'Defender', 70),
-          createMockPlayer(4, 'Winger', 70),
-          createMockPlayer(5, 'Pivot', 70),
-          createMockPlayer(6, 'Winger', 70), // Bench
-          createMockPlayer(7, 'Pivot', 70),  // Bench
-          createMockPlayer(8, 'Defender', 70), // Bench
+          createMockPlayer(1, 'Goalkeeper', 150),
+          createMockPlayer(2, 'Defender', 150),
+          createMockPlayer(3, 'Defender', 150),
+          createMockPlayer(4, 'Winger', 150),
+          createMockPlayer(5, 'Pivot', 150),
+          createMockPlayer(6, 'Winger', 150), // Bench
+          createMockPlayer(7, 'Pivot', 150),  // Bench
+          createMockPlayer(8, 'Defender', 150), // Bench
         ];
 
         const awayPlayers = [
-          createMockPlayer(11, 'Goalkeeper', 70),
-          createMockPlayer(12, 'Defender', 70),
-          createMockPlayer(13, 'Defender', 70),
-          createMockPlayer(14, 'Winger', 70),
-          createMockPlayer(15, 'Pivot', 70),
-          createMockPlayer(16, 'Winger', 70), // Bench
-          createMockPlayer(17, 'Pivot', 70),  // Bench
-          createMockPlayer(18, 'Defender', 70), // Bench
+          createMockPlayer(11, 'Goalkeeper', 150),
+          createMockPlayer(12, 'Defender', 150),
+          createMockPlayer(13, 'Defender', 150),
+          createMockPlayer(14, 'Winger', 150),
+          createMockPlayer(15, 'Pivot', 150),
+          createMockPlayer(16, 'Winger', 150), // Bench
+          createMockPlayer(17, 'Pivot', 150),  // Bench
+          createMockPlayer(18, 'Defender', 150), // Bench
         ];
 
         const match = createMockMatch(i + 1, homeTeam.id, awayTeam.id);
@@ -2351,21 +2351,21 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
-        createMockPlayer(6, 'Defender', 70), // Bench player
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Defender', 150), // Bench player
       ];
 
       const awayPlayers = [
-        createMockPlayer(7, 'Goalkeeper', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Defender', 70),
-        createMockPlayer(10, 'Winger', 70),
-        createMockPlayer(11, 'Pivot', 70),
-        createMockPlayer(12, 'Defender', 70), // Bench player
+        createMockPlayer(7, 'Goalkeeper', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Winger', 150),
+        createMockPlayer(11, 'Pivot', 150),
+        createMockPlayer(12, 'Defender', 150), // Bench player
       ];
 
       const match = createMockMatch(matchId, homeTeam.id, awayTeam.id);
@@ -2457,21 +2457,21 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
-        createMockPlayer(6, 'Defender', 70), // Bench player
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Defender', 150), // Bench player
       ];
 
       const awayPlayers = [
-        createMockPlayer(7, 'Goalkeeper', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Defender', 70),
-        createMockPlayer(10, 'Winger', 70),
-        createMockPlayer(11, 'Pivot', 70),
-        createMockPlayer(12, 'Defender', 70), // Bench player
+        createMockPlayer(7, 'Goalkeeper', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Winger', 150),
+        createMockPlayer(11, 'Pivot', 150),
+        createMockPlayer(12, 'Defender', 150), // Bench player
       ];
 
       const match = createMockMatch(matchId, homeTeam.id, awayTeam.id);
@@ -2558,21 +2558,21 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
-        createMockPlayer(6, 'Defender', 70), // Sub 1
-        createMockPlayer(7, 'Winger', 70),   // Sub 2
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Defender', 150), // Sub 1
+        createMockPlayer(7, 'Winger', 150),   // Sub 2
       ];
 
       const awayPlayers = [
-        createMockPlayer(8, 'Goalkeeper', 70),
-        createMockPlayer(9, 'Defender', 70),
-        createMockPlayer(10, 'Defender', 70),
-        createMockPlayer(11, 'Winger', 70),
-        createMockPlayer(12, 'Pivot', 70),
+        createMockPlayer(8, 'Goalkeeper', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Defender', 150),
+        createMockPlayer(11, 'Winger', 150),
+        createMockPlayer(12, 'Pivot', 150),
       ];
 
       const match = createMockMatch(matchId, homeTeam.id, awayTeam.id);
@@ -2631,20 +2631,20 @@ describe('MatchEngine - Phase 1', () => {
       const awayTeam = createMockTeam(2, 'Away Team');
 
       const homePlayers = [
-        createMockPlayer(1, 'Goalkeeper', 70),
-        createMockPlayer(2, 'Defender', 70),
-        createMockPlayer(3, 'Defender', 70),
-        createMockPlayer(4, 'Winger', 70),
-        createMockPlayer(5, 'Pivot', 70),
-        createMockPlayer(6, 'Defender', 70), // This player should come on
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Defender', 150), // This player should come on
       ];
 
       const awayPlayers = [
-        createMockPlayer(7, 'Goalkeeper', 70),
-        createMockPlayer(8, 'Defender', 70),
-        createMockPlayer(9, 'Defender', 70),
-        createMockPlayer(10, 'Winger', 70),
-        createMockPlayer(11, 'Pivot', 70),
+        createMockPlayer(7, 'Goalkeeper', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Winger', 150),
+        createMockPlayer(11, 'Pivot', 150),
       ];
 
       const match = createMockMatch(matchId, homeTeam.id, awayTeam.id);

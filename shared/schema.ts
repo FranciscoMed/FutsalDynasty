@@ -223,14 +223,38 @@ export interface OnCourtPlayer {
   player: PlayerWithTraits;
   
   // Effective attributes (base + fatigue modifiers)
+  // All attributes available for match engine actions
   effectiveAttributes: {
+    // Technical attributes
     shooting: number;
     passing: number;
     dribbling: number;
+    ballControl: number;
+    firstTouch: number;
+    
+    // Physical attributes
     pace: number;
+    stamina: number;
+    strength: number;
+    agility: number;
+    
+    // Defensive attributes
     tackling: number;
     positioning: number;
     marking: number;
+    interceptions: number;
+    
+    // Mental attributes
+    vision: number;
+    decisionMaking: number;
+    composure: number;
+    workRate: number;
+    
+    // Goalkeeper attributes (optional)
+    reflexes?: number;
+    handling?: number;
+    gkPositioning?: number;
+    distribution?: number;
   };
   
   // Performance tracking
@@ -601,8 +625,16 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
         (attributes.gkPositioning || 0) * 2.5 +
         (attributes.handling || 0) * 2.5 +
         (attributes.distribution || 0) * 1 +
-        attributes.composure * 1
-      ) / 10;
+        attributes.composure * 1.5 +
+        attributes.decisionMaking * 1 +
+        attributes.agility * 2 +
+        attributes.strength * 1 +
+        attributes.pace * 0.25 +
+        attributes.positioning * 0.25 +
+        attributes.tackling * 0.25 +
+        attributes.interceptions * 0.5 +
+        attributes.shooting * 0.25
+      ) / 16;
       break;
     
     case "Defender":
@@ -612,9 +644,16 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
         attributes.marking * 2.5 +
         attributes.interceptions * 2 +
         attributes.strength * 1.5 +
+        attributes.agility * 1.5 +
+        attributes.pace * 1 +
+        attributes.workRate * 1 +
+        attributes.decisionMaking * 1 +
+        attributes.passing * 1 +
+        attributes.stamina * 1 +
         attributes.composure * 1.5 +
-        attributes.passing * 1
-      ) / 14;
+        attributes.passing * 1 +
+        attributes.strength * 1.5
+      ) / 22;
       break;
     
     case "Winger":
@@ -625,8 +664,15 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
         attributes.shooting * 2 +
         attributes.passing * 1.5 +
         attributes.stamina * 1.5 +
-        attributes.agility * 1.5
-      ) / 14;
+        attributes.agility * 1.5 +
+        attributes.vision * 1 +
+        attributes.decisionMaking * 1 +
+        attributes.composure * 1 +
+        attributes.workRate * 1 +
+        attributes.tackling * 1.5 +
+        attributes.firstTouch * 1 +
+        attributes.strength * 0.5
+      ) / 20;
       break;
     
     case "Pivot":
@@ -637,8 +683,16 @@ export function calculateOverallRating(attributes: PlayerAttributes, position: P
         attributes.shooting * 2 +
         attributes.stamina * 1.5 +
         attributes.decisionMaking * 1.5 +
-        attributes.composure * 1
-      ) / 13;
+        attributes.composure * 1 +
+        attributes.strength * 3 +
+        attributes.firstTouch * 1 +
+        attributes.dribbling * 1 +
+        attributes.tackling * 0.5 +
+        attributes.agility * 1 +
+        attributes.pace * 0.5 +
+        attributes.interceptions * 0.5 +
+        attributes.workRate * 0.5
+      ) / 21;
       break;
   }
   

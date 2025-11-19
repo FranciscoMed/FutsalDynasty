@@ -355,7 +355,7 @@ export class TraitEngine {
       minute: number;
       score: { home: number; away: number };
       isImportantMatch?: boolean;
-      actionType: 'shot' | 'pass' | 'penalty' | 'freeKick' | 'save';
+      actionType: 'shot' | 'dribble' | 'penalty' | 'freeKick' | 'save';
       team: 'home' | 'away';
     }
   ): number {
@@ -393,7 +393,7 @@ export class TraitEngine {
     
     // classy: Better execution (especially passing)
     if (player.traits.includes('classy')) {
-      if (situation.actionType === 'pass') {
+      if (situation.actionType === 'dribble') {
         modifier += 0.08; // +8% pass accuracy
       } else {
         modifier += 0.04; // +4% for other actions
