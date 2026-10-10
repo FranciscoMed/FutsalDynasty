@@ -151,14 +151,15 @@ export class GameEngine {
 
   private async processWeeklyTraining(saveGameId: number, userId: number, teamId: number, trainingDate: Date): Promise<void> {
     const week = this.getTrainingWeekKey(trainingDate);
-    const claimed = await this.storage.claimTrainingWeek(saveGameId, userId, week);
-    if (!claimed) return;
-
     const players = await this.storage.getPlayersByTeam(saveGameId, userId, teamId);
+    const updates: Array<{ playerId: number; changes: Partial<Player> }> = [];
     const trainingReport: Array<{ playerName: string; changes: string[] }> = [];
     
     for (const player of players) {
-      const { improvements } = await this.developPlayer(saveGameId, userId, player);
+      const { playerChanges, improvements } = this.developPlayer(player);
+      if (Object.keys(playerChanges).length > 0) {
+        updates.push({ playerId: player.id, changes: playerChanges });
+      }
       if (improvements.length > 0 && improvements[0] !== "No significant changes") {
         trainingReport.push({
           playerName: player.name,
@@ -166,13 +167,16 @@ export class GameEngine {
         });
       }
     }
+
+    const applied = await this.storage.applyWeeklyTraining(saveGameId, userId, teamId, week, updates);
+    if (!applied) return;
     
     if (trainingReport.length > 0 && this.getISOWeekNumber(trainingDate) % 4 === 0) {
       await this.generateTrainingReport(saveGameId, userId, week, trainingReport);
     }
   }
 
-  private async developPlayer(saveGameId: number, userId: number, player: Player): Promise<{ improvements: string[] }> {
+  private developPlayer(player: Player): { playerChanges: Partial<Player>; improvements: string[] } {
     const age = player.age;
     let monthlyGrowthRate = 0;
     
@@ -216,25 +220,24 @@ export class GameEngine {
         player.potential
       );
       
-      await this.storage.updatePlayer(saveGameId, userId, player.id, {
-        attributes: updatedPlayer.attributes,
-        currentAbility: newCurrentAbility,
-      });
-      
-      return { improvements: changes };
+      return {
+        playerChanges: {
+          attributes: updatedPlayer.attributes,
+          currentAbility: newCurrentAbility,
+        },
+        improvements: changes,
+      };
     } else if (baseGrowthRate < 0) {
       const decline = Math.floor(Math.random() * 2);
-      if (decline === 0) return { improvements: ["No significant changes"] };
+      if (decline === 0) return { playerChanges: {}, improvements: ["No significant changes"] };
 
       const declinedAttributes = this.applyAttributeDecline(player, decline);
-      
-      await this.storage.updatePlayer(saveGameId, userId, player.id, declinedAttributes);
       improvements.push(`Overall ability declined by ${decline}`);
       
-      return { improvements };
+      return { playerChanges: declinedAttributes, improvements };
     }
     
-    return { improvements: ["No significant changes"] };
+    return { playerChanges: {}, improvements: ["No significant changes"] };
   }
 
   private applyTrainingFocusGrowth(

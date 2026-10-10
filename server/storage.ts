@@ -74,7 +74,13 @@ export interface IStorage {
   getPlayerTeamId(saveGameId: number, userId: number): Promise<number>;
   updateGameState(saveGameId: number, userId: number, state: Partial<GameState>): Promise<GameState>;
   createGameState(saveGameId: number, userId: number, state: Omit<GameState, "id" | "userId" | "saveGameId">): Promise<GameState>;
-  claimTrainingWeek(saveGameId: number, userId: number, week: string): Promise<boolean>;
+  applyWeeklyTraining(
+    saveGameId: number,
+    userId: number,
+    teamId: number,
+    week: string,
+    updates: Array<{ playerId: number; changes: Partial<Player> }>
+  ): Promise<boolean>;
   
   // User methods - unchanged (no saveGame filtering needed)
   getUser(id: number): Promise<User | undefined>;

@@ -736,16 +736,37 @@ export class DbStorage implements IStorage {
     return await this.getGameState(saveGameId, userId);
   }
 
-  async claimTrainingWeek(saveGameId: number, userId: number, week: string): Promise<boolean> {
-    const claimed = await db.update(gameStates)
-      .set({ lastTrainingWeek: week })
-      .where(and(
-        eq(gameStates.saveGameId, saveGameId),
-        eq(gameStates.userId, userId),
-        or(isNull(gameStates.lastTrainingWeek), ne(gameStates.lastTrainingWeek, week))
-      ))
-      .returning({ id: gameStates.id });
-    return claimed.length > 0;
+  async applyWeeklyTraining(
+    saveGameId: number,
+    userId: number,
+    teamId: number,
+    week: string,
+    updates: Array<{ playerId: number; changes: Partial<Player> }>
+  ): Promise<boolean> {
+    return db.transaction(async (transaction) => {
+      const claimed = await transaction.update(gameStates)
+        .set({ lastTrainingWeek: week })
+        .where(and(
+          eq(gameStates.saveGameId, saveGameId),
+          eq(gameStates.userId, userId),
+          or(isNull(gameStates.lastTrainingWeek), ne(gameStates.lastTrainingWeek, week))
+        ))
+        .returning({ id: gameStates.id });
+      if (claimed.length === 0) return false;
+
+      for (const { playerId, changes } of updates) {
+        await transaction.update(players)
+          .set(changes)
+          .where(and(
+            eq(players.saveGameId, saveGameId),
+            eq(players.userId, userId),
+            eq(players.teamId, teamId),
+            eq(players.id, playerId)
+          ));
+      }
+
+      return true;
+    });
   }
 
   // User methods - no userId filtering needed (users manage themselves)

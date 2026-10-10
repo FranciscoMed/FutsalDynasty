@@ -118,9 +118,19 @@ function createTrainingStorage(currentDate = new Date(2024, 7, 4)) {
       gameState = { ...gameState, ...update };
       return gameState;
     },
-    claimTrainingWeek: async (_saveGameId: number, _userId: number, week: string) => {
+    applyWeeklyTraining: async (
+      _saveGameId: number,
+      _userId: number,
+      _teamId: number,
+      week: string,
+      updates: Array<{ playerId: number; changes: Partial<Player> }>
+    ) => {
       if (gameState.lastTrainingWeek === week) return false;
       gameState = { ...gameState, lastTrainingWeek: week };
+      for (const { playerId, changes } of updates) {
+        const player = players.get(playerId);
+        if (player) players.set(playerId, { ...player, ...changes });
+      }
       return true;
     },
     getPlayersByTeam: async () => [...players.values()],
