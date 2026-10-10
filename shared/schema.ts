@@ -586,6 +586,7 @@ export interface GameState {
   nextMatchId: number | null;
   monthlyTrainingInProgress: boolean;
   lastTrainingReportMonth: number;
+  lastTrainingWeek?: string | null;
 }
 
 export function internalToDisplay(value: number): number {
@@ -880,6 +881,7 @@ export const gameStates = pgTable("game_states", {
   nextMatchId: integer("next_match_id"),
   monthlyTrainingInProgress: boolean("monthly_training_in_progress").notNull().default(true),
   lastTrainingReportMonth: integer("last_training_report_month").notNull(),
+  lastTrainingWeek: varchar("last_training_week", { length: 10 }),
 }, (table) => ({
   userSaveIdx: index("game_states_user_save_idx").on(table.userId, table.saveGameId),
 }));

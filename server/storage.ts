@@ -74,6 +74,7 @@ export interface IStorage {
   getPlayerTeamId(saveGameId: number, userId: number): Promise<number>;
   updateGameState(saveGameId: number, userId: number, state: Partial<GameState>): Promise<GameState>;
   createGameState(saveGameId: number, userId: number, state: Omit<GameState, "id" | "userId" | "saveGameId">): Promise<GameState>;
+  claimTrainingWeek(saveGameId: number, userId: number, week: string): Promise<boolean>;
   
   // User methods - unchanged (no saveGame filtering needed)
   getUser(id: number): Promise<User | undefined>;
@@ -140,6 +141,7 @@ export class MemStorage {
       nextMatchId: null,
       monthlyTrainingInProgress: true,
       lastTrainingReportMonth: 7,
+      lastTrainingWeek: null,
     };
   }
 

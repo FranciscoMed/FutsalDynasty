@@ -25,7 +25,7 @@ import {
   users,
   saveGames,
 } from "@shared/schema";
-import { eq, desc, and, inArray, or, gte, lt, sql } from "drizzle-orm";
+import { eq, desc, and, inArray, or, gte, lt, sql, isNull, ne } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DbStorage implements IStorage {
@@ -687,6 +687,7 @@ export class DbStorage implements IStorage {
       nextMatchId: state.nextMatchId,
       monthlyTrainingInProgress: state.monthlyTrainingInProgress,
       lastTrainingReportMonth: state.lastTrainingReportMonth,
+      lastTrainingWeek: state.lastTrainingWeek ?? null,
     };
   }
 
@@ -733,6 +734,18 @@ export class DbStorage implements IStorage {
       .values({ ...stateData, saveGameId, userId })
       .returning();
     return await this.getGameState(saveGameId, userId);
+  }
+
+  async claimTrainingWeek(saveGameId: number, userId: number, week: string): Promise<boolean> {
+    const claimed = await db.update(gameStates)
+      .set({ lastTrainingWeek: week })
+      .where(and(
+        eq(gameStates.saveGameId, saveGameId),
+        eq(gameStates.userId, userId),
+        or(isNull(gameStates.lastTrainingWeek), ne(gameStates.lastTrainingWeek, week))
+      ))
+      .returning({ id: gameStates.id });
+    return claimed.length > 0;
   }
 
   // User methods - no userId filtering needed (users manage themselves)
@@ -1040,6 +1053,7 @@ export class DbStorage implements IStorage {
       nextMatchId: null,
       monthlyTrainingInProgress: true,
       lastTrainingReportMonth: 7,
+      lastTrainingWeek: null,
     });
   }
 }
