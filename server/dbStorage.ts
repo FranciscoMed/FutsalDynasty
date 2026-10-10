@@ -25,7 +25,7 @@ import {
   users,
   saveGames,
 } from "@shared/schema";
-import { eq, desc, and, inArray, or, gte, lt, sql } from "drizzle-orm";
+import { eq, desc, and, inArray, or, gte, lt, sql, isNull, ne } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DbStorage implements IStorage {
@@ -687,6 +687,7 @@ export class DbStorage implements IStorage {
       nextMatchId: state.nextMatchId,
       monthlyTrainingInProgress: state.monthlyTrainingInProgress,
       lastTrainingReportMonth: state.lastTrainingReportMonth,
+      lastTrainingWeek: state.lastTrainingWeek ?? null,
     };
   }
 
@@ -733,6 +734,39 @@ export class DbStorage implements IStorage {
       .values({ ...stateData, saveGameId, userId })
       .returning();
     return await this.getGameState(saveGameId, userId);
+  }
+
+  async applyWeeklyTraining(
+    saveGameId: number,
+    userId: number,
+    teamId: number,
+    week: string,
+    updates: Array<{ playerId: number; changes: Partial<Player> }>
+  ): Promise<boolean> {
+    return db.transaction(async (transaction) => {
+      const claimed = await transaction.update(gameStates)
+        .set({ lastTrainingWeek: week })
+        .where(and(
+          eq(gameStates.saveGameId, saveGameId),
+          eq(gameStates.userId, userId),
+          or(isNull(gameStates.lastTrainingWeek), ne(gameStates.lastTrainingWeek, week))
+        ))
+        .returning({ id: gameStates.id });
+      if (claimed.length === 0) return false;
+
+      for (const { playerId, changes } of updates) {
+        await transaction.update(players)
+          .set(changes)
+          .where(and(
+            eq(players.saveGameId, saveGameId),
+            eq(players.userId, userId),
+            eq(players.teamId, teamId),
+            eq(players.id, playerId)
+          ));
+      }
+
+      return true;
+    });
   }
 
   // User methods - no userId filtering needed (users manage themselves)
@@ -1040,6 +1074,7 @@ export class DbStorage implements IStorage {
       nextMatchId: null,
       monthlyTrainingInProgress: true,
       lastTrainingReportMonth: 7,
+      lastTrainingWeek: null,
     });
   }
 }
