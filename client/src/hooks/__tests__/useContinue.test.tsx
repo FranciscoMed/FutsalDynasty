@@ -290,14 +290,20 @@ describe('useContinue', () => {
       vi.mocked(useMatchDay).mockReturnValue({
         nextMatch: {
           id: 1,
-          date: '2024-09-12T20:00:00.000Z',
-          played: false,
-          preparationStatus: 'pending',
+          homeTeamId: 1,
+          awayTeamId: 2,
           homeTeamName: 'Team A',
           awayTeamName: 'Team B',
-        } as any,
+          date: '2024-09-12T20:00:00.000Z',
+          competitionId: 1,
+          competitionName: 'League',
+          competitionType: 'league',
+          played: false,
+          preparationStatus: 'pending',
+        },
+        isLoading: false,
         hasMatchToday: true,
-        loading: false,
+        isMatchToday: true,
         refetch: vi.fn(),
       });
 
@@ -325,8 +331,9 @@ describe('useContinue', () => {
       const { useMatchDay } = await import('../useMatchDay');
       vi.mocked(useMatchDay).mockReturnValue({
         nextMatch: null,
+        isLoading: false,
         hasMatchToday: false,
-        loading: false,
+        isMatchToday: false,
         refetch: vi.fn(),
       });
 
