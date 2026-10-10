@@ -114,7 +114,7 @@ export function HomePage() {
           played: standing.played,
         };
       })
-      .filter(Boolean);
+      .filter((standing): standing is NonNullable<typeof standing> => standing !== null);
   }, [competitions, playerTeam]);
 
   // Debug logging for HomePage

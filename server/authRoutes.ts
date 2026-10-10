@@ -155,6 +155,8 @@ export function setupAuthRoutes(app: Express, storage: IStorage) {
       return;
     }
 
+    let saveGameId: number | null = null;
+
     try {
       const { name, teamName, teamAbbr } = req.body;
 
@@ -175,6 +177,7 @@ export function setupAuthRoutes(app: Express, storage: IStorage) {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+      saveGameId = saveGame.id;
 
       const seedEngine = new SeedEngine(storage);
       const seedResult = await seedEngine.seedNewGame({
@@ -195,7 +198,20 @@ export function setupAuthRoutes(app: Express, storage: IStorage) {
       res.json(updatedSaveGame);
     } catch (error) {
       console.error("Create save game error:", error);
-      res.status(500).json({ error: "Failed to create save game" });
+
+      if (saveGameId !== null) {
+        try {
+          await storage.deleteSaveGame(saveGameId);
+        } catch (cleanupError) {
+          console.error("Cleanup failed after save creation error:", cleanupError);
+        }
+      }
+
+      const message = error instanceof Error ? error.message : "Unknown error";
+      const isDev = process.env.NODE_ENV !== "production";
+      res.status(500).json({
+        error: isDev ? `Failed to create save game: ${message}` : "Failed to create save game",
+      });
     }
   });
 

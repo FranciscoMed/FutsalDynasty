@@ -60,7 +60,7 @@ export function TrainingPage() {
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Training</h1>
         <p className="text-muted-foreground">
-          Set monthly training plans for your players
+          Save each player&apos;s standing focus and intensity. Plans apply automatically every matchweek.
         </p>
       </div>
 
@@ -80,13 +80,13 @@ export function TrainingPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Next Report</CardTitle>
+            <CardTitle className="text-sm font-medium">Training Schedule</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23 days</div>
+            <div className="text-2xl font-bold">Every matchweek</div>
             <p className="text-xs text-muted-foreground">
-              End of September
+              Notable progress is reported periodically
             </p>
           </CardContent>
         </Card>
@@ -267,10 +267,10 @@ export function TrainingPage() {
             <div>
               <h4 className="font-medium mb-2">Age & Development</h4>
               <div className="space-y-2 text-sm">
-                <p><span className="text-success">16-21:</span> Peak development years (24-40 points/month)</p>
-                <p><span className="text-yellow-600">22-25:</span> Good development (16-28 points/month)</p>
-                <p><span className="text-orange-600">26-29:</span> Maintenance phase (8-20 points/month)</p>
-                <p><span className="text-red-600">30-32:</span> Slow decline (4-12 points/month)</p>
+                <p><span className="text-success">16-21:</span> Peak development years</p>
+                <p><span className="text-yellow-600">22-25:</span> Good development</p>
+                <p><span className="text-orange-600">26-29:</span> Slower development</p>
+                <p><span className="text-red-600">30-32:</span> Minimal development</p>
                 <p><span className="text-destructive">33+:</span> Clear decline phase</p>
               </div>
             </div>

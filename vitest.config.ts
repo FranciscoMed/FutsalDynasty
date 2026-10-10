@@ -7,6 +7,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    pool: 'threads',
+    maxWorkers: 1,
+    fileParallelism: false,
     setupFiles: ['./client/src/__tests__/setup.ts'],
     include: [
       '**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
@@ -29,6 +32,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './client/src'),
+      '@shared': path.resolve(__dirname, './shared'),
     },
   },
 });

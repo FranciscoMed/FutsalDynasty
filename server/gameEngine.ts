@@ -32,6 +32,8 @@ export class GameEngine {
       currentMonth: newMonth,
     });
 
+    await this.processWeeklyTraining(saveGameId, userId, gameState.playerTeamId, currentDate);
+
     // Simulate all non-user matches for this date
     const dateString = currentDate.toISOString();
     const simulationSummary = await this.matchSimulator.simulateAllMatchesOnDate(
@@ -105,8 +107,6 @@ export class GameEngine {
     
     await this.processMonthlyPayments(saveGameId, userId, gameState);
     
-    await this.processPlayerDevelopment(saveGameId, userId, gameState, newDate);
-    
     // Note: Player aging is handled via birthDate calculation (not stored age)
     // TODO: Migrate schema to use birthDate instead of age field
     // For now, age is still stored but should be calculated from birthDate in the future
@@ -149,12 +149,17 @@ export class GameEngine {
     }
   }
 
-  private async processPlayerDevelopment(saveGameId: number, userId: number, gameState: GameState, reportDate: Date): Promise<void> {
-    const players = await this.storage.getPlayersByTeam(saveGameId, userId, gameState.playerTeamId);
+  private async processWeeklyTraining(saveGameId: number, userId: number, teamId: number, trainingDate: Date): Promise<void> {
+    const week = this.getTrainingWeekKey(trainingDate);
+    const players = await this.storage.getPlayersByTeam(saveGameId, userId, teamId);
+    const updates: Array<{ playerId: number; changes: Partial<Player> }> = [];
     const trainingReport: Array<{ playerName: string; changes: string[] }> = [];
     
     for (const player of players) {
-      const { improvements } = await this.developPlayer(saveGameId, userId, player);
+      const { playerChanges, improvements } = this.developPlayer(player);
+      if (Object.keys(playerChanges).length > 0) {
+        updates.push({ playerId: player.id, changes: playerChanges });
+      }
       if (improvements.length > 0 && improvements[0] !== "No significant changes") {
         trainingReport.push({
           playerName: player.name,
@@ -162,27 +167,33 @@ export class GameEngine {
         });
       }
     }
+
+    const applied = await this.storage.applyWeeklyTraining(saveGameId, userId, teamId, week, updates);
+    if (!applied) return;
     
-    if (trainingReport.length > 0) {
-      await this.generateTrainingReport(saveGameId, userId, reportDate, trainingReport);
+    if (trainingReport.length > 0 && this.getISOWeekNumber(trainingDate) % 4 === 0) {
+      await this.generateTrainingReport(saveGameId, userId, week, trainingReport);
     }
   }
 
-  private async developPlayer(saveGameId: number, userId: number, player: Player): Promise<{ improvements: string[] }> {
+  private developPlayer(player: Player): { playerChanges: Partial<Player>; improvements: string[] } {
     const age = player.age;
-    let baseGrowthRate = 0;
+    let monthlyGrowthRate = 0;
     
     if (age <= 21) {
-      baseGrowthRate = 24 + Math.floor(Math.random() * 17);
+      monthlyGrowthRate = 24 + Math.floor(Math.random() * 17);
     } else if (age <= 25) {
-      baseGrowthRate = 16 + Math.floor(Math.random() * 13);
+      monthlyGrowthRate = 16 + Math.floor(Math.random() * 13);
     } else if (age <= 29) {
-      baseGrowthRate = 8 + Math.floor(Math.random() * 13);
+      monthlyGrowthRate = 8 + Math.floor(Math.random() * 13);
     } else if (age <= 32) {
-      baseGrowthRate = 4 + Math.floor(Math.random() * 9);
+      monthlyGrowthRate = 4 + Math.floor(Math.random() * 9);
     } else {
-      baseGrowthRate = -Math.floor(Math.random() * 6);
+      monthlyGrowthRate = -Math.floor(Math.random() * 6);
     }
+    const baseGrowthRate = monthlyGrowthRate > 0
+      ? Math.ceil(monthlyGrowthRate / 4)
+      : monthlyGrowthRate;
     
     const trainingIntensityMultiplier = {
       low: 0.5,
@@ -209,23 +220,24 @@ export class GameEngine {
         player.potential
       );
       
-      await this.storage.updatePlayer(saveGameId, userId, player.id, {
-        attributes: updatedPlayer.attributes,
-        currentAbility: newCurrentAbility,
-      });
-      
-      return { improvements: changes };
+      return {
+        playerChanges: {
+          attributes: updatedPlayer.attributes,
+          currentAbility: newCurrentAbility,
+        },
+        improvements: changes,
+      };
     } else if (baseGrowthRate < 0) {
       const decline = Math.floor(Math.random() * 2);
+      if (decline === 0) return { playerChanges: {}, improvements: ["No significant changes"] };
+
       const declinedAttributes = this.applyAttributeDecline(player, decline);
-      
-      await this.storage.updatePlayer(saveGameId, userId, player.id, declinedAttributes);
       improvements.push(`Overall ability declined by ${decline}`);
       
-      return { improvements };
+      return { playerChanges: declinedAttributes, improvements };
     }
     
-    return { improvements: ["No significant changes"] };
+    return { playerChanges: {}, improvements: ["No significant changes"] };
   }
 
   private applyTrainingFocusGrowth(
@@ -248,26 +260,22 @@ export class GameEngine {
     const secondaryGrowth = Math.round(totalGrowth * 0.3);
     
     const primaryAttrs = focusMapping[primaryFocus] || ['passing'];
-    const secondaryAttrs = focusMapping[secondaryFocus] || ['stamina'];
-    
-    primaryAttrs.forEach(attr => {
-      const growth = Math.floor(primaryGrowth / primaryAttrs.length);
-      const oldValue = updatedPlayer.attributes[attr as keyof PlayerAttributes] as number || 100;
-      const newValue = Math.min(oldValue + growth, 200);
-      (updatedPlayer.attributes as any)[attr] = newValue;
-      if (growth > 0) {
-        changes.push(`${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${oldValue} → ${newValue} (+${growth})`);
-      }
-    });
-    
-    secondaryAttrs.forEach(attr => {
-      if (!primaryAttrs.includes(attr)) {
-        const growth = Math.floor(secondaryGrowth / secondaryAttrs.length);
+    const secondaryAttrs = (focusMapping[secondaryFocus] || ['stamina'])
+      .filter(attr => !primaryAttrs.includes(attr));
+    const applyGrowth = (attributes: string[], growth: number, report: boolean) => {
+      attributes.forEach((attr, index) => {
+        const points = Math.floor(growth / attributes.length) + (index < growth % attributes.length ? 1 : 0);
         const oldValue = updatedPlayer.attributes[attr as keyof PlayerAttributes] as number || 100;
-        const newValue = Math.min(oldValue + growth, 200);
+        const newValue = Math.min(oldValue + points, 200);
         (updatedPlayer.attributes as any)[attr] = newValue;
-      }
-    });
+        if (report && newValue > oldValue) {
+          changes.push(`${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${oldValue} → ${newValue} (+${newValue - oldValue})`);
+        }
+      });
+    };
+
+    applyGrowth(primaryAttrs, primaryGrowth, true);
+    if (secondaryAttrs.length > 0) applyGrowth(secondaryAttrs, secondaryGrowth, false);
     
     const attrs = updatedPlayer.attributes;
     const avgAbility = Math.round(
@@ -298,14 +306,11 @@ export class GameEngine {
   private async generateTrainingReport(
     saveGameId: number,
     userId: number,
-    reportDate: Date,
+    week: string,
     trainingReport: Array<{ playerName: string; changes: string[] }>
   ): Promise<void> {
-    const monthName = this.getMonthName(reportDate.getMonth() + 1);
-    const year = reportDate.getFullYear();
-    
-    let reportBody = `Training Report for ${monthName} ${year}\n\n`;
-    reportBody += `The following players have shown improvement this month:\n\n`;
+    let reportBody = `Training Report for the week of ${week}\n\n`;
+    reportBody += `The following players had notable outcomes from their standing training plans:\n\n`;
     
     trainingReport.forEach(({ playerName, changes }) => {
       reportBody += `${playerName}:\n`;
@@ -317,17 +322,32 @@ export class GameEngine {
     
     await this.storage.createInboxMessage(saveGameId, userId, {
       category: "squad",
-      subject: `Training Report - ${monthName} ${year}`,
+      subject: `Training Report - Week of ${week}`,
       body: reportBody,
       from: "Coaching Staff",
-      date: reportDate,
+      date: new Date(`${week}T12:00:00`),
       read: false,
       starred: false,
       priority: "medium",
     });
   }
 
+  private getTrainingWeekKey(date: Date): string {
+    const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const year = monday.getFullYear();
+    const month = String(monday.getMonth() + 1).padStart(2, "0");
+    const day = String(monday.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
+  private getISOWeekNumber(date: Date): number {
+    const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    thursday.setDate(thursday.getDate() + 3 - ((thursday.getDay() + 6) % 7));
+    const firstThursday = new Date(thursday.getFullYear(), 0, 4);
+    firstThursday.setDate(firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7));
+    return 1 + Math.round((thursday.getTime() - firstThursday.getTime()) / 604800000);
+  }
 
   private async updateSeasonIfNeeded(saveGameId: number, userId: number, newMonth: number, newYear: number): Promise<void> {
     if (newMonth === 7) {
@@ -614,4 +634,3 @@ export class GameEngine {
     return events;
   }
 }
-

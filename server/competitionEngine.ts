@@ -320,7 +320,23 @@ export class CompetitionEngine {
     const firstNames = ["João", "Pedro", "Lucas", "Rafael", "Gabriel", "Miguel", "Carlos", "Andre", "Ricardo", "Fernando", "Diego", "Paulo", "Marco", "Luis", "Antonio"];
     const lastNames = ["Silva", "Santos", "Costa", "Oliveira", "Pereira", "Rodrigues", "Alves", "Fernandes", "Lima", "Gomes", "Ribeiro", "Carvalho", "Martins", "Araujo", "Sousa"];
 
-    const positions: Position[] = ["Goalkeeper", "Goalkeeper", "Defender", "Defender", "Defender", "Defender", "Winger", "Winger", "Winger", "Winger", "Pivot", "Pivot", "Pivot"];
+    const positions: Position[] = [
+      "Goalkeeper",
+      "Goalkeeper",
+      "Defender",
+      "Defender",
+      "Defender",
+      "Defender",
+      "Winger",
+      "Winger",
+      "Winger",
+      "Winger",
+      "Pivot",
+      "Pivot",
+      "Pivot",
+      "Defender",
+      "Winger",
+    ];
 
     for (let i = 0; i < 15; i++) {
       const position = positions[i];
