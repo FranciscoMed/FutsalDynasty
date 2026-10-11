@@ -412,15 +412,16 @@ export class GameEngine {
       match.homeTeamId === gameState.playerTeamId || 
       match.awayTeamId === gameState.playerTeamId;
 
-    // Check if preparation status is pending or not set
-    const needsPreparation = !match.preparationStatus || match.preparationStatus === "pending";
+    const canPrepareOrResume = !match.preparationStatus
+      || match.preparationStatus === "pending"
+      || match.preparationStatus === "confirmed";
 
-    return isPlayerMatch && needsPreparation;
+    return isPlayerMatch && canPrepareOrResume;
   }
 
   /**
-   * Get the next unplayed match involving the player's team
-   * Returns null if no upcoming matches
+   * Get the next unplayed match involving the player's team, including a prepared
+   * fixture so the manager can resume it after a reload.
    */
   async getNextUnplayedMatchForPlayer(saveGameId: number, userId: number): Promise<any | null> {
     const playerTeamId = await this.storage.getPlayerTeamId(saveGameId, userId);
@@ -433,12 +434,7 @@ export class GameEngine {
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
-    // Return the next match that needs preparation
-    const nextMatch = upcomingMatches.find(match => 
-      !match.preparationStatus || match.preparationStatus === "pending"
-    );
-
-    return nextMatch || null;
+    return upcomingMatches[0] || null;
   }
 
   /**

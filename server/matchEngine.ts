@@ -20,6 +20,8 @@ import { StatisticsEngine } from "./statisticsEngine";
 
 import { MatchEngineConfig as CONFIG } from './matchEngineConfig';
 import { config } from "process";
+import { orderPlayersForMatchPreparation } from "@shared/matchPreparation";
+import { getPlayerFixturePreparationError } from "./matchPreparationService";
 
 /**
  * Context for shot resolution
@@ -82,16 +84,31 @@ export class MatchEngine {
       throw new Error("Match already played");
     }
 
+    const gameState = await this.storage.getGameState(saveGameId, userId);
+    const preparationError = getPlayerFixturePreparationError(match, gameState.playerTeamId);
+    if (preparationError) {
+      throw new Error(preparationError);
+    }
+    const isPlayerFixture = match.homeTeamId === gameState.playerTeamId || match.awayTeamId === gameState.playerTeamId;
+
     // Load teams and players
-    const homeTeam = await this.storage.getTeam(saveGameId, userId, match.homeTeamId);
-    const awayTeam = await this.storage.getTeam(saveGameId, userId, match.awayTeamId);
+    let homeTeam = await this.storage.getTeam(saveGameId, userId, match.homeTeamId);
+    let awayTeam = await this.storage.getTeam(saveGameId, userId, match.awayTeamId);
 
     if (!homeTeam || !awayTeam) {
       throw new Error("Teams not found");
     }
 
-    const homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
-    const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
+    let homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
+    let awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
+
+    if (isPlayerFixture && match.preparation) {
+      if (match.homeTeamId === gameState.playerTeamId) {
+        ({ team: homeTeam, players: homePlayers } = this.applyMatchPreparation(homeTeam, homePlayers, match.preparation));
+      } else {
+        ({ team: awayTeam, players: awayPlayers } = this.applyMatchPreparation(awayTeam, awayPlayers, match.preparation));
+      }
+    }
 
     // Initialize match state
     const state = this.initializeMatch(
@@ -233,6 +250,15 @@ export class MatchEngine {
     }
 
     const state = this.currentState;
+    const existingMatch = await this.storage.getMatch(state.saveGameId, state.userId, state.matchId);
+    if (!existingMatch) {
+      throw new Error("Match not found");
+    }
+    if (existingMatch.played) {
+      this.currentState = null;
+      this.isRealTimeMatch = false;
+      return existingMatch;
+    }
 
     // Calculate final player ratings
     const playerRatings: Record<number, number> = {};
@@ -293,10 +319,9 @@ export class MatchEngine {
     };
 
     // Save match results
-    const updatedMatch = await this.storage.updateMatch(state.saveGameId, state.userId, state.matchId, {
+    const updatedMatch = await this.storage.completeMatchOnce(state.saveGameId, state.userId, state.matchId, {
       homeScore: state.score.home,
       awayScore: state.score.away,
-      played: true,
       events: state.events,
       homeStats,
       awayStats,
@@ -312,7 +337,12 @@ export class MatchEngine {
     this.currentState = null;
     this.isRealTimeMatch = false;
 
-    return updatedMatch!;
+    if (updatedMatch) return updatedMatch;
+    const completedMatch = await this.storage.getMatch(state.saveGameId, state.userId, state.matchId);
+    if (!completedMatch?.played) {
+      throw new Error("Match result could not be saved");
+    }
+    return completedMatch;
   }
 
   // ============================================================================
@@ -339,15 +369,24 @@ export class MatchEngine {
     }
 
     // Load teams and players
-    const homeTeam = await this.storage.getTeam(saveGameId, userId, match.homeTeamId);
-    const awayTeam = await this.storage.getTeam(saveGameId, userId, match.awayTeamId);
+    let homeTeam = await this.storage.getTeam(saveGameId, userId, match.homeTeamId);
+    let awayTeam = await this.storage.getTeam(saveGameId, userId, match.awayTeamId);
 
     if (!homeTeam || !awayTeam) {
       throw new Error("Teams not found");
     }
 
-    const homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
-    const awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
+    let homePlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.homeTeamId);
+    let awayPlayers = await this.storage.getPlayersByTeam(saveGameId, userId, match.awayTeamId);
+
+    if (match.preparation) {
+      const gameState = await this.storage.getGameState(saveGameId, userId);
+      if (match.homeTeamId === gameState.playerTeamId) {
+        ({ team: homeTeam, players: homePlayers } = this.applyMatchPreparation(homeTeam, homePlayers, match.preparation));
+      } else if (match.awayTeamId === gameState.playerTeamId) {
+        ({ team: awayTeam, players: awayPlayers } = this.applyMatchPreparation(awayTeam, awayPlayers, match.preparation));
+      }
+    }
 
     // Initialize match state
     const state = this.initializeMatch(
@@ -423,10 +462,9 @@ export class MatchEngine {
     };
 
     // Save match results
-    const updatedMatch = await this.storage.updateMatch(saveGameId, userId, matchId, {
+    const updatedMatch = await this.storage.completeMatchOnce(saveGameId, userId, matchId, {
       homeScore: state.score.home,
       awayScore: state.score.away,
-      played: true,
       events: state.events,
       homeStats,
       awayStats,
@@ -438,7 +476,12 @@ export class MatchEngine {
       await this.statisticsEngine.updatePlayerStatistics(saveGameId, userId, updatedMatch);
     }
 
-    return updatedMatch!;
+    if (updatedMatch) return updatedMatch;
+    const completedMatch = await this.storage.getMatch(saveGameId, userId, matchId);
+    if (!completedMatch?.played) {
+      throw new Error("Match result could not be saved");
+    }
+    return completedMatch;
   }
 
   /**
@@ -574,6 +617,27 @@ export class MatchEngine {
     // });
 
     return state;
+  }
+
+  private applyMatchPreparation(
+    team: Team,
+    players: Player[],
+    preparation: NonNullable<Match["preparation"]>
+  ): { team: Team; players: Player[] } {
+    return {
+      team: {
+        ...team,
+        formation: preparation.formation,
+        tactics: {
+          ...team.tactics,
+          formation: preparation.formation,
+          assignments: preparation.assignments,
+          substitutes: preparation.substitutes,
+          instructions: preparation.instructions,
+        },
+      },
+      players: orderPlayersForMatchPreparation(players, preparation),
+    };
   }
 
   /**
@@ -2656,4 +2720,3 @@ export class MatchEngine {
   }
 
 }
-

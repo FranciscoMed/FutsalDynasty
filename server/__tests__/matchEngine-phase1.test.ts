@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MatchEngine } from '../matchEngine';
 import type { IStorage } from '../storage';
-import type { Match, Player, Team } from '../../shared/schema';
+import type { Match, MatchPreparation, Player, Team } from '../../shared/schema';
 
 // Mock storage implementation
 class MockStorage implements Partial<IStorage> {
@@ -9,6 +9,8 @@ class MockStorage implements Partial<IStorage> {
   private teams: Map<string, Team> = new Map();
   private players: Map<string, Player[]> = new Map();
   private competitions: Map<string, any> = new Map();
+  private playerTeamId = 1;
+  private completedMatchWrites = 0;
 
   async getMatch(saveGameId: number, userId: number, matchId: number): Promise<Match | null> {
     return this.matches.get(`${saveGameId}-${userId}-${matchId}`) || null;
@@ -35,7 +37,7 @@ class MockStorage implements Partial<IStorage> {
       currentDate: new Date(),
       season: 2024,
       currentMonth: 1,
-      playerTeamId: 1,
+      playerTeamId: this.playerTeamId,
       competitions: [],
       nextMatchId: null,
       monthlyTrainingInProgress: false,
@@ -60,6 +62,23 @@ class MockStorage implements Partial<IStorage> {
     const updated = { ...match, ...updates };
     this.matches.set(key, updated);
     return updated;
+  }
+
+  async completeMatchOnce(
+    saveGameId: number,
+    userId: number,
+    matchId: number,
+    result: Pick<Match, 'homeScore' | 'awayScore' | 'events' | 'homeStats' | 'awayStats' | 'playerRatings'>
+  ): Promise<Match | undefined> {
+    const match = await this.getMatch(saveGameId, userId, matchId);
+    if (!match || match.played) return undefined;
+    this.completedMatchWrites++;
+    const updated = await this.updateMatch(saveGameId, userId, matchId, {
+      ...result,
+      played: true,
+      preparationStatus: 'completed',
+    });
+    return updated ?? undefined;
   }
 
   async updatePlayer(
@@ -92,6 +111,14 @@ class MockStorage implements Partial<IStorage> {
 
   setPlayers(saveGameId: number, userId: number, teamId: number, players: Player[]): void {
     this.players.set(`${saveGameId}-${userId}-${teamId}`, players);
+  }
+
+  setPlayerTeamId(playerTeamId: number): void {
+    this.playerTeamId = playerTeamId;
+  }
+
+  getCompletedMatchWriteCount(): number {
+    return this.completedMatchWrites;
   }
 }
 
@@ -245,6 +272,130 @@ describe('MatchEngine - Phase 1', () => {
   });
 
   describe('Basic Match Simulation', () => {
+    it('uses a fixture preparation and persists the result only once', async () => {
+      const saveGameId = 1;
+      const userId = 1;
+      const matchId = 44;
+      const homeTeam = createMockTeam(1, 'Home Team');
+      const awayTeam = createMockTeam(2, 'Away Team');
+      const homePlayers = [
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Winger', 150),
+      ];
+      const awayPlayers = [
+        createMockPlayer(7, 'Goalkeeper', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Winger', 150),
+        createMockPlayer(11, 'Pivot', 150),
+      ];
+      const preparation: MatchPreparation = {
+        formation: '3-1',
+        assignments: { gk: 1, fixo: 5, 'ala-left': 4, 'ala-right': 2, pivot: 3 },
+        substitutes: [6, null, null, null, null],
+        instructions: {
+          mentality: 'Attacking',
+          pressingIntensity: 'High',
+          flyGoalkeeper: 'Always',
+        },
+      };
+      const match = {
+        ...createMockMatch(matchId, homeTeam.id, awayTeam.id),
+        preparation,
+        preparationStatus: 'confirmed' as const,
+      };
+
+      storage.setMatch(saveGameId, userId, match);
+      storage.setTeam(saveGameId, userId, homeTeam);
+      storage.setTeam(saveGameId, userId, awayTeam);
+      storage.setPlayers(saveGameId, userId, homeTeam.id, homePlayers);
+      storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
+
+      const firstResult = await engine.simulateMatch(saveGameId, userId, matchId);
+      const persistedResult = await storage.getMatch(saveGameId, userId, matchId);
+      const retryResult = await engine.simulateMatch(saveGameId, userId, matchId);
+
+      expect(firstResult.played).toBe(true);
+      expect(firstResult.preparationStatus).toBe('completed');
+      expect(firstResult.events).toEqual(persistedResult?.events);
+      expect(firstResult.homeStats).toEqual(persistedResult?.homeStats);
+      expect(firstResult.playerRatings).toEqual(persistedResult?.playerRatings);
+      expect(firstResult.preparation).toEqual(preparation);
+      expect(retryResult).toEqual(firstResult);
+      expect(storage.getCompletedMatchWriteCount()).toBe(1);
+    });
+
+    it('initializes a real-time fixture with the saved lineup and instructions', async () => {
+      const saveGameId = 1;
+      const userId = 1;
+      const matchId = 45;
+      const homeTeam = createMockTeam(1, 'Home Team');
+      const awayTeam = createMockTeam(2, 'Away Team');
+      const homePlayers = [
+        createMockPlayer(1, 'Goalkeeper', 150),
+        createMockPlayer(2, 'Defender', 150),
+        createMockPlayer(3, 'Defender', 150),
+        createMockPlayer(4, 'Winger', 150),
+        createMockPlayer(5, 'Pivot', 150),
+        createMockPlayer(6, 'Winger', 150),
+      ];
+      const awayPlayers = [
+        createMockPlayer(7, 'Goalkeeper', 150),
+        createMockPlayer(8, 'Defender', 150),
+        createMockPlayer(9, 'Defender', 150),
+        createMockPlayer(10, 'Winger', 150),
+        createMockPlayer(11, 'Pivot', 150),
+      ];
+      const preparation: MatchPreparation = {
+        formation: '4-0',
+        assignments: { gk: 1, 'def-1': 2, 'def-2': 3, 'def-3': 4, 'def-4': 5 },
+        substitutes: [6, null, null, null, null],
+        instructions: {
+          mentality: 'VeryAttacking',
+          pressingIntensity: 'VeryHigh',
+          flyGoalkeeper: 'Sometimes',
+        },
+      };
+      const match = {
+        ...createMockMatch(matchId, homeTeam.id, awayTeam.id),
+        preparation,
+        preparationStatus: 'confirmed' as const,
+      };
+
+      storage.setMatch(saveGameId, userId, match);
+      storage.setTeam(saveGameId, userId, homeTeam);
+      storage.setTeam(saveGameId, userId, awayTeam);
+      storage.setPlayers(saveGameId, userId, homeTeam.id, homePlayers);
+      storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
+
+      const state = await engine.initializeRealTimeMatch(saveGameId, userId, matchId);
+
+      expect(state.homeLineup.map(player => player.player.id)).toEqual([1, 2, 3, 4, 5]);
+      expect(state.substitutions.homeBench.map(player => player.id)).toContain(6);
+      expect(state.homeTactics.mentality).toBe('VeryAttacking');
+      expect(state.homeTactics.pressingIntensity).toBe('VeryHigh');
+      expect(state.homeTactics.flyGoalkeeper).toEqual({ usage: 'Sometimes' });
+
+      for (let tick = 0; tick < 160; tick++) {
+        engine.processTick();
+      }
+      const finalResult = await engine.finalizeRealTimeMatch();
+      const persistedResult = await storage.getMatch(saveGameId, userId, matchId);
+
+      expect(finalResult.played).toBe(true);
+      expect(finalResult.preparationStatus).toBe('completed');
+      expect(finalResult.events.length).toBeGreaterThan(0);
+      expect(finalResult.homeStats.shots).toBeGreaterThanOrEqual(0);
+      expect(finalResult.awayStats.shots).toBeGreaterThanOrEqual(0);
+      expect(finalResult.playerRatings).not.toEqual({});
+      expect(persistedResult).toEqual(finalResult);
+      expect(storage.getCompletedMatchWriteCount()).toBe(1);
+    });
+
     it('should simulate a complete match', async () => {
       // Setup
       const saveGameId = 1;
@@ -2377,6 +2528,7 @@ describe('MatchEngine - Phase 1', () => {
       storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
 
       // Initialize engine
+      storage.setPlayerTeamId(999);
       await engine.initializeRealTimeMatch(saveGameId, userId, matchId);
       
       // Run a few ticks to start match
@@ -2483,6 +2635,7 @@ describe('MatchEngine - Phase 1', () => {
       storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
 
       // Initialize engine
+      storage.setPlayerTeamId(999);
       await engine.initializeRealTimeMatch(saveGameId, userId, matchId);
       
       // Run just 1 tick
@@ -2583,6 +2736,7 @@ describe('MatchEngine - Phase 1', () => {
       storage.setPlayers(saveGameId, userId, homeTeam.id, homePlayers);
       storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
 
+      storage.setPlayerTeamId(999);
       await engine.initializeRealTimeMatch(saveGameId, userId, matchId);
       
       let expelledPlayerId: number | null = null;
@@ -2655,6 +2809,7 @@ describe('MatchEngine - Phase 1', () => {
       storage.setPlayers(saveGameId, userId, homeTeam.id, homePlayers);
       storage.setPlayers(saveGameId, userId, awayTeam.id, awayPlayers);
 
+      storage.setPlayerTeamId(999);
       await engine.initializeRealTimeMatch(saveGameId, userId, matchId);
       
       // Run just 1 tick to initialize
@@ -2740,10 +2895,6 @@ describe('MatchEngine - Phase 1', () => {
     });
   });
 });
-
-
-
-
 
 
 

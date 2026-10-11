@@ -11,8 +11,10 @@ import { format } from "date-fns";
 import { TacticsReview } from "./TacticsReview";
 import { TacticsReviewV2 } from "./match-prep/TacticsReviewV2";
 import { OpponentAnalysis } from "./OpponentAnalysis";
-import type { Formation as OldFormation, TacticalPreset, Player } from "@shared/schema";
-import type { Formation } from "@/lib/formations";
+import { toast } from "sonner";
+import type { MatchPreparation, TacticalPreset, Player } from "@shared/schema";
+import { isEligibleForMatch } from "@shared/matchPreparation";
+import { FORMATIONS, type Formation } from "@/lib/formations";
 
 interface MatchPreparationData {
   match: {
@@ -21,6 +23,7 @@ interface MatchPreparationData {
     awayTeamName: string;
     competitionName: string;
     date: string;
+    preparation?: MatchPreparation | null;
   };
   playerTeam: {
     id: number;
@@ -34,6 +37,11 @@ interface MatchPreparationData {
       formation: Formation;
       assignments: Record<string, number | null>;
       substitutes: (number | null)[];
+      instructions?: {
+        mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
+        pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
+        flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
+      };
     };
   };
   opponent: {
@@ -127,8 +135,13 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
         hasInitialized: hasInitializedTactics.current
       });
       
-      // Load saved tactics if available
-      if (data.playerTeam.tactics) {
+      if (data.match.preparation) {
+        setFormation(data.match.preparation.formation);
+        setAssignments(data.match.preparation.assignments);
+        setSubstitutes(data.match.preparation.substitutes);
+        setTacticalInstructions(data.match.preparation.instructions);
+        hasInitializedTactics.current = true;
+      } else if (data.playerTeam.tactics) {
         const savedTactics = data.playerTeam.tactics;
         console.log('Loading saved tactics from database:', savedTactics);
         
@@ -142,6 +155,9 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
         if (savedTactics.substitutes && savedTactics.substitutes.length > 0) {
           console.log('Setting substitutes:', savedTactics.substitutes);
           setSubstitutes(savedTactics.substitutes);
+        }
+        if (savedTactics.instructions) {
+          setTacticalInstructions(savedTactics.instructions);
         }
         
         // Mark as initialized
@@ -178,7 +194,10 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
           instructions: tacticalInstructions,
         }),
       });
-      if (!confirmResponse.ok) throw new Error("Failed to confirm tactics");
+      if (!confirmResponse.ok) {
+        const result = await confirmResponse.json();
+        throw new Error(result.error || "Failed to save match preparation");
+      }
       
       // Return success - we'll navigate to the match simulation page
       return { matchId };
@@ -194,14 +213,38 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
       setLocation(`/match/${matchId}`);
       onClose();
     },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
   });
 
   // Validation
-  const filledPositions = Object.values(assignments).filter(id => id !== null).length;
-  const hasGoalkeeperAssigned = Object.entries(assignments).some(([slotId]) => slotId === "gk");
-  const isValid = filledPositions === 5 && hasGoalkeeperAssigned;
+  const eligibleSquad = data?.playerTeam.squad.filter(isEligibleForMatch) ?? [];
+  const eligiblePlayerIds = new Set(eligibleSquad.map(player => player.id));
+  const startingIds = Object.values(assignments).filter((id): id is number => id !== null);
+  const substituteIds = substitutes.filter((id): id is number => id !== null);
+  const filledPositions = startingIds.length;
+  const formationSlots = FORMATIONS[formation].positions.map(position => position.id);
+  const lineupFillsFormation = formationSlots.length === 5
+    && formationSlots.every(slot => typeof assignments[slot] === "number")
+    && Object.keys(assignments).length === formationSlots.length;
+  const assignedGoalkeeper = eligibleSquad.find(player => player.id === assignments.gk);
+  const allSelectionsEligible = [...startingIds, ...substituteIds].every(id => eligiblePlayerIds.has(id));
+  const hasUniqueSelections = new Set([...startingIds, ...substituteIds]).size === startingIds.length + substituteIds.length;
+  const isValid = filledPositions === 5
+    && lineupFillsFormation
+    && startingIds.length === new Set(startingIds).size
+    && assignedGoalkeeper?.position === "Goalkeeper"
+    && allSelectionsEligible
+    && hasUniqueSelections;
 
   const handleConfirmTactics = () => {
+    if (!data) return;
+    if (data.match.preparation) {
+      setLocation(`/match/${matchId}`);
+      onClose();
+      return;
+    }
     if (!isValid) return;
     confirmTacticsMutation.mutate();
   };
@@ -293,15 +336,57 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <TabsContent value="tactics" className="mt-0 space-y-4">
-                <TacticsReviewV2
-                  squad={data.playerTeam.squad}
-                  initialFormation={formation}
-                  initialAssignments={assignments}
-                  initialSubstitutes={substitutes}
-                  initialInstructions={tacticalInstructions}
-                  onTacticsChange={handleTacticsChange}
-                  onInstructionsChange={handleInstructionsChange}
-                />
+                {data.match.preparation ? (
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <div>
+                      <h3 className="font-semibold">Saved match preparation</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This fixture-specific lineup and tactical plan will be used when the match resumes.
+                      </p>
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">Formation:</span> {data.match.preparation.formation}
+                    </p>
+                    <div>
+                      <h4 className="mb-2 text-sm font-medium">Starting lineup</h4>
+                      <ul className="grid gap-1 text-sm sm:grid-cols-2">
+                        {Object.entries(data.match.preparation.assignments)
+                          .filter((entry): entry is [string, number] => typeof entry[1] === "number")
+                          .map(([slot, playerId]) => (
+                            <li key={slot}>
+                              {slot}: {data.playerTeam.squad.find(player => player.id === playerId)?.name ?? "Unavailable player"}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">Substitutes:</span>{" "}
+                      {data.match.preparation.substitutes
+                        .filter((id): id is number => id !== null)
+                        .map(id => data.playerTeam.squad.find(player => player.id === id)?.name ?? "Unavailable player")
+                        .join(", ") || "None"}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Instructions:</span>{" "}
+                      {data.match.preparation.instructions.mentality}, {data.match.preparation.instructions.pressingIntensity} pressing, fly goalkeeper {data.match.preparation.instructions.flyGoalkeeper.toLowerCase()}
+                    </p>
+                  </div>
+                ) : (
+                  <TacticsReviewV2
+                    squad={eligibleSquad}
+                    initialFormation={data.playerTeam.tactics?.formation ?? formation}
+                    initialAssignments={data.playerTeam.tactics?.assignments ?? assignments}
+                    initialSubstitutes={data.playerTeam.tactics?.substitutes ?? substitutes}
+                    initialInstructions={data.playerTeam.tactics?.instructions ?? tacticalInstructions}
+                    onTacticsChange={handleTacticsChange}
+                    onInstructionsChange={handleInstructionsChange}
+                  />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {data.match.preparation
+                    ? "This saved preparation is fixed for the current fixture."
+                    : `Only fit and eligible players are available for selection (${eligibleSquad.length} of ${data.playerTeam.squad.length}).`}
+                </p>
               </TabsContent>
 
               <TabsContent value="opponent" className="mt-0">
@@ -376,7 +461,7 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
                   </div>
                 </div>
 
-                {hasChanges && (
+                {!data.match.preparation && hasChanges && (
                   <Alert className="border-[#2D6A4F] bg-[#2D6A4F]/5">
                     <AlertCircle className="h-4 w-4 text-[#2D6A4F]" />
                     <AlertDescription className="text-[#1B4332]">
@@ -411,19 +496,19 @@ export function MatchPreparationPopup({ matchId, onClose }: MatchPreparationPopu
             </div>
             <Button
               onClick={handleConfirmTactics}
-              disabled={!isValid || confirmTacticsMutation.isPending}
+              disabled={(!data.match.preparation && !isValid) || confirmTacticsMutation.isPending}
               size="lg"
               className="bg-[#2D6A4F] hover:bg-[#1B4332] text-white gap-2"
             >
               {confirmTacticsMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Starting Match...
+                  Saving Preparation...
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  Confirm Tactics & Start Match
+                  {data.match.preparation ? "Resume Match" : "Confirm Tactics & Start Match"}
                 </>
               )}
             </Button>

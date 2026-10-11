@@ -12,6 +12,7 @@ import {
   type User,
   type SaveGame,
   type PlayerAttributes,
+  type MatchPreparation,
   calculateOverallRating,
   players,
   teams,
@@ -177,6 +178,7 @@ export class DbStorage implements IStorage {
         played: matches.played,
         homeScore: matches.homeScore,
         awayScore: matches.awayScore,
+        preparation: matches.preparation,
         events: matches.events,
         preparationStatus: matches.preparationStatus,
         homeStats: matches.homeStats,
@@ -237,6 +239,7 @@ export class DbStorage implements IStorage {
       played: row.played,
       homeScore: row.homeScore,
       awayScore: row.awayScore,
+      preparation: row.preparation ?? undefined,
       events: row.events,
       preparationStatus: row.preparationStatus ?? undefined,
       homeStats: row.homeStats,
@@ -263,6 +266,7 @@ export class DbStorage implements IStorage {
         played: matches.played,
         homeScore: matches.homeScore,
         awayScore: matches.awayScore,
+        preparation: matches.preparation,
         events: matches.events,
         preparationStatus: matches.preparationStatus,
         homeStats: matches.homeStats,
@@ -301,6 +305,7 @@ export class DbStorage implements IStorage {
       awayTeamId: match.awayTeamId,
       homeScore: match.homeScore,
       awayScore: match.awayScore,
+      preparation: match.preparation,
       date: match.date,
       played: match.played,
       preparationStatus: match.preparationStatus,
@@ -331,6 +336,43 @@ export class DbStorage implements IStorage {
     return result[0] as Match | undefined;
   }
 
+  async saveMatchPreparation(saveGameId: number, userId: number, id: number, preparation: MatchPreparation): Promise<Match | undefined> {
+    const result = await db.update(matches)
+      .set({ preparation, preparationStatus: "confirmed" })
+      .where(and(
+        eq(matches.saveGameId, saveGameId),
+        eq(matches.userId, userId),
+        eq(matches.id, id),
+        eq(matches.played, false),
+        isNull(matches.preparation),
+        or(
+          eq(matches.preparationStatus, "pending"),
+          eq(matches.preparationStatus, "confirmed"),
+          isNull(matches.preparationStatus)
+        )
+      ))
+      .returning();
+    return result[0] as Match | undefined;
+  }
+
+  async completeMatchOnce(
+    saveGameId: number,
+    userId: number,
+    id: number,
+    resultData: Pick<Match, "homeScore" | "awayScore" | "events" | "homeStats" | "awayStats" | "playerRatings">
+  ): Promise<Match | undefined> {
+    const result = await db.update(matches)
+      .set({ ...resultData, played: true, preparationStatus: "completed" })
+      .where(and(
+        eq(matches.saveGameId, saveGameId),
+        eq(matches.userId, userId),
+        eq(matches.id, id),
+        eq(matches.played, false)
+      ))
+      .returning();
+    return result[0] as Match | undefined;
+  }
+
   async getAllMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>> {
     // Efficiently fetch matches for a team with competition details using SQL OR in WHERE clause
     const teamMatches = await db
@@ -342,6 +384,7 @@ export class DbStorage implements IStorage {
         played: matches.played,
         homeScore: matches.homeScore,
         awayScore: matches.awayScore,
+        preparation: matches.preparation,
         events: matches.events,
         preparationStatus: matches.preparationStatus,
         homeStats: matches.homeStats,
@@ -393,6 +436,7 @@ export class DbStorage implements IStorage {
       date: match.date,
       played: match.played,
       preparationStatus: match.preparationStatus,
+      preparation: match.preparation,
       events: match.events,
       homeStats: match.homeStats,
       awayStats: match.awayStats,
