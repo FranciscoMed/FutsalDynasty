@@ -13,6 +13,7 @@ interface MatchDayInfo {
   competitionType: string;
   played: boolean;
   preparationStatus?: string;
+  preparation?: object | null;
 }
 
 /**
@@ -52,7 +53,9 @@ export function useMatchDay() {
   // Determine if we should show the popup
   const hasMatchToday = !!nextMatch && 
     isMatchToday && 
-    (!nextMatch.preparationStatus || nextMatch.preparationStatus === "pending");
+    (!nextMatch.preparationStatus
+      || nextMatch.preparationStatus === "pending"
+      || nextMatch.preparationStatus === "confirmed");
 
   // Debug logging
   console.log('📅 useMatchDay Debug:', {

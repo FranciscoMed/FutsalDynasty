@@ -93,7 +93,13 @@ export default function MatchPage({}: MatchPageProps) {
         playerTeamTactics: data.playerTeam?.tactics,
         match: data.match,
       });
-      
+
+      useEffect(() => {
+        if (matchMetadata?.match.played) {
+          setLocation(`/match/${matchId}/post-match`);
+        }
+      }, [matchMetadata?.match.played, matchId, setLocation]);
+
       return data;
     }
   });

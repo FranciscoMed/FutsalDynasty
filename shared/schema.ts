@@ -463,6 +463,15 @@ export interface MatchStats {
 
 export type MatchPreparationStatus = "pending" | "confirmed" | "simulating" | "completed";
 
+export type MatchPreparationFormation = "2-2" | "3-1" | "4-0";
+
+export interface MatchPreparation {
+  formation: MatchPreparationFormation;
+  assignments: Record<string, number | null>;
+  substitutes: (number | null)[];
+  instructions: NonNullable<TacticsData["instructions"]>;
+}
+
 export interface Match {
   id: number;
   competitionId: number;
@@ -474,6 +483,7 @@ export interface Match {
   date: Date;
   played: boolean;
   preparationStatus?: MatchPreparationStatus;
+  preparation?: MatchPreparation | null;
   events: MatchEvent[];
   homeStats: MatchStats;
   awayStats: MatchStats;
@@ -789,6 +799,7 @@ export const matches = pgTable("matches", {
   date: timestamp("date").notNull(),
   played: boolean("played").notNull().default(false),
   preparationStatus: varchar("preparation_status", { length: 20 }).default("pending").$type<MatchPreparationStatus>(),
+  preparation: jsonb("preparation").$type<MatchPreparation>(),
   events: jsonb("events").notNull().$type<MatchEvent[]>().default([]),
   homeStats: jsonb("home_stats").notNull().$type<MatchStats>(),
   awayStats: jsonb("away_stats").notNull().$type<MatchStats>(),

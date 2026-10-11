@@ -38,6 +38,13 @@ export interface IStorage {
   getAllMatchesForTeam(saveGameId: number, userId: number, teamId: number): Promise<Array<Match & { competitionId: number, competitionName: string, competitionType: string, homeTeamName: string, awayTeamName: string }>>;
   createMatch(saveGameId: number, userId: number, match: Omit<Match, "id" | "userId" | "saveGameId">): Promise<Match>;
   updateMatch(saveGameId: number, userId: number, id: number, match: Partial<Match>): Promise<Match | undefined>;
+  saveMatchPreparation(saveGameId: number, userId: number, id: number, preparation: NonNullable<Match["preparation"]>): Promise<Match | undefined>;
+  completeMatchOnce(
+    saveGameId: number,
+    userId: number,
+    id: number,
+    result: Pick<Match, "homeScore" | "awayScore" | "events" | "homeStats" | "awayStats" | "playerRatings">
+  ): Promise<Match | undefined>;
   
   // Competition methods - now require userId for security
   getCompetition(saveGameId: number, userId: number, id: number): Promise<Competition | undefined>;

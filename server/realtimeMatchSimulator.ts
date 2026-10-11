@@ -59,6 +59,7 @@ interface MatchSession {
   currentTick: number;
   timer: NodeJS.Timeout | null;
   watchers: Set<string>; // socket IDs
+  isCompleting: boolean;
 }
 
 /**
@@ -242,7 +243,8 @@ export class RealtimeMatchSimulator {
       isPaused: false,
       currentTick: 0,
       timer: null,
-      watchers: new Set()
+      watchers: new Set(),
+      isCompleting: false,
     };
 
     this.activeSessions.set(matchId, session);
@@ -303,44 +305,53 @@ export class RealtimeMatchSimulator {
    */
   private async completeMatch(matchId: number): Promise<void> {
     const session = this.activeSessions.get(matchId);
-    if (!session) return;
+    if (!session || session.isCompleting) return;
+    session.isCompleting = true;
 
-    const state = session.engine.getState();
-    console.log(`[RealtimeMatch] Match ${matchId} completed: ${state.score.home}-${state.score.away}`);
+    try {
+      const state = session.engine.getState();
+      console.log(`[RealtimeMatch] Match ${matchId} completed: ${state.score.home}-${state.score.away}`);
 
-    // Finalize and save match through engine
-    const savedMatch = await session.engine.finalizeRealTimeMatch();
+      // Finalize and save match through engine
+      const alreadyCompleted = (await this.storage.getMatch(session.saveGameId, session.userId, matchId))?.played;
+      const savedMatch = await session.engine.finalizeRealTimeMatch();
 
-    // Update competition standings
-    await this.competitionEngine.updateStandings(
-      savedMatch.competitionId, 
-      savedMatch, 
-      state.saveGameId, 
-      state.userId
-    );
+      if (!alreadyCompleted) {
+        await this.competitionEngine.updateStandings(
+          savedMatch.competitionId,
+          savedMatch,
+          state.saveGameId,
+          state.userId
+        );
 
-    // Create inbox message with match result
-    await this.storage.createInboxMessage(state.saveGameId, state.userId, {
-      category: "match",
-      subject: `Match Result: ${savedMatch.homeScore} - ${savedMatch.awayScore}`,
-      body: `Your match has been completed.\n\nFinal Score\n  ${savedMatch.homeScore} - ${savedMatch.awayScore} \n\nCheck the match details for full statistics.`,
-      from: "Match Officials",
-      date: savedMatch.date,
-      read: false,
-      starred: false,
-      priority: "high",
-      actionLink: `/matches/${matchId}`,
-    });
+        await this.storage.createInboxMessage(state.saveGameId, state.userId, {
+          category: "match",
+          subject: `Match Result: ${savedMatch.homeScore} - ${savedMatch.awayScore}`,
+          body: `Your match has been completed.\n\nFinal Score\n  ${savedMatch.homeScore} - ${savedMatch.awayScore} \n\nCheck the match details for full statistics.`,
+          from: "Match Officials",
+          date: savedMatch.date,
+          read: false,
+          starred: false,
+          priority: "high",
+          actionLink: `/matches/${matchId}`,
+        });
+      }
 
-    // Broadcast final state
-    const finalUpdate = this.createMatchUpdate(state, session.currentTick);
-    this.io.to(`match-${matchId}`).emit('match:complete', {
-      ...finalUpdate,
-      match: savedMatch
-    });
+      const finalUpdate = this.createMatchUpdate(state, session.currentTick);
+      this.io.to(`match-${matchId}`).emit('match:complete', {
+        ...finalUpdate,
+        match: savedMatch
+      });
 
-    // Clean up session
-    this.stopMatch(matchId);
+      this.stopMatch(matchId);
+    } catch (error) {
+      session.isCompleting = false;
+      console.error(`[RealtimeMatch] Failed to persist completed match ${matchId}:`, error);
+      this.io.to(`match-${matchId}`).emit("match:error", {
+        message: "Failed to save the completed match",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   }
 
   /**

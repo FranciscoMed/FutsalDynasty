@@ -7,6 +7,8 @@ import { MatchEngine } from "./matchEngine";
 import { StatisticsEngine } from "./statisticsEngine";
 import { setupAuthRoutes } from "./authRoutes";
 import { validateActiveSave } from "./middleware/validateSaveAccess";
+import { getPreparedStartingPlayerIds } from "@shared/matchPreparation";
+import { getPlayerFixturePreparationError, saveMatchPreparationOnce } from "./matchPreparationService";
 
 // DEPRECATED: Use validateActiveSave middleware instead
 // This function is kept for backward compatibility during migration
@@ -435,13 +437,21 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const matchId = parseInt(req.params.id);
+      const matchId = Number(req.params.id);
+      if (!Number.isSafeInteger(matchId) || matchId <= 0) {
+        res.status(400).json({ error: "Invalid match ID" });
+        return;
+      }
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       
       // Get match details
       const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
       if (!match) {
         res.status(404).json({ error: "Match not found" });
+        return;
+      }
+      if (match.homeTeamId !== gameState.playerTeamId && match.awayTeamId !== gameState.playerTeamId) {
+        res.status(403).json({ error: "This match doesn't involve your team" });
         return;
       }
 
@@ -453,6 +463,10 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
       // Determine which is the opponent
       const isHome = match.homeTeamId === gameState.playerTeamId;
       const opponentTeam = isHome ? awayTeam : homeTeam;
+      if (!playerTeam || !opponentTeam) {
+        res.status(404).json({ error: "Match teams not found" });
+        return;
+      }
 
       // Get player team squad
       const playerSquad = await storage.getPlayersByTeam(validatedSaveId, validatedUserId, gameState.playerTeamId);
@@ -461,7 +475,7 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
       const opponentSquad = await storage.getPlayersByTeam(
         validatedSaveId,
         validatedUserId,
-        opponentTeam!.id
+        opponentTeam.id
       );
 
       // Calculate opponent team rating
@@ -475,14 +489,14 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
       const opponentRecentMatches = allMatches
         .filter(m => 
           m.played && 
-          (m.homeTeamId === opponentTeam!.id || m.awayTeamId === opponentTeam!.id)
+          (m.homeTeamId === opponentTeam.id || m.awayTeamId === opponentTeam.id)
         )
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 5);
 
       // Calculate form
       const opponentForm = opponentRecentMatches.map(m => {
-        const isOpponentHome = m.homeTeamId === opponentTeam!.id;
+        const isOpponentHome = m.homeTeamId === opponentTeam.id;
         const opponentScore = isOpponentHome ? m.homeScore : m.awayScore;
         const otherScore = isOpponentHome ? m.awayScore : m.homeScore;
         
@@ -545,103 +559,74 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     }
   });
 
-  // Confirm tactics before match simulation
+  // Save a fixture-specific preparation before match simulation
   app.post("/api/matches/:id/confirm-tactics", validateActiveSave, async (req, res) => {
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const matchId = parseInt(req.params.id);
-      const { formation, assignments, substitutes, instructions }: { 
-        formation?: string; 
-        assignments?: Record<string, number | null>; 
-        substitutes?: (number | null)[];
-        instructions?: {
-          mentality: 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
-          pressingIntensity: 'Low' | 'Medium' | 'High' | 'VeryHigh';
-          flyGoalkeeper: 'Never' | 'Sometimes' | 'Always';
-        };
-      } = req.body;
+      const matchId = Number(req.params.id);
+      if (!Number.isSafeInteger(matchId) || matchId <= 0) {
+        res.status(400).json({ error: "Invalid match ID" });
+        return;
+      }
 
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
-
-      if (!match) {
+      const result = await saveMatchPreparationOnce(
+        storage,
+        validatedSaveId,
+        validatedUserId,
+        matchId,
+        gameState.playerTeamId,
+        req.body
+      );
+      if (result.status === "not-found") {
         res.status(404).json({ error: "Match not found" });
         return;
       }
-
-      // Verify match involves player's team
-      if (match.homeTeamId !== gameState.playerTeamId && 
-          match.awayTeamId !== gameState.playerTeamId) {
+      if (result.status === "forbidden") {
         res.status(403).json({ error: "This match doesn't involve your team" });
         return;
       }
-
-      // Validate lineup has exactly 5 positions filled
-      if (assignments) {
-        const filledPositions = Object.values(assignments).filter(id => id !== null).length;
-        if (filledPositions !== 5) {
-          res.status(400).json({ error: "Starting lineup must have exactly 5 players" });
-          return;
-        }
-
-        // Validate goalkeeper is assigned
-        if (!assignments["gk"]) {
-          res.status(400).json({ error: "Starting lineup must include a goalkeeper" });
-          return;
-        }
+      if (result.status === "played") {
+        res.status(409).json({ error: "This match has already been played" });
+        return;
+      }
+      if (result.status === "invalid") {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      if (result.status === "conflict") {
+        res.status(409).json({ error: "Match preparation could not be saved because the fixture has changed" });
+        return;
+      }
+      if (result.status === "already-prepared") {
+        res.json({
+          success: true,
+          message: "Match preparation is already saved.",
+          matchId,
+          preparation: result.preparation,
+        });
+        return;
       }
 
-      // Update team tactics with new system
-      if (formation || assignments || substitutes) {
-        const updateData: any = {};
-        
-        // Save new tactics format
-        if (formation && assignments && substitutes) {
-          updateData.tactics = {
-            formation,
-            assignments,
-            substitutes,
-            instructions: instructions || {
-              mentality: 'Balanced',
-              pressingIntensity: 'Medium',
-              flyGoalkeeper: 'Never'
-            }
-          };
-
-          // Also update the team's formation field for display
-          updateData.formation = formation;
-
-          // Also populate startingLineup for backward compatibility with match engine
-          const startingLineup = Object.values(assignments).filter((id: number | null): id is number => id !== null);
-          updateData.startingLineup = startingLineup;
-          
-          // Populate substitutes array for backward compatibility
-          const subs = substitutes.filter((id: number | null): id is number => id !== null);
-          updateData.substitutes = subs;
-          
-          // Debug: Log what's being saved
-          console.log('[Routes] Confirming tactics:', {
-            matchId,
-            teamId: gameState.playerTeamId,
-            formation,
-            instructions,
-            updateData
-          });
-        }
-
-        await storage.updateTeam(validatedSaveId, validatedUserId, gameState.playerTeamId, updateData);
-      }
-
-      // Mark match as confirmed (ready to simulate)
-      await storage.updateMatch(validatedSaveId, validatedUserId, matchId, {
-        preparationStatus: "confirmed",
+      const startingLineup = getPreparedStartingPlayerIds(result.preparation);
+      await storage.updateTeam(validatedSaveId, validatedUserId, gameState.playerTeamId, {
+        formation: result.preparation.formation,
+        startingLineup,
+        substitutes: result.preparation.substitutes.filter((id): id is number => id !== null),
+        tactics: {
+          formation: result.preparation.formation,
+          assignments: result.preparation.assignments,
+          substitutes: result.preparation.substitutes,
+          instructions: result.preparation.instructions,
+        },
       });
 
-      res.json({ 
+      res.json({
         success: true, 
-        message: "Tactics confirmed. Match is ready to simulate.",
+        message: "Match preparation saved. The fixture is ready to simulate.",
         matchId,
+        preparation: result.match.preparation,
       });
     } catch (error) {
       console.error("Error confirming tactics:", error);
@@ -667,7 +652,26 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const matchId = parseInt(req.params.id);
+      const matchId = Number(req.params.id);
+      if (!Number.isSafeInteger(matchId) || matchId <= 0) {
+        res.status(400).json({ error: "Invalid match ID" });
+        return;
+      }
+      const matchToStart = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
+      if (!matchToStart) {
+        res.status(404).json({ error: "Match not found" });
+        return;
+      }
+      if (matchToStart.played) {
+        res.json(matchToStart);
+        return;
+      }
+      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+      const preparationError = getPlayerFixturePreparationError(matchToStart, gameState.playerTeamId);
+      if (preparationError) {
+        res.status(409).json({ error: preparationError });
+        return;
+      }
       const match = await matchEngine.simulateMatch(validatedSaveId, validatedUserId, matchId);
       
       await compEngine.updateStandings(match.competitionId, match, validatedSaveId, validatedUserId);
