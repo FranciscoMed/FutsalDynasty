@@ -36,8 +36,13 @@ function createFixture() {
     createMatch(5, 9, 10),
   ];
   let completedWrites = 0;
+  let playerTeamLookups = 0;
   const storage = {
     getGameState: async () => ({ playerTeamId: USER_TEAM_ID }) as GameState,
+    getPlayerTeamId: async () => {
+      playerTeamLookups++;
+      return USER_TEAM_ID;
+    },
     getAllMatches: async () => matches,
     getMatch: async (_saveGameId: number, _userId: number, id: number) =>
       matches.find((match) => match.id === id),
@@ -55,7 +60,12 @@ function createFixture() {
     },
   } as unknown as IStorage;
 
-  return { matches, storage, getCompletedWrites: () => completedWrites };
+  return {
+    matches,
+    storage,
+    getCompletedWrites: () => completedWrites,
+    getPlayerTeamLookups: () => playerTeamLookups,
+  };
 }
 
 describe("AI matchweek simulation", () => {
@@ -63,7 +73,7 @@ describe("AI matchweek simulation", () => {
 
   it("simulates the full AI round once across retries and preserves the user's completed fixture", async () => {
     const fixture = createFixture();
-    const simulateMatch = vi.spyOn(MatchEngine.prototype, "simulateMatch").mockImplementation(
+    const simulateMatch = vi.spyOn(MatchEngine.prototype, "simulateMatchWithOwnership").mockImplementation(
       async (saveGameId, userId, matchId) => {
         const match = await fixture.storage.getMatch(saveGameId, userId, matchId);
         const result = await fixture.storage.completeMatchOnce(saveGameId, userId, matchId, {
@@ -74,7 +84,7 @@ describe("AI matchweek simulation", () => {
           awayStats: {} as Match["awayStats"],
           playerRatings: {},
         });
-        return (result ?? match) as Match;
+        return { match: (result ?? match) as Match, persisted: Boolean(result) };
       }
     );
     const simulator = new MatchSimulator(fixture.storage);
@@ -96,6 +106,7 @@ describe("AI matchweek simulation", () => {
     expect(firstAttempt.results.map(({ matchId }) => matchId).sort()).toEqual([2, 3, 4, 5]);
     expect(retry).toEqual({ matchesSimulated: 0, results: [] });
     expect(fixture.getCompletedWrites()).toBe(4);
+    expect(fixture.getPlayerTeamLookups()).toBe(0);
     expect(simulateMatch).toHaveBeenCalledTimes(4);
     expect(fixture.matches[0]).toMatchObject({
       id: 1,
@@ -105,10 +116,61 @@ describe("AI matchweek simulation", () => {
     });
   });
 
+  it("reports concurrent fixture resolutions only from the caller that persisted them", async () => {
+    const fixture = createFixture();
+    const waitingResolvers = new Map<number, Array<() => void>>();
+    const simulateMatch = vi.spyOn(MatchEngine.prototype, "simulateMatchWithOwnership").mockImplementation(
+      async (saveGameId, userId, matchId) => {
+        const match = await fixture.storage.getMatch(saveGameId, userId, matchId);
+        await new Promise<void>((resolve) => {
+          const resolvers = waitingResolvers.get(matchId) ?? [];
+          resolvers.push(resolve);
+          waitingResolvers.set(matchId, resolvers);
+          if (resolvers.length === 2) {
+            resolvers.forEach((release) => release());
+          }
+        });
+        const result = await fixture.storage.completeMatchOnce(saveGameId, userId, matchId, {
+          homeScore: 1,
+          awayScore: 0,
+          events: [],
+          homeStats: {} as Match["homeStats"],
+          awayStats: {} as Match["awayStats"],
+          playerRatings: {},
+        });
+        return { match: (result ?? match) as Match, persisted: Boolean(result) };
+      }
+    );
+    const simulator = new MatchSimulator(fixture.storage);
+
+    const summaries = await Promise.all([
+      simulator.simulateAllMatchesOnDate(
+        SAVE_GAME_ID,
+        USER_ID,
+        MATCH_DATE.toISOString(),
+        USER_TEAM_ID
+      ),
+      simulator.simulateAllMatchesOnDate(
+        SAVE_GAME_ID,
+        USER_ID,
+        MATCH_DATE.toISOString(),
+        USER_TEAM_ID
+      ),
+    ]);
+    const results = summaries.flatMap(({ results: summaryResults }) => summaryResults);
+
+    expect(results).toHaveLength(4);
+    expect(results.map(({ matchId }) => matchId).sort()).toEqual([2, 3, 4, 5]);
+    expect(summaries.reduce((total, summary) => total + summary.matchesSimulated, 0)).toBe(4);
+    expect(fixture.getCompletedWrites()).toBe(4);
+    expect(fixture.getPlayerTeamLookups()).toBe(0);
+    expect(simulateMatch).toHaveBeenCalledTimes(8);
+  });
+
   it("does not simulate a player-team fixture through the single-match resolver", async () => {
     const fixture = createFixture();
     fixture.matches[1].homeTeamId = USER_TEAM_ID;
-    const simulateMatch = vi.spyOn(MatchEngine.prototype, "simulateMatch");
+    const simulateMatch = vi.spyOn(MatchEngine.prototype, "simulateMatchWithOwnership");
 
     const result = await new MatchSimulator(fixture.storage).simulateMatchInBackground(
       SAVE_GAME_ID,
@@ -117,6 +179,7 @@ describe("AI matchweek simulation", () => {
     );
 
     expect(result).toBeNull();
+    expect(fixture.getPlayerTeamLookups()).toBe(1);
     expect(simulateMatch).not.toHaveBeenCalled();
   });
 });

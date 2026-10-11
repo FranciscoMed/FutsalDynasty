@@ -360,13 +360,23 @@ export class MatchEngine {
     matchId: number,
     realTime: boolean = false
   ): Promise<Match> {
+    const result = await this.simulateMatchWithOwnership(saveGameId, userId, matchId, realTime);
+    return result.match;
+  }
+
+  async simulateMatchWithOwnership(
+    saveGameId: number,
+    userId: number,
+    matchId: number,
+    realTime: boolean = false
+  ): Promise<{ match: Match; persisted: boolean }> {
     const match = await this.storage.getMatch(saveGameId, userId, matchId);
     if (!match) {
       throw new Error("Match not found");
     }
 
     if (match.played) {
-      return match;
+      return { match, persisted: false };
     }
 
     // Load teams and players
@@ -477,12 +487,12 @@ export class MatchEngine {
       await this.statisticsEngine.updatePlayerStatistics(saveGameId, userId, updatedMatch);
     }
 
-    if (updatedMatch) return updatedMatch;
+    if (updatedMatch) return { match: updatedMatch, persisted: true };
     const completedMatch = await this.storage.getMatch(saveGameId, userId, matchId);
     if (!completedMatch?.played) {
       throw new Error("Match result could not be saved");
     }
-    return completedMatch;
+    return { match: completedMatch, persisted: false };
   }
 
   /**
