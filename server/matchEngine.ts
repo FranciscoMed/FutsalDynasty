@@ -29,6 +29,7 @@ import { getPlayerFixturePreparationError } from "./matchPreparationService";
 interface ShotContext {
   shotType: 'open_play' | 'counter_attack' | 'free_kick' | 'penalty_10m' | 'corner';
   isCounter?: boolean;
+  counterAgainstFlyGK?: boolean;
   onTargetProb: number;
   saveProb: number;
   assistProb?: number;
@@ -1187,9 +1188,10 @@ export class MatchEngine {
     // Calculate shot probabilities
     const onTargetProb = CONFIG.shooting.onTargetBase * quality;
     let saveProb = CONFIG.goalkeeper.baseSaveChance;
+    const counterAgainstFlyGK = isCounter && this.isFlyGoalkeeperActive(defendingTeam, state);
 
     // Fly-goalkeeper vulnerability: counter-attacks are much more dangerous
-    if (isCounter && this.isFlyGoalkeeperActive(defendingTeam, state)) {
+    if (counterAgainstFlyGK) {
       saveProb *= (1 - CONFIG.flyGoalkeeper.modifiers.counterVulnerability);
     }
 
@@ -1197,6 +1199,7 @@ export class MatchEngine {
     const context: ShotContext = {
       shotType: isCounter ? 'counter_attack' : 'open_play',
       isCounter,
+      counterAgainstFlyGK,
       onTargetProb,
       saveProb,
       assistProb: CONFIG.shooting.assistProbability,
@@ -2500,7 +2503,7 @@ export class MatchEngine {
    * Handle goal scored
    */
   private handleGoal(state: LiveMatchState, context: ShotContext): void {
-    const { shooter, attackingTeam, quality, isCounter, shotType, assistProb } = context;
+    const { shooter, attackingTeam, quality, isCounter, shotType, assistProb, counterAgainstFlyGK } = context;
     const defendingTeam = this.getOpposingTeam(attackingTeam);
     
     // Update score
@@ -2531,13 +2534,14 @@ export class MatchEngine {
     defendingLineup.forEach(p => {
       p.performance.rating += CONFIG.ratings.weights.goalsConceded;
     });
-    
+
     // Format description
     const description = this.formatGoalDescription(
       shooter.player.name,
       assisterName,
       shotType,
-      isCounter
+      isCounter,
+      counterAgainstFlyGK
     );
     
     // Create goal event
@@ -2552,7 +2556,7 @@ export class MatchEngine {
         assistName: assisterName,
         shotQuality: quality,
         isCounter,
-        goalContext: shotType
+        goalContext: counterAgainstFlyGK ? 'counter_vs_flyGK' : shotType
       }
     );
     
@@ -2619,10 +2623,12 @@ export class MatchEngine {
     shooterName: string,
     assisterName: string | undefined,
     shotType: string,
-    isCounter?: boolean
+    isCounter?: boolean,
+    counterAgainstFlyGK?: boolean
   ): string {
     const assist = assisterName ? ` (Assist: ${assisterName})` : '';
     const counter = isCounter ? ' (Counter-attack)' : '';
+    const flyGKWarning = counterAgainstFlyGK ? ' - GK out of position!' : '';
     
     let typePrefix = '';
     switch (shotType) {
@@ -2637,7 +2643,7 @@ export class MatchEngine {
         break;
     }
     
-    return `⚽ ${typePrefix}GOAL! ${shooterName} scores!${assist}${counter}`;
+    return `⚽ ${typePrefix}GOAL! ${shooterName} scores!${assist}${counter}${flyGKWarning}`;
   }
 
   // ============================================================================
