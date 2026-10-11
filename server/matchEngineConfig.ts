@@ -422,7 +422,7 @@ export const MatchEngineConfig = {
       possession: 0.40,             // +40% possession
       shotFrequency: 0.08,          // +8% shot frequency
       counterVulnerability: 0.28,   // +28% opponent counter goal probability
-      defensiveWeakness: 0.06,     // -6% defensive resistance
+      defensiveWeakness: -0.06,    // -6% defensive resistance
     },
   },
 
