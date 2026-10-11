@@ -43,8 +43,8 @@ export const MatchEngineConfig = {
   events: {
     /** Base probability per tick for each event type (before modifiers) */
     baseProbabilities: {
-      /** Shot attempts (per tick) - calibrated for ~25-30 shots/match */
-      shot: 0.15,
+      /** Shot attempts (per tick) - calibrated for ~20-25 shots/match */
+      shot: 0.13,
       /** 1v1 dribble attempts */
       dribble: 0.30,
       /** Tackle attempts */
@@ -99,7 +99,7 @@ export const MatchEngineConfig = {
       strength: 0.25,
     },
     /** Counter-attack bonus */
-    counterAttackBonus: 0.15,
+    counterAttackBonus: 0.10,
     /** Momentum impact on shot quality (±15%) */
     momentumImpact: 0.30,
     /** Base variance range (±8%) */
@@ -419,10 +419,10 @@ export const MatchEngineConfig = {
 
     /** Performance modifiers */
     modifiers: {
-      possession: 0.5,              // +50% possession
-      shotFrequency: 0.20,           // +20% shot frequency
-      counterVulnerability: 0.40,    // +40% opponent counter goal probability
-      defensiveWeakness: 0.10,      // -10% defensive resistance
+      possession: 0.35,             // +35% possession
+      shotFrequency: 0.12,          // +12% shot frequency
+      counterVulnerability: 0.30,   // +30% opponent counter goal probability
+      defensiveWeakness: 0.08,     // -8% defensive resistance
     },
   },
 
@@ -476,8 +476,8 @@ export const MatchEngineConfig = {
     pressing: {
       Low: { fouls: -0.15, turnovers: -0.10, fatigue: -0.08 },
       Medium: { fouls: 0, turnovers: 0, fatigue: 0 },
-      High: { fouls: 0.20, turnovers: 0.15, fatigue: 0.15 },
-      VeryHigh: { fouls: 0.4, turnovers: 0.30, fatigue: 0.35 }
+      High: { fouls: 0.18, turnovers: 0.12, fatigue: 0.12 },
+      VeryHigh: { fouls: 0.30, turnovers: 0.20, fatigue: 0.25 }
     },
     /** Width affects wing play, central play, and compactness */
     width: {
