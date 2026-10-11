@@ -33,6 +33,11 @@ export class MatchSimulator {
         return null;
       }
 
+      const gameState = await this.storage.getGameState(saveGameId, userId);
+      if (this.shouldSkipMatch(match, gameState.playerTeamId)) {
+        return null;
+      }
+
       // Simulate the match using the full match engine
       const simulatedMatch = await this.matchEngine.simulateMatch(
         saveGameId,
