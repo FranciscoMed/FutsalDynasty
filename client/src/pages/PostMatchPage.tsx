@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, TrendingUp, Users, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Trophy, TrendingUp, Users, ListOrdered, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PostMatchData {
@@ -18,7 +18,19 @@ interface PostMatchData {
     competitionName: string;
     date: string;
     isHome: boolean;
+    homeTeamId?: number;
+    awayTeamId?: number;
   };
+  events?: Array<{
+    minute: number;
+    type: string;
+    playerName: string;
+    teamId: number;
+    assistName?: string;
+    description: string;
+  }>;
+  homeStats?: Record<string, number> | null;
+  awayStats?: Record<string, number> | null;
   standings: Array<{
     position: number;
     teamId: number;
@@ -54,7 +66,10 @@ export default function PostMatchPage() {
     queryKey: ["postMatch", matchId],
     queryFn: async () => {
       const response = await fetch(`/api/matches/${matchId}/post-match`);
-      if (!response.ok) throw new Error("Failed to fetch post-match data");
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "Failed to fetch post-match data");
+      }
       return response.json();
     },
     staleTime: Infinity,
@@ -80,7 +95,9 @@ export default function PostMatchPage() {
           <CardContent className="pt-6">
             <Alert variant="destructive">
               <AlertDescription>
-                Failed to load post-match data. Please try again.
+                {error instanceof Error && error.message
+                  ? `Match review unavailable: ${error.message}`
+                  : "Failed to load post-match data. Please try again."}
               </AlertDescription>
             </Alert>
             <Button onClick={() => setLocation("/matches")} className="mt-4">
@@ -94,11 +111,33 @@ export default function PostMatchPage() {
   }
 
   const { match, standings, nextMatch, playerPerformance } = data;
+  const events = data.events ?? [];
+  const homeStats = data.homeStats ?? null;
+  const awayStats = data.awayStats ?? null;
+  const hasStats = !!homeStats && !!awayStats;
   const playerTeam = match.isHome ? match.homeTeamName : match.awayTeamName;
   const opponentTeam = match.isHome ? match.awayTeamName : match.homeTeamName;
   const playerScore = match.isHome ? match.homeScore : match.awayScore;
   const opponentScore = match.isHome ? match.awayScore : match.homeScore;
   
+  const playerStats = hasStats ? (match.isHome ? homeStats : awayStats) : null;
+  const opponentStats = hasStats ? (match.isHome ? awayStats : homeStats) : null;
+  const statRows: Array<[string, string]> = [
+    ["possession", "Possession (%)"],
+    ["shots", "Shots"],
+    ["shotsOnTarget", "Shots on Target"],
+    ["passes", "Passes"],
+    ["passAccuracy", "Pass Accuracy (%)"],
+    ["tackles", "Tackles"],
+    ["interceptions", "Interceptions"],
+    ["blocks", "Blocks"],
+    ["fouls", "Fouls"],
+    ["corners", "Corners"],
+    ["saves", "Saves"],
+  ];
+  const teamNameForEvent = (teamId: number) =>
+    teamId === match.homeTeamId ? match.homeTeamName : teamId === match.awayTeamId ? match.awayTeamName : "";
+
   const matchResult = playerScore > opponentScore ? "win" : playerScore < opponentScore ? "loss" : "draw";
 
   return (
@@ -163,10 +202,14 @@ export default function PostMatchPage() {
 
       {/* Tabs for Details */}
       <Tabs value={currentTab} onValueChange={setCurrentTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">
             <Trophy className="w-4 h-4 mr-2" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="events">
+            <ListOrdered className="w-4 h-4 mr-2" />
+            Events
           </TabsTrigger>
           <TabsTrigger value="standings">
             <TrendingUp className="w-4 h-4 mr-2" />
@@ -174,7 +217,7 @@ export default function PostMatchPage() {
           </TabsTrigger>
           <TabsTrigger value="squad">
             <Users className="w-4 h-4 mr-2" />
-            Squad Performance
+            Statistics
           </TabsTrigger>
         </TabsList>
 
@@ -240,6 +283,38 @@ export default function PostMatchPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="events" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Match Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {events.length === 0 ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Match events are unavailable for this match.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <ul className="space-y-2" data-testid="match-events">
+                  {events.map((event, index) => (
+                    <li key={index} className="flex items-start gap-3 border-b pb-2">
+                      <span className="font-mono w-12 shrink-0">{event.minute}'</span>
+                      <div>
+                        <div className="font-semibold">
+                          {event.type.replace(/_/g, " ")} - {event.playerName}
+                          {teamNameForEvent(event.teamId) && ` (${teamNameForEvent(event.teamId)})`}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{event.description}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="standings" className="space-y-4">
           <Card>
             <CardHeader>
@@ -300,15 +375,35 @@ export default function PostMatchPage() {
         <TabsContent value="squad" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Squad Performance</CardTitle>
+              <CardTitle>Match Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <Alert>
-                <AlertDescription>
-                  Detailed squad statistics will be available here. This includes individual player ratings,
-                  goals, assists, and other match statistics.
-                </AlertDescription>
-              </Alert>
+              {!playerStats || !opponentStats ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Match statistics are unavailable for this match.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <table className="w-full" data-testid="match-statistics">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-center py-2 px-2">{playerTeam}</th>
+                      <th className="text-center py-2 px-2">Stat</th>
+                      <th className="text-center py-2 px-2">{opponentTeam}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {statRows.map(([key, label]) => (
+                      <tr key={key} className="border-b">
+                        <td className="text-center py-2 px-2">{playerStats[key] ?? "-"}</td>
+                        <td className="text-center py-2 px-2 text-muted-foreground">{label}</td>
+                        <td className="text-center py-2 px-2">{opponentStats[key] ?? "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
