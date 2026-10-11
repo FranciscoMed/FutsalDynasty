@@ -2531,13 +2531,16 @@ export class MatchEngine {
     defendingLineup.forEach(p => {
       p.performance.rating += CONFIG.ratings.weights.goalsConceded;
     });
+
+    const counterAgainstFlyGK = isCounter && this.isFlyGoalkeeperActive(defendingTeam, state);
     
     // Format description
     const description = this.formatGoalDescription(
       shooter.player.name,
       assisterName,
       shotType,
-      isCounter
+      isCounter,
+      counterAgainstFlyGK
     );
     
     // Create goal event
@@ -2552,7 +2555,7 @@ export class MatchEngine {
         assistName: assisterName,
         shotQuality: quality,
         isCounter,
-        goalContext: shotType
+        goalContext: counterAgainstFlyGK ? 'counter_vs_flyGK' : shotType
       }
     );
     
@@ -2619,10 +2622,12 @@ export class MatchEngine {
     shooterName: string,
     assisterName: string | undefined,
     shotType: string,
-    isCounter?: boolean
+    isCounter?: boolean,
+    counterAgainstFlyGK?: boolean
   ): string {
     const assist = assisterName ? ` (Assist: ${assisterName})` : '';
     const counter = isCounter ? ' (Counter-attack)' : '';
+    const flyGKWarning = counterAgainstFlyGK ? ' - GK out of position!' : '';
     
     let typePrefix = '';
     switch (shotType) {
@@ -2637,7 +2642,7 @@ export class MatchEngine {
         break;
     }
     
-    return `⚽ ${typePrefix}GOAL! ${shooterName} scores!${assist}${counter}`;
+    return `⚽ ${typePrefix}GOAL! ${shooterName} scores!${assist}${counter}${flyGKWarning}`;
   }
 
   // ============================================================================
