@@ -313,17 +313,19 @@ export class RealtimeMatchSimulator {
       console.log(`[RealtimeMatch] Match ${matchId} completed: ${state.score.home}-${state.score.away}`);
 
       // Finalize and save match through engine
-      const alreadyCompleted = (await this.storage.getMatch(session.saveGameId, session.userId, matchId))?.played;
+      const wasAlreadyCompleted = Boolean(
+        (await this.storage.getMatch(session.saveGameId, session.userId, matchId))?.played
+      );
       const savedMatch = await session.engine.finalizeRealTimeMatch();
 
-      if (!alreadyCompleted) {
-        await this.competitionEngine.updateStandings(
-          savedMatch.competitionId,
-          savedMatch,
-          state.saveGameId,
-          state.userId
-        );
+      await this.competitionEngine.finalizeMatch(
+        state.saveGameId,
+        state.userId,
+        savedMatch,
+        wasAlreadyCompleted
+      );
 
+      if (!wasAlreadyCompleted) {
         await this.storage.createInboxMessage(state.saveGameId, state.userId, {
           category: "match",
           subject: `Match Result: ${savedMatch.homeScore} - ${savedMatch.awayScore}`,

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import type { MatchEvent, MatchStats } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,9 @@ interface PostMatchData {
     competitionName: string;
     date: string;
     isHome: boolean;
+    events: MatchEvent[];
+    homeStats: MatchStats;
+    awayStats: MatchStats;
   };
   standings: Array<{
     position: number;
@@ -44,6 +48,22 @@ interface PostMatchData {
     topRated?: { name: string; rating: number };
   };
 }
+
+const statRows: Array<{ label: string; key: keyof MatchStats; suffix?: string }> = [
+  { label: "Possession", key: "possession", suffix: "%" },
+  { label: "Shots", key: "shots" },
+  { label: "Shots on target", key: "shotsOnTarget" },
+  { label: "Passes", key: "passes" },
+  { label: "Pass accuracy", key: "passAccuracy", suffix: "%" },
+  { label: "Tackles", key: "tackles" },
+  { label: "Interceptions", key: "interceptions" },
+  { label: "Blocks", key: "blocks" },
+  { label: "Successful dribbles", key: "dribblesSuccessful" },
+  { label: "Unsuccessful dribbles", key: "dribblesUnsuccessful" },
+  { label: "Fouls", key: "fouls" },
+  { label: "Corners", key: "corners" },
+  { label: "Saves", key: "saves" },
+];
 
 export default function PostMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -236,6 +256,54 @@ export default function PostMatchPage() {
                   </div>
                 </div>
               )}
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Match Events</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {match.events.length > 0 ? (
+                      <ol className="space-y-3">
+                        {[...match.events]
+                          .sort((a, b) => a.minute - b.minute)
+                          .map((event, index) => (
+                            <li key={`${event.minute}-${event.type}-${index}`} className="flex gap-3">
+                              <span className="font-semibold tabular-nums">{event.minute}&apos;</span>
+                              <span>{event.description}</span>
+                            </li>
+                          ))}
+                      </ol>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No match events were recorded.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Match Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-3 gap-y-2 text-sm">
+                      <div className="font-semibold text-right">{match.homeTeamName}</div>
+                      <div />
+                      <div className="font-semibold">{match.awayTeamName}</div>
+                      {statRows.map(({ label, key, suffix }) => (
+                        <div key={key} className="contents">
+                          <div className="text-right tabular-nums">
+                            {match.homeStats[key]}{suffix}
+                          </div>
+                          <div className="text-center text-muted-foreground">{label}</div>
+                          <div className="tabular-nums">
+                            {match.awayStats[key]}{suffix}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

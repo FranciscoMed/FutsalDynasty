@@ -7,8 +7,33 @@ import { MatchEngine } from "./matchEngine";
 import { StatisticsEngine } from "./statisticsEngine";
 import { setupAuthRoutes } from "./authRoutes";
 import { validateActiveSave } from "./middleware/validateSaveAccess";
+import type { MatchStats } from "@shared/schema";
 import { getPreparedStartingPlayerIds } from "@shared/matchPreparation";
 import { getPlayerFixturePreparationError, saveMatchPreparationOnce } from "./matchPreparationService";
+
+const MATCH_STAT_KEYS: Array<keyof MatchStats> = [
+  "possession",
+  "shots",
+  "shotsOnTarget",
+  "passes",
+  "passAccuracy",
+  "tackles",
+  "interceptions",
+  "blocks",
+  "dribblesSuccessful",
+  "dribblesUnsuccessful",
+  "fouls",
+  "corners",
+  "saves",
+];
+
+function isCompleteMatchStats(value: unknown): value is MatchStats {
+  if (typeof value !== "object" || value === null) return false;
+  const stats = value as Partial<MatchStats>;
+  return MATCH_STAT_KEYS.every(key =>
+    typeof stats[key] === "number" && Number.isFinite(stats[key])
+  );
+}
 
 // DEPRECATED: Use validateActiveSave middleware instead
 // This function is kept for backward compatibility during migration
@@ -657,36 +682,38 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
         res.status(400).json({ error: "Invalid match ID" });
         return;
       }
-      const matchToStart = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
-      if (!matchToStart) {
+      const existingMatch = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
+      if (!existingMatch) {
         res.status(404).json({ error: "Match not found" });
         return;
       }
-      if (matchToStart.played) {
-        res.json(matchToStart);
-        return;
+      const wasAlreadyPlayed = existingMatch.played;
+      let match = existingMatch;
+      if (!wasAlreadyPlayed) {
+        const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
+        const preparationError = getPlayerFixturePreparationError(existingMatch, gameState.playerTeamId);
+        if (preparationError) {
+          res.status(409).json({ error: preparationError });
+          return;
+        }
+        match = await matchEngine.simulateMatch(validatedSaveId, validatedUserId, matchId);
       }
-      const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
-      const preparationError = getPlayerFixturePreparationError(matchToStart, gameState.playerTeamId);
-      if (preparationError) {
-        res.status(409).json({ error: preparationError });
-        return;
+
+      await compEngine.finalizeMatch(validatedSaveId, validatedUserId, match, wasAlreadyPlayed);
+
+      if (!wasAlreadyPlayed) {
+        await storage.createInboxMessage(validatedSaveId, validatedUserId, {
+          category: "match",
+          subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
+          body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} \n\nCheck the match details for full statistics.`,
+          from: "Match Officials",
+          date: match.date,
+          read: false,
+          starred: false,
+          priority: "high",
+          actionLink: `/matches/${matchId}`,
+        });
       }
-      const match = await matchEngine.simulateMatch(validatedSaveId, validatedUserId, matchId);
-      
-      await compEngine.updateStandings(match.competitionId, match, validatedSaveId, validatedUserId);
-      
-      await storage.createInboxMessage(validatedSaveId, validatedUserId, {
-        category: "match",
-        subject: `Match Result: ${match.homeScore} - ${match.awayScore}`,
-        body: `Your match has been completed.\n\nFinal Score\n  ${match.homeScore} - ${match.awayScore} \n\nCheck the match details for full statistics.`,
-        from: "Match Officials",
-        date: match.date,
-        read: false,
-        starred: false,
-        priority: "high",
-        actionLink: `/matches/${matchId}`,
-      });
       
       res.json(match);
     } catch (error) {
@@ -699,13 +726,24 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
     const { validatedSaveId, validatedUserId } = res.locals;
 
     try {
-      const matchId = parseInt(req.params.id);
+      const matchId = Number(req.params.id);
+      if (!Number.isSafeInteger(matchId) || matchId <= 0) {
+        res.status(400).json({ error: "Invalid match ID" });
+        return;
+      }
       
       // Get match details
       const match = await storage.getMatch(validatedSaveId, validatedUserId, matchId);
       if (!match) {
         return res.status(404).json({ error: "Match not found" });
       }
+      if (!match.played) {
+        return res.status(409).json({ error: "Match report is unavailable until the fixture has been completed" });
+      }
+      if (!Array.isArray(match.events) || !isCompleteMatchStats(match.homeStats) || !isCompleteMatchStats(match.awayStats)) {
+        return res.status(409).json({ error: "Persisted match events or statistics are unavailable" });
+      }
+      await compEngine.finalizeMatch(validatedSaveId, validatedUserId, match, true);
 
       // Get game state to find player's team
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
@@ -719,8 +757,14 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
       if (!playerTeam) {
         return res.status(404).json({ error: "Player team not found" });
       }
+      if (!opponentTeam) {
+        return res.status(404).json({ error: "Opponent team not found" });
+      }
 
       const isHome = match.homeTeamId === playerTeamId;
+      if (!isHome && match.awayTeamId !== playerTeamId) {
+        return res.status(404).json({ error: "Match does not involve the player's team" });
+      }
 
       // Get competition with standings
       const competition = await storage.getCompetition(validatedSaveId, validatedUserId, match.competitionId);
@@ -734,6 +778,7 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
           const team = await storage.getTeam(validatedSaveId, validatedUserId, standing.teamId);
           return {
             position: index + 1,
+            teamId: standing.teamId,
             teamName: team?.name || 'Unknown Team',
             played: standing.played,
             won: standing.won,
@@ -779,7 +824,13 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
           awayTeamName: isHome ? opponentTeam?.name || 'Unknown' : playerTeam.name,
           homeScore: match.homeScore,
           awayScore: match.awayScore,
-          isHome
+          isHome,
+          date: match.date,
+          competitionName: competition.name,
+          events: match.events,
+          homeStats: match.homeStats,
+          awayStats: match.awayStats,
+          playerRatings: match.playerRatings,
         },
         standings: standingsWithNames,
         nextMatch: nextMatchData

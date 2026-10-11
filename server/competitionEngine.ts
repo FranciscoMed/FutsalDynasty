@@ -1,9 +1,163 @@
 import type { IStorage } from "./storage";
 import type { Competition, Match, LeagueStanding, Team, Player, PlayerAttributes, Position, PlayerTrait } from "@shared/schema";
 import { calculateOverallRating } from "@shared/schema";
+import { getMatchdayKey, MatchSimulator } from "./matchSimulator";
+
+function calculateStandingsFromResults(competition: Competition, matches: Match[]): LeagueStanding[] {
+  const standings = new Map<number, LeagueStanding>(competition.standings.map(standing => [
+    standing.teamId,
+    {
+      ...standing,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      points: 0,
+      form: [] as string[],
+    },
+  ]));
+
+  const playedMatches = matches
+    .filter(match => match.played)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
+
+  for (const match of playedMatches) {
+    const home = standings.get(match.homeTeamId);
+    const away = standings.get(match.awayTeamId);
+    if (!home || !away) continue;
+
+    home.played++;
+    away.played++;
+    home.goalsFor += match.homeScore;
+    home.goalsAgainst += match.awayScore;
+    away.goalsFor += match.awayScore;
+    away.goalsAgainst += match.homeScore;
+
+    if (match.homeScore > match.awayScore) {
+      home.won++;
+      home.points += 3;
+      away.lost++;
+      home.form.push("W");
+      away.form.push("L");
+    } else if (match.homeScore < match.awayScore) {
+      away.won++;
+      away.points += 3;
+      home.lost++;
+      home.form.push("L");
+      away.form.push("W");
+    } else {
+      home.drawn++;
+      away.drawn++;
+      home.points++;
+      away.points++;
+      home.form.push("D");
+      away.form.push("D");
+    }
+
+    if (home.form.length > 5) home.form.shift();
+    if (away.form.length > 5) away.form.shift();
+    home.goalDifference = home.goalsFor - home.goalsAgainst;
+    away.goalDifference = away.goalsFor - away.goalsAgainst;
+  }
+
+  return Array.from(standings.values()).sort((a, b) =>
+    b.points - a.points
+    || b.goalDifference - a.goalDifference
+    || b.goalsFor - a.goalsFor
+  );
+}
 
 export class CompetitionEngine {
-  constructor(private storage: IStorage) {}
+  private matchSimulator: MatchSimulator;
+
+  constructor(private storage: IStorage) {
+    this.matchSimulator = new MatchSimulator(storage);
+  }
+
+  async finalizeMatch(
+    saveGameId: number,
+    userId: number,
+    match: Match,
+    wasAlreadyPlayed: boolean
+  ): Promise<void> {
+    if (match.competitionType === "league") {
+      await this.completeMatchweek(saveGameId, userId, match.id);
+    } else if (!wasAlreadyPlayed) {
+      await this.updateStandings(match.competitionId, match, saveGameId, userId);
+    }
+  }
+
+  async completeMatchweek(saveGameId: number, userId: number, matchId: number): Promise<Competition> {
+    const match = await this.storage.getMatch(saveGameId, userId, matchId);
+    if (!match) {
+      throw new Error("Match not found");
+    }
+    if (match.competitionType !== "league") {
+      throw new Error("Only league matchweeks can be completed");
+    }
+
+    const gameState = await this.storage.getGameState(saveGameId, userId);
+    if (match.homeTeamId !== gameState.playerTeamId && match.awayTeamId !== gameState.playerTeamId) {
+      throw new Error("Match does not involve the player's team");
+    }
+    if (!match.played) {
+      throw new Error("The player's match must be completed before the matchweek can be finalized");
+    }
+
+    const competition = await this.storage.getCompetition(saveGameId, userId, match.competitionId);
+    if (!competition) {
+      throw new Error("Competition not found");
+    }
+    if (competition.type !== "league") {
+      throw new Error("Only league matchweeks can be completed");
+    }
+
+    const matchday = getMatchdayKey(match.date);
+    const fixtures = await this.storage.getMatchesByCompetition(saveGameId, userId, competition.id);
+    const getMatchdayFixtures = (matches: Match[]) =>
+      matches.filter(fixture => getMatchdayKey(fixture.date) === matchday);
+    const matchdayFixtures = getMatchdayFixtures(fixtures);
+    if (matchdayFixtures.length === 0) {
+      throw new Error(`No fixtures found for matchweek ${matchday}`);
+    }
+
+    await this.matchSimulator.simulateAllMatchesOnDate(
+      saveGameId,
+      userId,
+      match.date.toISOString(),
+      gameState.playerTeamId,
+      competition.id
+    );
+
+    const persistedFixtures = await this.storage.getMatchesByCompetition(saveGameId, userId, competition.id);
+    const persistedMatchday = getMatchdayFixtures(persistedFixtures);
+    if (persistedMatchday.length !== matchdayFixtures.length || persistedMatchday.some(fixture => !fixture.played)) {
+      throw new Error(`Matchweek ${matchday} is incomplete; one or more fixture results are unavailable`);
+    }
+
+    const standings = calculateStandingsFromResults(competition, persistedFixtures);
+    const scheduledMatchdays = Array.from(new Set(persistedFixtures.map(fixture => getMatchdayKey(fixture.date)))).sort();
+    let consecutiveCompletedMatchdays = 0;
+    for (const scheduledDate of scheduledMatchdays) {
+      if (persistedFixtures.some(fixture => getMatchdayKey(fixture.date) === scheduledDate && !fixture.played)) {
+        break;
+      }
+      consecutiveCompletedMatchdays++;
+    }
+
+    const updatedCompetition = await this.storage.updateCompetition(saveGameId, userId, competition.id, {
+      standings,
+      currentMatchday: Math.max(competition.currentMatchday, consecutiveCompletedMatchdays),
+    });
+    if (!updatedCompetition) {
+      throw new Error("Competition standings could not be saved");
+    }
+
+    return updatedCompetition;
+  }
 
   async createLeagueCompetition(season: number, playerTeamId: number, saveGameId: number, userId: number): Promise<Competition> {
     console.log(`Creating league competition for season ${season}`);
