@@ -44,7 +44,7 @@ export const MatchEngineConfig = {
     /** Base probability per tick for each event type (before modifiers) */
     baseProbabilities: {
       /** Shot attempts (per tick) - calibrated for ~20-25 shots/match */
-      shot: 0.13,
+      shot: 0.10,
       /** 1v1 dribble attempts */
       dribble: 0.30,
       /** Tackle attempts */
@@ -419,10 +419,10 @@ export const MatchEngineConfig = {
 
     /** Performance modifiers */
     modifiers: {
-      possession: 0.35,             // +35% possession
-      shotFrequency: 0.12,          // +12% shot frequency
-      counterVulnerability: 0.30,   // +30% opponent counter goal probability
-      defensiveWeakness: 0.08,     // -8% defensive resistance
+      possession: 0.40,             // +40% possession
+      shotFrequency: 0.08,          // +8% shot frequency
+      counterVulnerability: 0.28,   // +28% opponent counter goal probability
+      defensiveWeakness: 0.06,     // -6% defensive resistance
     },
   },
 
