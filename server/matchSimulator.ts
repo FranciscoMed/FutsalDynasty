@@ -19,7 +19,8 @@ export class MatchSimulator {
   async simulateMatchInBackground(
     saveGameId: number,
     userId: number,
-    matchId: number
+    matchId: number,
+    playerTeamId?: number
   ): Promise<SimulationResult | null> {
     try {
       const match = await this.storage.getMatch(saveGameId, userId, matchId);
@@ -33,13 +34,22 @@ export class MatchSimulator {
         return null;
       }
 
+      const resolvedPlayerTeamId =
+        playerTeamId ?? (await this.storage.getPlayerTeamId(saveGameId, userId));
+      if (this.shouldSkipMatch(match, resolvedPlayerTeamId)) {
+        return null;
+      }
+
       // Simulate the match using the full match engine
-      const simulatedMatch = await this.matchEngine.simulateMatch(
+      const { match: simulatedMatch, persisted } = await this.matchEngine.simulateMatchWithOwnership(
         saveGameId,
         userId,
         matchId,
         false // Not real-time
       );
+      if (!persisted) {
+        return null;
+      }
 
       console.log(
         `✓ Simulated match ${matchId}: Team ${simulatedMatch.homeTeamId} ${simulatedMatch.homeScore}-${simulatedMatch.awayScore} Team ${simulatedMatch.awayTeamId}`
@@ -94,7 +104,7 @@ export class MatchSimulator {
 
       // Simulate all matches in parallel for speed
       const simulationPromises = matchesToSimulate.map((match) =>
-        this.simulateMatchInBackground(saveGameId, userId, match.id)
+        this.simulateMatchInBackground(saveGameId, userId, match.id, playerTeamId)
       );
 
       const results = await Promise.all(simulationPromises);
