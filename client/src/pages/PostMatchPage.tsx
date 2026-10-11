@@ -394,13 +394,20 @@ export default function PostMatchPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {statRows.map(([key, label]) => (
+                    {statRows.map(([key, label]) => {
+                      const display = (stats: Record<string, any>, other: Record<string, any>) => {
+                        if (key !== "possession") return stats[key] ?? "-";
+                        const total = (Number(stats[key]) || 0) + (Number(other[key]) || 0);
+                        return total > 0 ? Math.round(((Number(stats[key]) || 0) / total) * 100) : 50;
+                      };
+                      return (
                       <tr key={key} className="border-b">
-                        <td className="text-center py-2 px-2">{playerStats[key] ?? "-"}</td>
+                        <td className="text-center py-2 px-2">{display(playerStats, opponentStats)}</td>
                         <td className="text-center py-2 px-2 text-muted-foreground">{label}</td>
-                        <td className="text-center py-2 px-2">{opponentStats[key] ?? "-"}</td>
+                        <td className="text-center py-2 px-2">{display(opponentStats, playerStats)}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
