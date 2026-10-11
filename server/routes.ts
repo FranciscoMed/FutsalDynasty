@@ -707,6 +707,10 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
         return res.status(404).json({ error: "Match not found" });
       }
 
+      if (!match.played) {
+        return res.status(409).json({ error: "Match has not been played yet" });
+      }
+
       // Get game state to find player's team
       const gameState = await storage.getGameState(validatedSaveId, validatedUserId);
       const playerTeamId = gameState.playerTeamId;
@@ -734,6 +738,7 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
           const team = await storage.getTeam(validatedSaveId, validatedUserId, standing.teamId);
           return {
             position: index + 1,
+            teamId: standing.teamId,
             teamName: team?.name || 'Unknown Team',
             played: standing.played,
             won: standing.won,
@@ -779,8 +784,15 @@ export async function registerRoutes(app: Express, competitionEngine?: Competiti
           awayTeamName: isHome ? opponentTeam?.name || 'Unknown' : playerTeam.name,
           homeScore: match.homeScore,
           awayScore: match.awayScore,
+          competitionName: competition.name,
+          date: match.date,
+          homeTeamId: match.homeTeamId,
+          awayTeamId: match.awayTeamId,
           isHome
         },
+        events: Array.isArray(match.events) ? match.events : [],
+        homeStats: match.homeStats ?? null,
+        awayStats: match.awayStats ?? null,
         standings: standingsWithNames,
         nextMatch: nextMatchData
       });
